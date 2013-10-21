@@ -1,7 +1,7 @@
 hpcomm: embryonic code for communicating with recent HP calculators
 ===================================================================
 
-As of 2013/10/20, hpcomm (still called hidtest, see below) is nothing more
+As of 2013/10/21, hpcomm (still called hidtest, see below) is nothing more
 than a proof of concept for communicating with a single HP Prime calculator
 running "SDKV0.30" firmware version from mid-August 2013. It's not even
 interactive.
@@ -27,9 +27,9 @@ saves space in the longer term :)
 
 Build process
 -------------
-For now, hidtest.cpp is meant to be dropped into an HIDAPI source tree
-(from https://github.com/signal11/hidapi.git ) and built from there.
-Yeah, this badly needs improvement, but it was quicker this way, and
+For now (2013/10/21), hidtest.cpp is meant to be dropped into an HIDAPI
+source tree (from https://github.com/signal11/hidapi.git ) and built from
+there. Yeah, this badly needs improvement, but it was quicker this way, and
 actually enabled me to get something out of the door in several hours,
 i.e. before the end of the week-end ;)
 
@@ -38,8 +38,8 @@ TODO list
 * hopefully attract contributors who have an actual HP Prime calculator
   (I don't) and have more free time than I do;
 * make this a separate, autotools-based project;
-* split the HP cable and calcs code across multiple files and headers;
 * add comments to the code (they will look like those in libti*);
+* add testing code, based on test_ticalcs_2;
 * somehow gain better knowledge of the protocol, so as to be able to...
 * ... add more operations (several others are known, see commented code
   snippet in main). Finish the rpkt / vpkt code in the process.
@@ -68,11 +68,12 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
 
 Changelog
 ---------
+2013/10/21: Split into multiple files, but still piggybacking hidtest.cpp.
 2013/10/20: First public version.
 2013/10/19: Project started.
 
-Thanks
-------
+Thanks / greetings
+------------------
 * Xavier "critor" Andréani for testing on his real Prime and providing USB
   packet dumps (which I analyzed with Wireshark);
 * the other TI-Planet ( http://tiplanet.org/ ) admins.
