@@ -1,5 +1,5 @@
 /*
- * libhpcables: hand-helds support libraries.
+ * libhpfiles: hand-helds support libraries.
  * Copyright (C) 2013 Lionel Debroux
  * Code patterns and snippets borrowed from libticables & libticalcs:
  * Copyright (C) 1999-2009 Romain Liévin
@@ -21,10 +21,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __HPCOMM_LINK_PRIME_HID_H__
-#define __HPCOMM_LINK_PRIME_HID_H__
+/**
+ * \file typesprime.h Files: Prime file types.
+ */
 
-#include "hpcomm.h"
-#include "hidapi.h"
+#ifndef __HPLIBS_FILES_TYPESPRIME_H__
+#define __HPLIBS_FILES_TYPESPRIME_H__
+
+// TODO
 
 #endif

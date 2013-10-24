@@ -1,5 +1,5 @@
 /*
- * libhpcables, libhpcalcs: hand-helds support libraries.
+ * libhpfiles: hand-helds support libraries.
  * Copyright (C) 2013 Lionel Debroux
  * Code patterns and snippets borrowed from libticables & libticalcs:
  * Copyright (C) 1999-2009 Romain Liévin
@@ -21,25 +21,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __HPCOMM_H__
-#define __HPCOMM_H__
+/**
+ * \file filetypes.h Files: Umbrella header for file types.
+ */
 
-typedef enum {
-    CABLE_NONE = 0,
-    CABLE_PRIME_HID,
-    CABLE_MAX
-} cable_model;
+#ifndef __HPLIBS_FILES_FILETYPES_H__
+#define __HPLIBS_FILES_FILETYPES_H__
 
-typedef enum {
-    CALC_NONE = 0,
-    CALC_PRIME,
-    CALC_MAX
-} calc_model;
-
-#define USB_VID_HP (0x03F0)
-#define USB_PID_PRIME (0x0441)
-
-#define PRIME_RAW_DATA_SIZE (64+1)
-
+#include "typesprime.h"
 
 #endif

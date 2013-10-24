@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: HPCalcs
+Description: HP Prime (and similar others later ?) calculator management library
+Version: @VERSION@
+Requires: hidapi-hidraw
+Libs: -L${libdir} -lhpcalcs
+Cflags: -I${includedir}/hplp
+

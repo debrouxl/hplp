@@ -25,10 +25,13 @@
  * \file hpcables.h Cables: base part.
  */
 
-#ifndef __HPCOMM_CABLES_H__
-#define __HPCOMM_CABLES_H__
+#ifndef __HPLIBS_CABLES_H__
+#define __HPLIBS_CABLES_H__
 
-#include "hpcomm.h"
+#include <stdint.h>
+
+#include "hplibs.h"
+#include "export.h"
 
 typedef struct _cable_handle cable_handle;
 typedef struct _cable_fncts cable_fncts;
@@ -53,15 +56,27 @@ struct _cable_handle {
 };
 
 
-int hpcables_init(void);
-int hpcables_exit(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-cable_handle * hpcables_handle_new(cable_model model);
-int hpcables_handle_del(cable_handle * handle);
+HPEXPORT int HPCALL hpcables_init(void);
+HPEXPORT int HPCALL hpcables_exit(void);
 
-int hpcables_cable_open(cable_handle * handle);
-int hpcables_cable_close(cable_handle * handle);
-int hpcables_cable_send (cable_handle * handle, uint8_t * data, uint32_t len);
-int hpcables_cable_recv (cable_handle * handle, uint8_t * data, uint32_t * len);
+HPEXPORT const char* HPCALL hpcables_version_get(void);
+
+HPEXPORT int HPCALL hpcables_error_get(int number, char **message);
+
+HPEXPORT cable_handle * HPCALL hpcables_handle_new(cable_model model);
+HPEXPORT int HPCALL hpcables_handle_del(cable_handle * handle);
+
+HPEXPORT int HPCALL hpcables_cable_open(cable_handle * handle);
+HPEXPORT int HPCALL hpcables_cable_close(cable_handle * handle);
+HPEXPORT int HPCALL hpcables_cable_send (cable_handle * handle, uint8_t * data, uint32_t len);
+HPEXPORT int HPCALL hpcables_cable_recv (cable_handle * handle, uint8_t * data, uint32_t * len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

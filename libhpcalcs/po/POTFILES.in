@@ -1,0 +1,9 @@
+src/calc_prime.c
+src/hpcables.c
+src/hpcalcs.c
+src/hpfiles.c
+src/link_prime_hid.c
+src/logging.c
+src/prime_cmd.c
+src/prime_rpkt.c
+src/prime_vpkt.c
