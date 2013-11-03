@@ -28,22 +28,27 @@
 #ifndef __HPLIBS_H__
 #define __HPLIBS_H__
 
+//! Enumeration of cable types.
 typedef enum {
     CABLE_NONE = 0,
     CABLE_PRIME_HID,
     CABLE_MAX
 } cable_model;
 
+//! Enumeration of calculator types.
 typedef enum {
     CALC_NONE = 0,
     CALC_PRIME,
     CALC_MAX
 } calc_model;
 
+//! USB Vendor ID of Hewlett-Packard.
 #define USB_VID_HP (0x03F0)
+//! USB Product ID of the Prime calculator.
 #define USB_PID_PRIME (0x0441)
 
-#define PRIME_RAW_DATA_SIZE (64+1)
+//! Size of a raw packet for the Prime.
+#define PRIME_RAW_DATA_SIZE (64)
 
 
 #endif

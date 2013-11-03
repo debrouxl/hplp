@@ -32,56 +32,64 @@
 #include <hpcalcs.h>
 #include "logging.h"
 
+#include <inttypes.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-static int hexdump(uint8_t *data, uint32_t size)
+#define VPKT_DBG 2
+
+static void hexdump(const char * direction, uint8_t *data, uint32_t size)
 {
+    if (size > 0) {
 #if (VPKT_DBG == 1)
-    char str[64];
-    uint32_t i;
+        char str[64];
+        uint32_t i;
 
-    str[0] = 0;
-    if (size <= 12)
-    {
-        str[0] = ' '; str[1] = ' '; str[2] = ' '; str[3] = ' ';
-
-        for (i = 0; i < size; i++)
+        hpcalcs_debug("Dumping %s packet with size %" PRIu32, direction, size);
+        str[0] = 0;
+        if (size <= 12)
         {
-            sprintf(&str[3*i+4], "%02X ", data[i]);
+            str[0] = ' '; str[1] = ' '; str[2] = ' '; str[3] = ' ';
+
+            for (i = 0; i < size; i++)
+            {
+                sprintf(&str[3*i+4], "%02X ", data[i]);
+            }
         }
-    }
-    else
-    {
-        sprintf(str, "    %02X %02X %02X %02X %02X ..... %02X %02X %02X %02X %02X",
-                     data[0], data[1], data[2], data[3], data[4],
-                     data[size-5], data[size-4], data[size-3], data[size-2], data[size-1]);
-    }
-    ticalcs_info(str);
-#elsif (VPKT_DBG == 2)
-    char *str = (char *)g_malloc(3*size + 8 + 10);
-    uint32_t i, j, k;
-    int step = 12;
-
-    for(k = 0; k < 4; k++)
-    {
-        str[k] = ' ';
-    }
-
-    for (i = j = 0; i < size; i++, j++)
-    {
-        if(i && !(i % step))
+        else
         {
-            ticalcs_info(str);
-            j = 0;
+            sprintf(str, "    %02X %02X %02X %02X %02X ..... %02X %02X %02X %02X %02X",
+                         data[0], data[1], data[2], data[3], data[4],
+                         data[size-5], data[size-4], data[size-3], data[size-2], data[size-1]);
         }
+        hpcalcs_debug(str);
+#elif (VPKT_DBG == 2)
+        char *str;
 
-        sprintf(&str[3*j+4], "%02X ", data[i]);
-    }
-    ticalcs_info(str);
+        hpcalcs_debug("Dumping %s packet with size %" PRIu32, direction, size);
+        str = (char *)malloc(3 * size + 8 + 10);
+        if (str != NULL) {
+            uint32_t i, j, k;
+            int step = 16;
 
-    g_free(str);
+            for(k = 0; k < 4; k++) {
+                str[k] = ' ';
+            }
+
+            for (i = j = 0; i < size; i++, j++) {
+                if (i && !(i % step)) {
+                    hpcalcs_debug(str);
+                    j = 0;
+                }
+
+                sprintf(&str[3*j+4], "%02X ", data[i]);
+            }
+            hpcalcs_debug(str);
+
+            free(str);
+        }
 #endif
-    return 0;
+    }
 }
 
 
@@ -90,13 +98,13 @@ HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_pkt * pkt) {
     if (handle != NULL && pkt != NULL) {
         cable_handle * cable = handle->cable;
         if (cable != NULL) {
-            hexdump(pkt->data, pkt->size);
+            hexdump("OUT", pkt->data, pkt->size);
             res = hpcables_cable_send(cable, pkt->data, pkt->size);
             if (res == 0) {
-                hpcables_info("%s: send succeeded", __FUNCTION__);
+                hpcalcs_info("%s: send succeeded", __FUNCTION__);
             }
             else {
-                hpcables_error("%s: send failed", __FUNCTION__);
+                hpcalcs_error("%s: send failed", __FUNCTION__);
             }
         }
         else {
@@ -115,12 +123,12 @@ HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_pkt * pkt) {
         cable_handle * cable = handle->cable;
         if (cable != NULL) {
             res = hpcables_cable_recv(cable, pkt->data, &pkt->size);
-            hexdump(pkt->data, pkt->size);
+            hexdump("IN", pkt->data, pkt->size);
             if (res == 0) {
-                hpcables_info("%s: recv succeeded", __FUNCTION__);
+                //hpcalcs_info("%s: recv succeeded", __FUNCTION__);
             }
             else {
-                hpcables_error("%s: recv failed", __FUNCTION__);
+                hpcalcs_warning("%s: recv failed", __FUNCTION__);
             }
         }
         else {

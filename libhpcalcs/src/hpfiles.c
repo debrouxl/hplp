@@ -32,6 +32,7 @@
 #include <hpfiles.h>
 #include "logging.h"
 
+#include <inttypes.h>
 #include <string.h>
 
 // not static, must be shared between instances
@@ -53,65 +54,17 @@ HPEXPORT const char* HPCALL hpfiles_version_get (void) {
     return VERSION;
 }
 
-HPEXPORT int HPCALL hpfiles_error_get (int number, char **message) {
-    if (message != NULL) {
-        *message = (char *)"";
-        return number;
-    }
-    else {
-        hpfiles_error("%s: message is NULL", __FUNCTION__);
-        return number;
-    }
-}
 
-
-/**
- * hpfiles_ve_create:
- *
- * Allocate a new files_var_entry structure.
- *
- * Return value: the entry or NULL if error.
- **/
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create(void) {
     return calloc(1, sizeof(files_var_entry));
 }
 
-/**
- * hpfiles_ve_create_with_size:
- * @size: length of data.
- *
- * Allocate a new files_var_entry structure and space for data.
- *
- * Return value: the entry or NULL if error.
- **/
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_size(uint32_t size) {
     files_var_entry * ve = hpfiles_ve_create();
     if (ve != NULL) {
         ve->data = (uint8_t *)calloc(sizeof(uint8_t), size);
-        if (ve->data == NULL) {
-            free(ve);
-            ve = NULL;
-        }
-    }
-
-    return ve;
-}
-
-/**
- * hpfiles_ve_create_with_data:
- * @data: length of data.
- * @size: length of data.
- *
- * Allocate a new files_var_entry structure and space for data.
- *
- * Return value: the entry or NULL if error.
- **/
-HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, uint32_t size) {
-    files_var_entry * ve = hpfiles_ve_create();
-    if (ve != NULL) {
-        ve->data = (uint8_t *)malloc(size);
         if (ve->data != NULL) {
-            memcpy(ve->data, data, size);
+            ve->size = size;
         }
         else {
             free(ve);
@@ -122,16 +75,24 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, ui
     return ve;
 }
 
-/**
- * hpfiles_ve_delete:
- * @ve: var entry.
- *
- * Free data buffer and the structure itself.
- *
- * Return value: none.
- **/
-HPEXPORT void HPCALL hpfiles_ve_delete(files_var_entry * ve)
-{
+HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, uint32_t size) {
+    files_var_entry * ve = hpfiles_ve_create();
+    if (ve != NULL) {
+        ve->data = (uint8_t *)malloc(size);
+        if (ve->data != NULL) {
+            memcpy(ve->data, data, size);
+            ve->size = size;
+        }
+        else {
+            free(ve);
+            ve = NULL;
+        }
+    }
+
+    return ve;
+}
+
+HPEXPORT void HPCALL hpfiles_ve_delete(files_var_entry * ve) {
     if (ve != NULL) {
         free(ve->data);
         free(ve);
@@ -141,28 +102,11 @@ HPEXPORT void HPCALL hpfiles_ve_delete(files_var_entry * ve)
     }
 }
 
-/**
- * hpfiles_ve_alloc_data:
- * @size: length of data.
- *
- * Allocate space for data field of files_var_entry.
- *
- * Return value: allocated space or NULL if error.
- **/
-HPEXPORT void *hpfiles_ve_alloc_data(size_t size) {
+
+HPEXPORT void *hpfiles_ve_alloc_data(uint32_t size) {
     return calloc(sizeof(uint8_t), size + 1);
 }
 
-/**
- * hpfiles_ve_copy:
- * @dst: destination entry.
- * @src: source entry.
- *
- * Copy files_var_entry and its content from src to dst.
- * If data is NULL, a new buffer is allocated before copying.
- *
- * Return value: the dst pointer or NULL if malloc error.
- **/
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_copy(files_var_entry * dst, files_var_entry * src) {
     if (src != NULL && dst != NULL) {
         memcpy(dst, src, sizeof(files_var_entry));
@@ -184,14 +128,6 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_copy(files_var_entry * dst, files_v
     return dst;
 }
 
-/**
- * hpfiles_ve_dup:
- * @src: source entry.
- *
- * Duplicate files_var_entry and its content from src to dst (full copy).
- *
- * Return value: a newly allocated entry (must be freed with #hpfiles_ve_delete when no longer needed).
- **/
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_dup(files_var_entry * src) {
     files_var_entry * dst = NULL;
 
@@ -218,46 +154,37 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_dup(files_var_entry * src) {
     return dst;
 }
 
-/**
- * hpfiles_ve_create_array:
- * @nelts: size of NULL-terminated array (number of files_var_entry structures).
- *
- * Allocate a NULL-terminated array of files_var_entry structures. You have to allocate
- * each elements of the array by yourself.
- *
- * Return value: the array or NULL if error.
- **/
-HPEXPORT files_var_entry ** HPCALL hpfiles_ve_create_array(int element_count) {
+
+HPEXPORT int hpfiles_ve_display(files_var_entry * ve) {
+    int res = 0;
+    if (ve != NULL) {
+        hpfiles_info("Displaying var entry %p", ve);
+        hpfiles_info("Name: %ls", ve->name);
+        hpfiles_info("Type: %u (%02X)", ve->type, ve->type);
+        hpfiles_info("Size: %" PRIu32 " (%02" PRIX32 ")", ve->size, ve->size);
+        hpfiles_info("Data: %p", ve->data);
+        res = 1;
+    }
+    else {
+        hpfiles_error("%s: ve is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+
+HPEXPORT files_var_entry ** HPCALL hpfiles_ve_create_array(uint32_t element_count) {
     return (files_var_entry **)calloc(element_count + 1, sizeof(files_var_entry *));
 }
 
-/**
- * hpfiles_ve_resize_array:
- * @array: address of array
- * @nelts: size of NULL-terminated array (number of files_var_entry structures).
- *
- * Re-allocate a NULL-terminated array of files_var_entry structures. You have to allocate
- * each elements of the array by yourself.
- *
- * Return value: the array or NULL if error.
- **/
-HPEXPORT files_var_entry ** HPCALL hpfiles_ve_resize_array(files_var_entry ** array, int element_count) {
+HPEXPORT files_var_entry ** HPCALL hpfiles_ve_resize_array(files_var_entry ** array, uint32_t element_count) {
     return (files_var_entry **)realloc(array, (element_count + 1) * sizeof(files_var_entry *));
 }
 
-/**
- * hpfiles_ve_delete_array:
- * @array: an NULL-terminated array of files_var_entry structures.
- *
- * Free the whole array (data buffer, files_var_entry structure and array itself).
- *
- * Return value: none.
- **/
 HPEXPORT void HPCALL hpfiles_ve_delete_array(files_var_entry ** array) {
     files_var_entry ** ptr;
 
     if (array != NULL) {
-        for(ptr = array; ptr; ptr++) {
+        for(ptr = array; *ptr; ptr++) {
             hpfiles_ve_delete(*ptr);
         }
         free(array);

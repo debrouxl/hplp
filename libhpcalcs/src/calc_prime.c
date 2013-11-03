@@ -71,7 +71,7 @@ static int calc_prime_recv_screen(calc_handle * handle, calc_screenshot_format f
 
     res = calc_prime_s_recv_screen(handle, format);
     if (res == 0) {
-        res = calc_prime_r_recv_screen(handle, out_data, out_size);
+        res = calc_prime_r_recv_screen(handle, format, out_data, out_size);
         if (res != 0) {
             hpcalcs_error("%s: r_recv_screen failed", __FUNCTION__);
         }
@@ -98,10 +98,10 @@ static int calc_prime_send_file(calc_handle * handle, files_var_entry * file) {
     return res;
 }
 
-static int calc_prime_recv_file(calc_handle * handle, const char * name, files_var_entry ** out_file) {
+static int calc_prime_recv_file(calc_handle * handle, files_var_entry * request, files_var_entry ** out_file) {
     int res;
 
-    res = calc_prime_s_recv_file(handle, name);
+    res = calc_prime_s_recv_file(handle, request);
     if (res == 0) {
         res = calc_prime_r_recv_file(handle, out_file);
         if (res != 0) {
@@ -134,12 +134,12 @@ const calc_fncts calc_prime_fncts =
 {
     CALC_PRIME,
     "HP Prime",
-    "HP Prime",
+    "HP Prime Graphing Calculator",
     CALC_OPS_CHECK_READY | CALC_OPS_GET_INFOS | CALC_OPS_RECV_SCREEN | CALC_OPS_SEND_FILE | CALC_OPS_RECV_FILE | CALC_OPS_RECV_BACKUP,
     &calc_prime_check_ready,
     &calc_prime_get_infos,
     &calc_prime_recv_screen,
     &calc_prime_send_file,
     &calc_prime_recv_file,
-    &calc_prime_recv_backup
+    &calc_prime_recv_backup,
 };

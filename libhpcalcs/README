@@ -1,43 +1,62 @@
 hplp: code for communicating with recent HP calculators
 =======================================================
 
-Status
-------
-As of 2013/10/24, hplp (still called test_hpcalcs for now) is an early toolkit
-for two-way communications with a single HP Prime calculator running "SDKV0.30"
-firmware version from mid-August 2013.
-It features a terminal-based UI, which triggers successful packet sends and
-receives to/from my beta-tester's calculator using the appropriate protocol.
+hplp (still entirely in libhpcalcs for now) is the beginning of a toolkit for
+two-way communications with HP Prime calculators.
+
+Status (2013/11/03)
+-------------------
+The code base does:
+* support communication with a single Prime calculator connected to the
+  computer. The communication is known to work with the "SDKV0.30" firmware
+  version from mid-August 2013, but might not work with other older or newer
+  versions, if HP performs backwards-incompatible changes in the protocol
+  (like TI does);
+* implement six operations (without _known_ bugs): ready check, get calculator
+  information, receive screenshot, send file, receive file, receive backup;
+* provide a terminal-based UI: the test program "test_hpcalcs".
+
+The code base doesn't:
+* perform color conversion on PNG screenshots (libhpcalcs should depend on
+  libpng to uncompress the files, and recompress them after mangling);
+* provide a way to select one of multiple HP calculators (probing USB
+  devices);
+* provide a user-friendly GUI for the above, but a GUI can definitely build
+  upon the library easily enough;
+* implement _proper_ conversion from UTF-16 LE to other charsets on its own:
+  that's a task for libicu, Qt or other libraries;
 
 Goals
 -----
-Laying the groundwork for GUIs dealing with two-way communication with HP Prime
-calculators, and possibly 39gII (these calcs are supposed to be somewhat
-similar), using USB HID class.
+Laying the groundwork for GUIs dealing with two-way communication with HP
+Prime calculators, and possibly 39gII (Prime and 39gII are supposed to be
+somewhat similar), using USB HID class, and possibly later fake MSD for
+firmware upgrades.
 
 Non-goals
 ---------
-As far as I'm concerned:
+As far as I'm concerned, working _by myself_ on:
 * duplicating / replacing code targeting older, non-USB HID-based HP
-  calculators is not a goal;
-* making a GUI comparable to HP's is not a goal either, but other people should
-  obviously do it, in order to make the software much more usable.
+  calculators;
+* a GUI comparable to HP's Connectivity Kit. However, other people should
+  obviously do it, in order to make the software much more usable !
 
 Technical notes
 ---------------
 The code leverages HIDAPI, and it was strongly inspired by the time-proven
 concepts and APIs of the libti* family, which I (Lionel Debroux) am the
 current maintainer of.
-The libti* family ( https://github.com/debrouxl/tilibs ) forms the back-end for
-TILP, TIEmu, TilEm and titools (mainly), and contains the only third-party
-portable FLOSS code with two-way communication support for all three series of
-TI-Z80, TI-68k and TI-Nspire graphing calculators.
-Putting together framework strongly inspired by libti* took a bit of work,
+The GPL'ed libti* family ( https://github.com/debrouxl/tilibs ) forms the
+back-end for TILP, TIEmu, TilEm and titools (mainly), and contains the only
+third-party portable FLOSS code with two-way communication support for all
+three series of TI-Z80, TI-68k and TI-Nspire graphing calculators.
+Putting together framework strongly inspired by libti* clearly took some work,
 but having such a foundation saves time in the longer term. IOW, it's worth
 the apparent complexity.
 
 Obviously, until the calculator's protocol is better documented, the API
-may change a bit in backwards-incompatible manners.
+will change in backwards-incompatible manners (for instance, the output
+parameters of check ready and get infos operations).
 
 Build process
 -------------
@@ -45,44 +64,47 @@ The build process is that of pretty much any autotools-based piece of
 software:
 $ autoreconf -i -f
 $ ./configure
-$ ./make
+$ ./make check
 # make install
 
-The only external dependency, for now, is HIDAPI:
+The terminal-based test program is in tests/test_hpcalcs.
+
+For now, the main external dependency is HIDAPI:
 https://github.com/signal11/hidapi.git
 Unless your Linux distro packages it, you need to compile and install it
 yourself (it is also an autotools-based project).
+The code base shall depend on libpng (probably 1.6, due to its more friendly
+API) when screenshot color conversion is implemented.
 
 TODO list
 ---------
-(before wider public release)
-* add testing code / authoritative example, based on test_ticalcs_2;
-* conditional block in configure.ac for hidapi (Windows, MacOS X) vs.
-  hidapi-hidraw (Linux);
-(after wider public release)
-* add comments to the code, of course. They will look like those in libti*,
-  and will be useful for ...
-* ... hopefully attracting contributors who have an actual HP Prime calculator
-  (I don't) and have more free time than I do;
-* a GUI, but I won't be the one doing it;
+* ... hopefully attract _code_ contributors who have an actual HP Prime
+  calculator (I don't) and have more free time than I do;
+* a GUI, but I won't be the one doing it. Nowadays, Qt is the main choice for
+  a portable, good-looking, fast UI toolkit. GTK+ used to be a better choice
+  wrt. portability, but that was years ago, and in 2013, a number of
+  applications and desktop environments are switching from GTK+ to Qt;
 * add devices probing code (the hpcables part currently assumes that the
-  calculator is plugged in and that there's a single calculator);
+  calculator is plugged in and that there's a single calculator), HIDAPI
+  provides some probing functions;
 * add error codes and their propagation to the caller, like in libti*;
-* actually use translation framework in the code (beyond requiring intltool
-  in configure);
-* add "attached", "busy" and "open" setting / resetting / checking, like
-  in libti*. These variables should be explicitly made atomic (C11), if
-  modern (cross-)MinGW supports that;
+* actually use translation framework in the code, beyond requiring intltool
+  in configure;
+* fill in torture test;
 * somehow gain better knowledge of the protocol, so as to be able to...
 * ... add more operations and data structures. 
+* add dissectors and session logs, like in libticalcs;
 * add support for Prime in fake MSD mode, for firmware upgrades ? I've
   already partially analyzed the protocol and published my notes at
   http://tiplanet.org/hpwiki/index.php?title=HP_Prime/Linking_Protocol
   but I'm not really confident about it ;)
   Need to find a library for MSD. libusbx does not recommend using it
   in MSD mode.
-* certainly much more, if users and programmers think the software is
-  useful :-)
+* add 39gII support, probably, as the Prime is supposed to be somewhat similar
+  to the 39gII. That's where the usefulness of the cables / calcs separation
+  and cables generic API will become most obvious.
+* certainly more... at least, if users and programmers think the software
+  fits a purpose :-)
 
 License
 -------
@@ -104,17 +126,22 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
 
 Changelog
 ---------
-2013/10/22-2x: Created autotools-based project and test client; vastly
-expand the code.
+2013/10/22 - 2013/11/03: Created autotools-based project and test client;
+vastly expand the code, to the point it becomes releasable (if not really
+usable).
 2013/10/21: Split into multiple files, but still piggybacking hidtest.cpp.
-2013/10/20: First public version.
+2013/10/20: First public PoC.
 2013/10/19: Project started.
 
-Thanks / greetings
-------------------
-* Xavier "critor" Andréani for testing on his real Prime and providing USB
-  packet dumps (which I analyzed with Wireshark);
-* the other TI-Planet ( http://tiplanet.org/ ) admins;
-* the HP Prime developer team at HP: some of its members spend time attending
-  message boards, even in communities traditionally interested in TI calcs
-  (Omnimaga, Cemetech, TI-Planet), which is a win-win move.
+Credits (demoscene style)
+-------------------------
+* _many_ thanks to Xavier "critor" Andréani for testing many program versions
+  on his real Prime and providing many USB packet dumps (which I analyzed
+  with Wireshark) and terminal output sessions;
+* greetings to the other TI-Planet ( http://tiplanet.org/ ) admins;
+* greetings to the HP Prime developer team at HP: some of its members spend
+  time attending user message boards and interacting with users and programmers,
+  even in communities traditionally interested in TI calcs (Omnimaga, Cemetech,
+  TI-Planet), which is a win-win move for both HP and its users;
+* fuckings to TI EdTech management imposing a closed-minded, lose-lose stance
+  on the Nspire platform, despite community input.

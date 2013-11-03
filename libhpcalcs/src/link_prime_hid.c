@@ -45,11 +45,11 @@ static int cable_prime_hid_open (cable_handle * handle) {
             handle->model = CABLE_PRIME_HID;
             handle->handle = (void *)device_handle;
             handle->fncts = &cable_prime_hid_fncts;
-            handle->read_timeout = 500;
+            handle->read_timeout = 2000;
             handle->open = 1;
             handle->busy = 0;
             res = 0;
-            hpcables_error("%s: cable open succeeded", __FUNCTION__);
+            hpcables_info("%s: cable open succeeded", __FUNCTION__);
         }
         else {
             hpcables_error("%s: cable open failed", __FUNCTION__);
@@ -68,7 +68,7 @@ static int cable_prime_hid_close (cable_handle * handle) {
         if (device_handle != NULL) {
             hid_close(device_handle);
             res = 0;
-            hpcables_error("%s: cable close succeeded", __FUNCTION__);
+            hpcables_info("%s: cable close succeeded", __FUNCTION__);
         }
         else {
             hpcables_error("%s: device_handle is NULL", __FUNCTION__);

@@ -6,7 +6,7 @@ includedir=@includedir@
 Name: HPCalcs
 Description: HP Prime (and similar others later ?) calculator management library
 Version: @VERSION@
-Requires: hidapi-hidraw
+Requires.private: @HIDAPI_PKG@
 Libs: -L${libdir} -lhpcalcs
 Cflags: -I${includedir}/hplp
 

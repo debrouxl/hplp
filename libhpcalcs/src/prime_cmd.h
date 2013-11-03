@@ -31,9 +31,9 @@
 #define CMD_PRIME_CHECK_READY (0xFF)
 #define CMD_PRIME_GET_INFOS (0xFA)
 #define CMD_PRIME_RECV_SCREEN (0xFC)
-#define CMD_PRIME_SEND_FILE (0xF7)
-#define CMD_PRIME_RECV_FILE (0xF8)
 #define CMD_PRIME_RECV_BACKUP (0xF9)
+#define CMD_PRIME_REQ_FILE (0xF8)
+#define CMD_PRIME_RECV_FILE (0xF7)
 #define CMD_PRIME_UNKNOWN (0xE7)
 
 HPEXPORT int HPCALL calc_prime_s_check_ready(calc_handle * handle);
@@ -43,12 +43,12 @@ HPEXPORT int HPCALL calc_prime_s_get_infos (calc_handle * handle);
 HPEXPORT int HPCALL calc_prime_r_get_infos (calc_handle * handle, calc_infos * infos);
 
 HPEXPORT int HPCALL calc_prime_s_recv_screen(calc_handle * handle, calc_screenshot_format format);
-HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, uint8_t ** out_data, uint32_t * out_size);
+HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screenshot_format format, uint8_t ** out_data, uint32_t * out_size);
 
 HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry * file);
 HPEXPORT int HPCALL calc_prime_r_send_file(calc_handle * handle);
 
-HPEXPORT int HPCALL calc_prime_s_recv_file(calc_handle * handle, const char * name);
+HPEXPORT int HPCALL calc_prime_s_recv_file(calc_handle * handle, files_var_entry * file);
 HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry ** out_file);
 
 HPEXPORT int HPCALL calc_prime_s_recv_backup(calc_handle * handle);

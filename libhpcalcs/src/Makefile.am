@@ -24,7 +24,8 @@ libhpcalcs_la_LIBADD = $(LIBINTL) \
 libhpcalcs_la_LDFLAGS = -no-undefined -version-info @LT_LIBVERSION@
 libhpcalcs_la_SOURCES = *.h \
 	hpfiles.c hpcables.c hpcalcs.c \
-	logging.c \
+	error.c logging.c type2str.c \
+	filetypes.c typesprime.c \
 	link_prime_hid.c \
 	prime_rpkt.c prime_vpkt.c prime_cmd.c calc_prime.c
 

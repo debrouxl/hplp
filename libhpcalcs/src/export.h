@@ -28,33 +28,22 @@
 #define __HPCALCS_EXPORT__
 
 #ifdef HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* 
-	Calling convention: default 
-*/
-# define HPCALL
+// Calling convention: default
+#define HPCALL
 
-/* 
-	Symbols exporting 
-*/
+// Symbols export
 #if defined(HAVE_FVISIBILITY)	// GCC 4.0 has introduced the -fvisibility flag (similar to declspec)
-# define HPEXPORT __attribute__ ((visibility("default")))
+#define HPEXPORT __attribute__ ((visibility("default")))
 
 #elif defined(__WIN32__)
-# if defined(__BORLANDC__)		// BCC32 v5.x (or C++Builder)
-#  if __BORLANDC__ >= 0x0500	// (c) 2001 Thomas Wolf (two@chello.at)
-#   define HPEXPORT
-#  else
-#   define HPEXPORT
-#  endif
-
-# elif defined(_MSC_VER)		// MSVC 5.0 mini
+# if defined(_MSC_VER)		// MSVC 5.0 mini
 #  if defined(HPCALCS_EXPORTS)
 #   define HPEXPORT __declspec(dllexport)
 #  else
@@ -77,27 +66,25 @@ extern "C" {
 }
 #endif
 
-/* 
-	Symbols deprecating
-*/
-#ifndef TILIBS_DEPRECATED
+// Symbols deprecation
+#ifndef HPLIBS_DEPRECATED
 # ifdef __GNUC__
 #  if (__GNUC__>3) || (__GNUC__==3 && __GNUC_MINOR__>=3)
-#   define TILIBS_DEPRECATED __attribute__((deprecated))
+#   define HPLIBS_DEPRECATED __attribute__((deprecated))
 #  else /* not GCC >= 3.3 */
-#   define TILIBS_DEPRECATED
+#   define HPLIBS_DEPRECATED
 #  endif /* GCC >= 3.3 */
 # else /* not __GNUC__ */
 #  ifdef _MSC_VER
 #   if _MSC_VER >= 1300
-#    define TILIBS_DEPRECATED __declspec(deprecated)
+#    define HPLIBS_DEPRECATED __declspec(deprecated)
 #   else /* not _MSC_VER >= 1300 */
-#    define TILIBS_DEPRECATED
+#    define HPLIBS_DEPRECATED
 #   endif /* _MSC_VER >= 1300 */
 #  else /* not _MSC_VER */
-#   define TILIBS_DEPRECATED
+#   define HPLIBS_DEPRECATED
 #  endif /* _MSC_VER */
 # endif /* __GNUC__ */
-#endif /* TILIBS_DEPRECATED */
+#endif /* HPLIBS_DEPRECATED */
 
 #endif

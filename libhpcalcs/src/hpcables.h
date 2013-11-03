@@ -33,9 +33,12 @@
 #include "hplibs.h"
 #include "export.h"
 
-typedef struct _cable_handle cable_handle;
+//! Opaque type for internal _cable_fncts.
 typedef struct _cable_fncts cable_fncts;
+//! Opaque type for internal _cable_handle.
+typedef struct _cable_handle cable_handle;
 
+//! Internal structure containing information about the cable, and function pointers.
 struct _cable_fncts {
     cable_model model;
     const char * name;
@@ -46,13 +49,14 @@ struct _cable_fncts {
     int (*recv) (cable_handle * handle, uint8_t * data, uint32_t * len);
 };
 
+//! Internal structure containing state about the cable, returned and passed around by the user.
 struct _cable_handle {
     cable_model model;
     void * handle;
     const cable_fncts * fncts;
     int read_timeout;
-    int open;
-    int busy;
+    int open; // Should be made explicitly atomic with GCC >= 4.7 or Clang, but int is atomic on most ISAs anyway.
+    int busy; // Should be made explicitly atomic with GCC >= 4.7 or Clang, but int is atomic on most ISAs anyway.
 };
 
 
@@ -60,20 +64,110 @@ struct _cable_handle {
 extern "C" {
 #endif
 
+/**
+ * \brief Initializes library internals. Must be called before any other libhpcables function.
+ * \return Whether the initialization succeeded.
+ * \todo return instance count instead.
+ **/
 HPEXPORT int HPCALL hpcables_init(void);
+/**
+ * \brief Tears down library internals. No other libhpcables function can be called after this one.
+ * \return Whether the teardown succeeded.
+ * \todo return instance count instead.
+ **/
 HPEXPORT int HPCALL hpcables_exit(void);
 
+/**
+ * \brief Returns the library version string.
+ * \return The library version string, usually under the form "X.Y.Z".
+ **/
 HPEXPORT const char* HPCALL hpcables_version_get(void);
 
+/**
+ * \brief Gets the error message if the error was produced by this library
+ * \param number the error number (from internal error.h)
+ * \param message out pointer for a newly allocated text error message, which must be freed by the caller
+ *
+ * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
+ **/
 HPEXPORT int HPCALL hpcables_error_get(int number, char **message);
 
+/**
+ * \brief Create a new handle (opaque structure) for the given cable model.
+ * The handle must be freed with \a hpcables_handle_del when no longer needed.
+ * \param model the cable model.
+ * \return NULL if an error occurred, otherwise a valid handle.
+ **/
 HPEXPORT cable_handle * HPCALL hpcables_handle_new(cable_model model);
+/**
+ * \brief Deletes a handle (opaque structure) created by \a hpcables_handle_new().
+ * \param handle the handle to be deleted.
+ * \return 0 if the deletion succeeded, nonzero otherwise.
+ **/
 HPEXPORT int HPCALL hpcables_handle_del(cable_handle * handle);
+/**
+ * \brief Shows basic information about a handle.
+ * \param handle the handle to be dumped.
+ * \return 0 if the handle was non-NULL, nonzero otherwise.
+ **/
+HPEXPORT int HPCALL hpcables_handle_display(cable_handle * handle);
 
+/**
+ * \brief Retrieves the cable model from the given cable handle.
+ * \param handle the cable handle
+ * \return the cable model corresponding to the given handle.
+ */
+HPEXPORT cable_model HPCALL hpcables_get_model(cable_handle * handle);
+
+/**
+ * \brief Sets the timeout for the given cable handle.
+ * \param handle the cable handle
+ * \param timeout the new timeout.
+ * \return the old timeout.
+ */
+HPEXPORT int HPCALL hpcables_options_set_read_timeout(cable_handle * handle, int timeout);
+
+/**
+ * \brief Opens the given cable.
+ * \param handle the handle to be opened.
+ * \return 0 if the operation succeeded, nonzero otherwise.
+ **/
 HPEXPORT int HPCALL hpcables_cable_open(cable_handle * handle);
+/**
+ * \brief Closes the given cable.
+ * \param handle the handle to be closed.
+ * \return 0 if the operation succeeded, nonzero otherwise.
+ **/
 HPEXPORT int HPCALL hpcables_cable_close(cable_handle * handle);
+/**
+ * \brief Send data through the given cable.
+ * \param handle the cable handle.
+ * \param data the data to be sent.
+ * \param len the size of the data to be sent.
+ * \return 0 if the operation succeeded, nonzero otherwise.
+ **/
 HPEXPORT int HPCALL hpcables_cable_send (cable_handle * handle, uint8_t * data, uint32_t len);
+/**
+ * \brief Receive data through the given cable.
+ * \param handle the cable handle.
+ * \param data storage area for the data to be received.
+ * \param len storage area for the length of the received data.
+ * \return 0 if the operation succeeded, nonzero otherwise.
+ **/
 HPEXPORT int HPCALL hpcables_cable_recv (cable_handle * handle, uint8_t * data, uint32_t * len);
+
+/**
+ * \brief Converts a calculator model to a printable string.
+ * \param model the calculator model.
+ * \return the string corresponding to the calculator model.
+ **/
+HPEXPORT const char * HPCALL hpcables_model_to_string(calc_model model);
+/**
+ * \brief Converts a string to a supported calculator model, if possible.
+ * \param string the string.
+ * \return the calculator model corresponding to the string, CALC_NONE if failed.
+ **/
+HPEXPORT calc_model HPCALL hpcables_string_to_model(const char *str);
 
 #ifdef __cplusplus
 }

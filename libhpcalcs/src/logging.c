@@ -35,13 +35,40 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <time.h>
+
+#ifdef  __GNUC__
+#ifndef alloca
+#define alloca(size) __builtin_alloca(size)
+#endif
+#endif
+
+static FILE * log_file;
+
+static void output_log(const char *format, va_list args) {
+    if (log_file == NULL) {
+        log_file = fopen("trace.txt", "w+b");
+        if (log_file != NULL) {
+            time_t curtime = time(NULL);
+            fprintf(log_file, "Opening log file at %s", ctime(&curtime));
+        }
+    }
+    // Windows' terminal is extremely slow, cannot print the traces there.
+#ifndef _WIN32
+    vprintf(format, args);
+#endif
+    if (log_file != NULL) {
+        vfprintf(log_file, format, args);
+        fflush(log_file);
+    }
+}
 
 void hpfiles_debug (const char *format, ...) {
     va_list args;
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpfiles DEBUG: ") + 4);
     sprintf(format2, "hpfiles DEBUG: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpfiles_info (const char *format, ...) {
@@ -49,7 +76,7 @@ void hpfiles_info (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpfiles INFO: ") + 4);
     sprintf(format2, "hpfiles INFO: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpfiles_warning (const char *format, ...) {
@@ -57,7 +84,7 @@ void hpfiles_warning (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpfiles WARN: ") + 4);
     sprintf(format2, "hpfiles WARN: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpfiles_error (const char *format, ...) {
@@ -65,7 +92,7 @@ void hpfiles_error (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpfiles ERROR: ") + 4);
     sprintf(format2, "hpfiles ERROR: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 
@@ -75,7 +102,7 @@ void hpcables_debug (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpcables DEBUG: ") + 4);
     sprintf(format2, "hpcables DEBUG: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpcables_info (const char *format, ...) {
@@ -83,7 +110,7 @@ void hpcables_info (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpcables INFO: ") + 4);
     sprintf(format2, "hpcables INFO: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpcables_warning (const char *format, ...) {
@@ -91,7 +118,7 @@ void hpcables_warning (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpcables WARN: ") + 4);
     sprintf(format2, "hpcables WARN: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpcables_error (const char *format, ...) {
@@ -99,7 +126,7 @@ void hpcables_error (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpcables ERROR: ") + 4);
     sprintf(format2, "hpcables ERROR: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 
@@ -109,7 +136,7 @@ void hpcalcs_debug (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpcalcs DEBUG: ") + 4);
     sprintf(format2, "hpcalcs DEBUG: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpcalcs_info (const char *format, ...) {
@@ -117,7 +144,7 @@ void hpcalcs_info (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpcalcs INFO: ") + 4);
     sprintf(format2, "hpcalcs INFO: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpcalcs_warning (const char *format, ...) {
@@ -125,7 +152,7 @@ void hpcalcs_warning (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpcalcs WARN: ") + 4);
     sprintf(format2, "hpcalcs WARN: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }
 
 void hpcalcs_error (const char *format, ...) {
@@ -133,5 +160,5 @@ void hpcalcs_error (const char *format, ...) {
     char * format2 = (char *)alloca(strlen(format) + sizeof("hpcalcs ERROR: ") + 4);
     sprintf(format2, "hpcalcs ERROR: %s\n", format);
     va_start (args, format);
-    vprintf(format2, args);
+    output_log(format2, args);
 }

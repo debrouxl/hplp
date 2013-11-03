@@ -29,6 +29,7 @@
 #include <config.h>
 #endif
 
+#include <inttypes.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -44,70 +45,322 @@
 #undef VERSION
 #define VERSION "Test program"
 
-static int is_ready(calc_handle* h) {
+// NOTE: this pair of crude routines is just for demo and testing purposes !
+// In the general case, a proper i18n library (not offered by the C standard library) should be used !
+static void crude_convert_UTF16LE_to_8bit(const char16_t * input, char * output) {
+    const char * in_ptr = (const char *)input;
+    char16_t chr = 0;
+    do {
+        chr = ((char16_t)*in_ptr) | (((char16_t)*(in_ptr + 1)) << 8);
+        in_ptr += 2;
+        if (chr & 0xFF00) {
+            *output++ = '_'; // Mangle characters with high byte set...
+        }
+        else {
+            *output++ = (char)(chr & 0xFF);
+        }
+    } while (chr != 0);
+}
+
+static void crude_convert_8bit_to_UTF16LE(const char * input, char16_t * output) {
+    char chr = 0;
+    do {
+        chr = *input++;
+        *((char *)output) = chr;
+        *(((char *)output) + 1) = 0x00;
+        output++;
+    } while (chr != 0);
+}
+
+
+static void produce_output_file(calc_handle * handle, files_var_entry * entry) {
+    char filename[FILES_VARNAME_MAXLEN + 13];
+    FILE * f;
+    const char * extension;
+
+    printf("Receive file success\n");
+    hpfiles_ve_display(entry);
+    crude_convert_UTF16LE_to_8bit(entry->name, filename);
+    extension = hpfiles_vartype2fext(hpcalcs_get_model(handle), entry->type);
+    if (extension[0] != 0) {
+        strcat(filename, ".");
+        strcat(filename, extension);
+    }
+    f = fopen(filename, "w+b");
+    if (f != NULL) {
+        fwrite(entry->data, 1, entry->size, f);
+        fclose(f);
+    }
+    else {
+        printf("Cannot open file for writing !\n");
+    }
+}
+
+static int is_ready(calc_handle * handle) {
     int res;
     uint8_t * data;
     uint32_t size;
 
-    res = hpcalcs_calc_check_ready(h, &data, &size);
-    // TODO: do something with data & size.
+    res = hpcalcs_calc_check_ready(handle, &data, &size);
+    if (res == 0) {
+        printf("Check ready success\n");
+        // TODO: do something with data & size.
+    }
+    else {
+        printf("hpcalcs_calc_check_ready failed\n");
+    }
 
     return res;
 }
 
-static int get_infos(calc_handle *h) {
+static int get_infos(calc_handle * handle) {
     int res;
     calc_infos infos;
 
-    res = hpcalcs_calc_get_infos(h, &infos);
-    // TODO: do something with infos.
+    res = hpcalcs_calc_get_infos(handle, &infos);
+    if (res == 0) {
+        printf("Get infos success\n");
+        // TODO: do something with infos.
+    }
+    else {
+        printf("hpcalcs_calc_check_ready failed\n");
+    }
 
     return res;
 }
 
-static int recv_screen(calc_handle *h) {
-    int res;
+static int recv_screen(calc_handle * handle) {
+    int res = 0;
     uint8_t * data;
     uint32_t size;
+    unsigned int format;
+    int err;
 
-    res = hpcalcs_calc_recv_screen(h, CALC_SCREENSHOT_FORMAT_PRIME_PNG, &data, &size);
-    // TODO: do something with data & size.
+    printf("Choose a format:");
+
+    err = scanf("%u", &format);
+    if (err >= 1) {
+        char filename[1024];
+
+        filename[0] = 0;
+
+        printf("\nEnter output filename: ");
+        err = scanf("%1023s", filename);
+        if (err >= 1) {
+            puts("\n");
+            res = hpcalcs_calc_recv_screen(handle, format, &data, &size);
+            if (res == 0 && data != NULL) {
+                FILE * f;
+                printf("Receive screenshot success\n");
+                f = fopen(filename, "w+b");
+                if (f != NULL) {
+                    fwrite(data, 1, size, f);
+                    fclose(f);
+                }
+                else {
+                    printf("Cannot open file for writing !\n");
+                }
+            }
+            else {
+                printf("hpcalcs_calc_recv_screen failed\n");
+            }
+        }
+        else {
+            printf("Canceled\n");
+        }
+    }
+    else {
+        printf("Canceled\n");
+    }
 
     return res;
 }
 
-static int send_file(calc_handle *h) {
-    int res;
-    files_var_entry entry;
+/*// On GCC 4.7+ and Clang, we can use the standard u"FOO" construct; otherwise, use L"x".
+#if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ <= 4) && (__GNUC_MINOR__ < 7))
+#define UTF16(x) L##x
+#else
+#define UTF16(x) u##x
+#endif*/
 
-    res = hpcalcs_calc_send_file(h, &entry);
+#define xstr(s) str(s)
+#define str(s) #s
+
+static int send_file(calc_handle * handle) {
+    int res = 0;
+    int err;
+    files_var_entry * entry = NULL;
+    char filename[FILES_VARNAME_MAXLEN + 1];
+
+    printf("\nEnter input filename: ");
+    err = scanf("%" xstr(FILES_VARNAME_MAXLEN) "s", filename);
+    if (err >= 1) {
+        FILE * f = fopen(filename, "rb");
+        if (f != NULL) {
+            uint32_t size;
+            uint8_t type;
+            fseek(f, 0, SEEK_END);
+            size = (uint32_t)ftell(f);
+            fseek(f, 0, SEEK_SET);
+            printf("Input file has size %" PRIu32 " (%" PRIx32 ")\n", size, size);
+            entry = hpfiles_ve_create_with_size(size);
+            if (entry != NULL) {
+                char * calcfilename = NULL;
+                if (!hpfiles_parsefilename(hpcalcs_get_model(handle), filename, &type, &calcfilename)) {
+                    if (type != FILE_TYPE_UNKNOWN && calcfilename != NULL) {
+                        entry->type = type;
+                        if (fread(entry->data, 1, size, f) == size) {
+                            crude_convert_8bit_to_UTF16LE(calcfilename, entry->name);
+                            // We can at last send the file !
+                            res = hpcalcs_calc_send_file(handle, entry);
+                            if (res == 0 && entry != NULL) {
+                                printf("hpcalcs_calc_send_file succeeded\n");
+                            }
+                            else {
+                                printf("hpcalcs_calc_send_file failed\n");
+                            }
+                        }
+                        else {
+                            printf("Reading input file failed, aborted\n");
+                        }
+                        free(calcfilename);
+                    }
+                    else {
+                        printf("Unable to determine file type or calc filename, aborted (please report the bug !)\n");
+                    }
+                }
+                else {
+                    printf("Unable to parse filename, aborted (please report the bug !)\n");
+                }
+                hpfiles_ve_delete(entry);
+            }
+            else {
+                printf("Cannot create entry, aborted\n");
+            }
+        }
+        else {
+            printf("Cannot open input file, aborted\n");
+        }
+    }
+    else {
+        printf("Canceled\n");
+    }
 
     return res;
 }
 
-static int recv_file(calc_handle *h) {
-    int res;
-    const char * name;
+static int recv_file(calc_handle * handle) {
+    int res = 0;
+    int err;
+    files_var_entry request;
     files_var_entry * entry;
+    char typestr[11];
 
-    name = "foo";
-    res = hpcalcs_calc_recv_file(h, name, &entry);
-    // TODO: do something with entry.
+    memset((void *)&request, 0, sizeof(request));
+    printf("\nEnter input filename (without computer-side extension): ");
+    // FIXME This is not valid in general, as scanf("%ls") produces wchar_t.
+    // A library with proper UTF-16LE support should be used.
+    err = scanf("%" xstr(FILES_VARNAME_MAXLEN) "ls", request.name);
+    if (err >= 1) {
+        printf("Enter file type:");
+
+        err = scanf("%10s", typestr);
+        if (err >= 1) {
+            uint8_t type = hpfiles_str2vartype(hpcalcs_get_model(handle), typestr);
+            if (type != FILE_TYPE_UNKNOWN) {
+                /*const char * fext = hpfiles_vartype2fext(hpcalcs_get_model(handle), type);
+                if (fext != NULL && fext[0] != 0) {
+                    wcscat(request.name, L".");
+                    crude_convert_8bit_to_UTF16LE(fext, request.name + wcslen(request.name) + 1);
+                }*/
+                request.type = type;
+                res = hpcalcs_calc_recv_file(handle, &request, &entry);
+                printf("hpcalcs_calc_recv_file finished\n");
+                if (res == 0 && entry != NULL) {
+                    produce_output_file(handle, entry);
+                    hpfiles_ve_delete(entry);
+                }
+                else {
+                    printf("hpcalcs_calc_recv_file failed\n");
+                }
+            }
+            else {
+                printf("Unable to determine file type from stringe, aborted (please report the bug !)\n");
+            }
+        }
+        else {
+            printf("Canceled\n");
+        }
+    }
+    else {
+        printf("Canceled\n");
+    }
 
     return res;
 }
 
-static int recv_backup(calc_handle *h) {
+static int recv_backup(calc_handle * handle) {
     int res;
     files_var_entry ** entries;
 
-    res = hpcalcs_calc_recv_backup(h, &entries);
-    // TODO: do something with entries.
+    res = hpcalcs_calc_recv_backup(handle, &entries);
+    if (res == 0) {
+        if (entries != NULL) {
+            files_var_entry ** ptr = entries;
+            while (*ptr != NULL) {
+                produce_output_file(handle, *ptr++);
+            }
+            hpfiles_ve_delete_array(entries);
+        }
+        else {
+            printf("hpcalcs_calc_recv_backup returned NULL entries\n");
+        }
+    }
+    else {
+        printf("hpcalcs_calc_recv_backup failed\n");
+    }
 
     return res;
 }
 
-#define NITEMS	7
+static int vpkt_send_experiments(calc_handle * handle) {
+    int res = -1;
+    int err;
+    unsigned int id;
+
+    printf("Enter ID:");
+    err = scanf("%u", &id);
+    if (err >= 1) {
+        prime_vtl_pkt * pkt = prime_vtl_pkt_new(2);
+        if (pkt != NULL) {
+            uint8_t * ptr;
+
+            pkt->cmd = (uint8_t)id;
+            ptr = pkt->data;
+            *ptr++ = (uint8_t)id;
+            res = prime_send_data(handle, pkt);
+
+            if (res == 0) {
+                printf("prime_send_data succeeded\n");
+            }
+            else {
+                printf("prime_send_data failed\n");
+            }
+
+            prime_vtl_pkt_del(pkt);
+        }
+        else {
+            printf("%s: couldn't create packet", __FUNCTION__);
+        }
+    }
+    else {
+        printf("Canceled\n");
+    }
+
+    return res;
+}
+
+#define NITEMS	8
 
 static const char *str_menu[NITEMS] = 
 {
@@ -117,7 +370,8 @@ static const char *str_menu[NITEMS] =
     "Get screenshot",
     "Send file",
     "Receive file",
-    "Receive backup"
+    "Receive backup",
+    "Virtual packet send experiments"
 };
 
 typedef int (*FNCT_MENU) (calc_handle*);
@@ -130,7 +384,8 @@ static const FNCT_MENU fnct_menu[NITEMS] =
     recv_screen,
     send_file,
     recv_file,
-    recv_backup
+    recv_backup,
+    vpkt_send_experiments
 };
 
 int main(int argc, char **argv)
@@ -140,8 +395,6 @@ int main(int argc, char **argv)
     cable_handle * cable;
     calc_handle * calc;
     int res;
-    int do_exit=0;
-    unsigned int choice;
 
     // init libs
     res = hpfiles_init();
@@ -179,7 +432,8 @@ int main(int argc, char **argv)
     {
         int i;
         int err;
-restart:
+        unsigned int choice;
+
         // Display menu
         printf("Choose an action:\n");
         for(i = 0; i < NITEMS; i++) {
@@ -189,12 +443,12 @@ restart:
 
         err = scanf("%u", &choice);
         if (err < 1) {
-            goto restart;
+            continue;
         }
         printf("\n");
 
         if (choice == 0) {
-            do_exit = 1;
+            break;
         }
 
         // Process choice
@@ -203,7 +457,7 @@ restart:
         }
         printf("\n");
 
-    } while(!do_exit);
+    } while(1);
 
     // detach cable
     res = hpcalcs_cable_detach(calc);

@@ -22,14 +22,12 @@
  */
 
 /**
- * \file filetypes.h Files: Umbrella header for file types.
+ * \file error.h Files / cables / calcs: Error IDs.
  */
 
-#ifndef __HPLIBS_FILES_FILETYPES_H__
-#define __HPLIBS_FILES_FILETYPES_H__
+#ifndef __HPLIBS_CALCS_ERROR_H__
+#define __HPLIBS_CALCS_ERROR_H__
 
-#include "typesprime.h"
-
-#define FILE_TYPE_UNKNOWN (0xFF)
+// TODO
 
 #endif
