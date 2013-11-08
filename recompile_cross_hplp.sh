@@ -2,7 +2,7 @@
 
 # Maintainer script for automating the cross-compilation and installation of hplp
 # from a checkout of the complete hplp repository over at Github.
-# Simplified from the tilp / gfm script.
+# Simplified from the tilp / gfm script (recompile_cross_tilp.sh).
 #
 # Copyright (C) 2010, 2011, 2012, 2013 Lionel Debroux, Benjamin Moody
 
