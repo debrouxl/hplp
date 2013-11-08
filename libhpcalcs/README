@@ -86,7 +86,7 @@ TODO list
   applications and desktop environments are switching from GTK+ to Qt;
 * add devices probing code (the hpcables part currently assumes that the
   calculator is plugged in and that there's a single calculator), HIDAPI
-  provides some probing functions;
+  provides some probing functions (e.g. based on vendor);
 * add error codes and their propagation to the caller, like in libti*;
 * actually use translation framework in the code, beyond requiring intltool
   in configure;

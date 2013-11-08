@@ -46,8 +46,9 @@ const calc_fncts * hpcalcs_all_calcs[CALC_MAX] = {
 // not static, must be shared between instances
 int hpcalcs_instance_count = 0;
 
-HPEXPORT int HPCALL hpcalcs_init(void) {
-    hpcalcs_info("hpcalcs library version %s", hpcalcs_version_get());
+HPEXPORT int HPCALL hpcalcs_init(void (*log_callback)(const char *format, va_list args)) {
+    hpcalcs_log_set_callback(log_callback);
+    hpcalcs_info("hpcalcs library version %s compiled on " __DATE__ " " __TIME__, hpcalcs_version_get());
     hpcalcs_info("%s: init succeeded", __FUNCTION__);
     return 0;
 }

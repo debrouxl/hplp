@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "../src/hpfiles.h"
 #include "../src/hpcables.h"
@@ -44,6 +45,27 @@
 
 #undef VERSION
 #define VERSION "Test program"
+
+static FILE * log_file = NULL;
+
+static void output_log_callback(const char *format, va_list args) {
+    // Windows' terminal is extremely slow, cannot print the traces there.
+#ifndef _WIN32
+    vprintf(format, args);
+#else
+    if (log_file == NULL) {
+        log_file = fopen("trace.txt", "w+b");
+        if (log_file != NULL) {
+            time_t curtime = time(NULL);
+            fprintf(log_file, "Opening log file at %s", ctime(&curtime));
+        }
+    }
+    else {
+        vfprintf(log_file, format, args);
+        fflush(log_file);
+    }
+#endif
+}
 
 // NOTE: this pair of crude routines is just for demo and testing purposes !
 // In the general case, a proper i18n library (not offered by the C standard library) should be used !
@@ -362,8 +384,7 @@ static int vpkt_send_experiments(calc_handle * handle) {
 
 #define NITEMS	8
 
-static const char *str_menu[NITEMS] = 
-{
+static const char *str_menu[NITEMS] = {
     "Exit",
     "Check whether calc is ready",
     "Get calculator information",
@@ -376,8 +397,7 @@ static const char *str_menu[NITEMS] =
 
 typedef int (*FNCT_MENU) (calc_handle*);
 
-static const FNCT_MENU fnct_menu[NITEMS] = 
-{
+static const FNCT_MENU fnct_menu[NITEMS] = {
     NULL,
     is_ready,
     get_infos,
@@ -388,8 +408,7 @@ static const FNCT_MENU fnct_menu[NITEMS] =
     vpkt_send_experiments
 };
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     cable_model model1 = CABLE_PRIME_HID;
     calc_model model2 = CALC_PRIME;
     cable_handle * cable;
@@ -397,15 +416,15 @@ int main(int argc, char **argv)
     int res;
 
     // init libs
-    res = hpfiles_init();
+    res = hpfiles_init(output_log_callback);
     if (res) {
         return 1;
     }
-    res = hpcables_init();
+    res = hpcables_init(output_log_callback);
     if (res) {
         return 1;
     }
-    res = hpcalcs_init();
+    res = hpcalcs_init(output_log_callback);
     if (res) {
         return 1;
     }

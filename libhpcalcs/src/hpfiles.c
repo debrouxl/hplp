@@ -38,8 +38,9 @@
 // not static, must be shared between instances
 int hpfiles_instance_count = 0;
 
-HPEXPORT int HPCALL hpfiles_init(void) {
-    hpfiles_info("hpfiles library version %s", hpfiles_version_get());
+HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_list args)) {
+    hpfiles_log_set_callback(log_callback);
+    hpfiles_info("hpfiles library version %s compiled on " __DATE__ " " __TIME__, hpfiles_version_get());
     hpfiles_info("%s: init succeeded", __FUNCTION__);
     return 0;
 }

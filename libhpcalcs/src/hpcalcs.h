@@ -29,6 +29,7 @@
 #define __HPLIBS_CALCS_H__
 
 #include <stdint.h>
+#include <stdarg.h>
 #include <uchar.h>
 
 #include "hplibs.h"
@@ -129,10 +130,11 @@ extern "C" {
 
 /**
  * \brief Initializes library internals. Must be called before any other libhpcalcs function.
+ * \param log_callback callback function for receiving logging output.
  * \return Whether the initialization succeeded.
  * \todo return instance count instead.
  **/
-HPEXPORT int HPCALL hpcalcs_init(void);
+HPEXPORT int HPCALL hpcalcs_init(void (*log_callback)(const char *format, va_list args));
 /**
  * \brief Tears down library internals. No other libhpcalcs function can be called after this one.
  * \return Whether the teardown succeeded.
@@ -153,6 +155,18 @@ HPEXPORT const char* HPCALL hpcalcs_version_get(void);
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
  **/
 HPEXPORT int HPCALL hpcalcs_error_get(int number, char **message);
+
+/**
+ * \brief Sets the callback function used by the library for logging
+ * \param log_callback function pointer
+ */
+HPEXPORT void HPCALL hpcalcs_log_set_callback(void (*log_callback)(const char *format, va_list args));
+/**
+ * \brief Sets the log level of the library, for controlling how much logging output is produced.
+ * \param log_level log level (from hplibs.h)
+ * \return the previous log level
+ */
+HPEXPORT hplibs_logging_level HPCALL hpcalcs_log_set_level(hplibs_logging_level log_level);
 
 
 /**

@@ -3,7 +3,7 @@ dnl $Id$
 
 # Init.
 AC_PREREQ(2.57)
-AC_INIT(libhpcalcs, 0.0.1, [lionel_debroux@yahoo.fr])
+AC_INIT(libhpcalcs, 0.0.1, [lionel_debroux@yahoo.fr], libhpcalcs, [https://github.com/debrouxl/hplp])
 
 dnl Release versioning info
 VERSION="0.0.1"
@@ -74,11 +74,11 @@ AC_SUBST(HIDAPI_CFLAGS)
 AC_SUBST(HIDAPI_LIBS)
 AC_SUBST(HIDAPI_PKG)
 
-#PKG_CHECK_MODULES(HPCABLES, hpcables >= 1.2.0)
+#PKG_CHECK_MODULES(HPCABLES, hpcables >= 0.0.1)
 #AC_SUBST(HPCABLES_CFLAGS)
 #AC_SUBST(HPCABLES_LIBS)
 
-#PKG_CHECK_MODULES(HPFILES, hpfiles >= 1.1.0)
+#PKG_CHECK_MODULES(HPFILES, hpfiles >= 0.0.1)
 #AC_SUBST(HPFILES_CFLAGS)
 #AC_SUBST(HPFILES_LIBS)
 

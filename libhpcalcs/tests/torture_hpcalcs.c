@@ -15,11 +15,15 @@ fprintf(stderr, "%d\n", i); FUNCTION(args); i++
 #define STR "\"%s\""
 #define VOID ""
 
-int main(int argc, char **argv)
-{
+static void output_log_callback(const char *format, va_list args) {
+    vprintf(format, args);
+    fflush(stdout);
+}
+
+int main(int argc, char **argv) {
     int i = 1;
 
-    hpcalcs_init();
+    hpcalcs_init(output_log_callback);
     hpcalcs_exit();
 
     return 0;

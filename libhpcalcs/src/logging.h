@@ -28,6 +28,8 @@
 #ifndef __HPLIBS_LOGGING_H__
 #define __HPLIBS_LOGGING_H__
 
+#include <stdarg.h>
+
 void hpfiles_debug (const char *format, ...);
 void hpfiles_info (const char *format, ...);
 void hpfiles_warning (const char *format, ...);

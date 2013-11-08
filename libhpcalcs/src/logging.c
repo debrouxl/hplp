@@ -29,13 +29,14 @@
 # include <config.h>
 #endif
 
+#include <hpfiles.h>
+#include <hpcables.h>
+#include <hpcalcs.h>
 #include "logging.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
-#include <time.h>
 
 #ifdef  __GNUC__
 #ifndef alloca
@@ -43,122 +44,104 @@
 #endif
 #endif
 
-static FILE * log_file;
+void (*hpfiles_log_callback)(const char *format, va_list args);
+hplibs_logging_level hpfiles_log_level = LOG_LEVEL_ALL;
 
-static void output_log(const char *format, va_list args) {
-    if (log_file == NULL) {
-        log_file = fopen("trace.txt", "w+b");
-        if (log_file != NULL) {
-            time_t curtime = time(NULL);
-            fprintf(log_file, "Opening log file at %s", ctime(&curtime));
-        }
+void (*hpcables_log_callback)(const char *format, va_list args);
+hplibs_logging_level hpcables_log_level = LOG_LEVEL_ALL;
+
+void (*hpcalcs_log_callback)(const char *format, va_list args);
+hplibs_logging_level hpcalcs_log_level = LOG_LEVEL_ALL;
+
+
+#define DEBUG_FUNC_BODY(lib, level) \
+    if (lib##_log_callback != NULL && lib##_log_level <= LOG_LEVEL_##level) { \
+        va_list args; \
+        char * format2; \
+        va_start (args, format); \
+        format2 = (char *)alloca(strlen(format) + sizeof("hpfiles " #level ": ") + 10); \
+        sprintf(format2, "hpfiles " #level ": %s\n", format); \
+        (*lib##_log_callback)(format2, args); \
     }
-    // Windows' terminal is extremely slow, cannot print the traces there.
-#ifndef _WIN32
-    vprintf(format, args);
-#endif
-    if (log_file != NULL) {
-        vfprintf(log_file, format, args);
-        fflush(log_file);
-    }
+
+HPEXPORT void HPCALL hpfiles_log_set_callback(void (*log_callback)(const char *format, va_list args)) {
+    hpfiles_log_callback = log_callback;
+}
+
+HPEXPORT hplibs_logging_level HPCALL hpfiles_log_set_level(hplibs_logging_level log_level) {
+    hplibs_logging_level ret = hpfiles_log_level;
+    hpfiles_log_level = log_level;
+    return ret;
 }
 
 void hpfiles_debug (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpfiles DEBUG: ") + 4);
-    sprintf(format2, "hpfiles DEBUG: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpfiles, DEBUG)
 }
 
 void hpfiles_info (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpfiles INFO: ") + 4);
-    sprintf(format2, "hpfiles INFO: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpfiles, INFO)
 }
 
 void hpfiles_warning (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpfiles WARN: ") + 4);
-    sprintf(format2, "hpfiles WARN: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpfiles, WARN)
 }
 
 void hpfiles_error (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpfiles ERROR: ") + 4);
-    sprintf(format2, "hpfiles ERROR: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpfiles, ERROR)
 }
 
 
 
+HPEXPORT void HPCALL hpcables_log_set_callback(void (*log_callback)(const char *format, va_list args)) {
+    hpcables_log_callback = log_callback;
+}
+
+HPEXPORT hplibs_logging_level HPCALL hpcables_log_set_level(hplibs_logging_level log_level) {
+    hplibs_logging_level ret = hpcables_log_level;
+    hpcables_log_level = log_level;
+    return ret;
+}
+
 void hpcables_debug (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpcables DEBUG: ") + 4);
-    sprintf(format2, "hpcables DEBUG: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpcables, DEBUG)
 }
 
 void hpcables_info (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpcables INFO: ") + 4);
-    sprintf(format2, "hpcables INFO: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpcables, INFO)
 }
 
 void hpcables_warning (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpcables WARN: ") + 4);
-    sprintf(format2, "hpcables WARN: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpcables, WARN)
 }
 
 void hpcables_error (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpcables ERROR: ") + 4);
-    sprintf(format2, "hpcables ERROR: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpcables, ERROR)
 }
 
 
 
+HPEXPORT void HPCALL hpcalcs_log_set_callback(void (*log_callback)(const char *format, va_list args)) {
+    hpcalcs_log_callback = log_callback;
+}
+
+HPEXPORT hplibs_logging_level HPCALL hpcalcs_log_set_level(hplibs_logging_level log_level) {
+    hplibs_logging_level ret = hpcalcs_log_level;
+    hpcalcs_log_level = log_level;
+    return ret;
+}
+
 void hpcalcs_debug (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpcalcs DEBUG: ") + 4);
-    sprintf(format2, "hpcalcs DEBUG: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpcalcs, DEBUG)
 }
 
 void hpcalcs_info (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpcalcs INFO: ") + 4);
-    sprintf(format2, "hpcalcs INFO: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpcalcs, INFO)
 }
 
 void hpcalcs_warning (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpcalcs WARN: ") + 4);
-    sprintf(format2, "hpcalcs WARN: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpcalcs, WARN)
 }
 
 void hpcalcs_error (const char *format, ...) {
-    va_list args;
-    char * format2 = (char *)alloca(strlen(format) + sizeof("hpcalcs ERROR: ") + 4);
-    sprintf(format2, "hpcalcs ERROR: %s\n", format);
-    va_start (args, format);
-    output_log(format2, args);
+    DEBUG_FUNC_BODY(hpcalcs, ERROR)
 }

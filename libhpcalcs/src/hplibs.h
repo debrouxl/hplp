@@ -42,6 +42,15 @@ typedef enum {
     CALC_MAX
 } calc_model;
 
+//! Enumeration of logging levels.
+typedef enum {
+    LOG_LEVEL_ALL = 0,
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_INFO,
+    LOG_LEVEL_WARN,
+    LOG_LEVEL_ERROR
+} hplibs_logging_level;
+
 //! USB Vendor ID of Hewlett-Packard.
 #define USB_VID_HP (0x03F0)
 //! USB Product ID of the Prime calculator.

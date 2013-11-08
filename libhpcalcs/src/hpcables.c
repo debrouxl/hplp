@@ -46,10 +46,11 @@ const cable_fncts * hpcables_all_cables[CABLE_MAX] = {
 // not static, must be shared between instances
 int hpcables_instance_count = 0;
 
-HPEXPORT int HPCALL hpcables_init(void) {
+HPEXPORT int HPCALL hpcables_init(void (*log_callback)(const char *format, va_list args)) {
     int res;
 
-    hpcables_info("hpcables library version %s", hpcables_version_get());
+    hpcables_log_set_callback(log_callback);
+    hpcables_info("hpcables library version %s compiled on " __DATE__ " " __TIME__, hpcables_version_get());
 
     res = hid_init();
     if (res == 0) {

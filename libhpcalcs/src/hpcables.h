@@ -29,6 +29,7 @@
 #define __HPLIBS_CABLES_H__
 
 #include <stdint.h>
+#include <stdarg.h>
 
 #include "hplibs.h"
 #include "export.h"
@@ -66,10 +67,11 @@ extern "C" {
 
 /**
  * \brief Initializes library internals. Must be called before any other libhpcables function.
+ * \param log_callback callback function for receiving logging output.
  * \return Whether the initialization succeeded.
  * \todo return instance count instead.
  **/
-HPEXPORT int HPCALL hpcables_init(void);
+HPEXPORT int HPCALL hpcables_init(void (*log_callback)(const char *format, va_list args));
 /**
  * \brief Tears down library internals. No other libhpcables function can be called after this one.
  * \return Whether the teardown succeeded.
@@ -91,6 +93,18 @@ HPEXPORT const char* HPCALL hpcables_version_get(void);
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
  **/
 HPEXPORT int HPCALL hpcables_error_get(int number, char **message);
+
+/**
+ * \brief Sets the callback function used by the library for logging
+ * \param log_callback function pointer
+ */
+HPEXPORT void HPCALL hpcables_log_set_callback(void (*log_callback)(const char *format, va_list args));
+/**
+ * \brief Sets the log level of the library, for controlling how much logging output is produced.
+ * \param log_level log level (from hplibs.h)
+ * \return the previous log level
+ */
+HPEXPORT hplibs_logging_level HPCALL hpcables_log_set_level(hplibs_logging_level log_level);
 
 /**
  * \brief Create a new handle (opaque structure) for the given cable model.

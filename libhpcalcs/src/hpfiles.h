@@ -30,6 +30,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <uchar.h>
 
 #include "hplibs.h"
@@ -56,10 +57,11 @@ extern "C" {
 
 /**
  * \brief Initializes library internals. Must be called before any other libhpfiles function.
+ * \param log_callback callback function for receiving logging output.
  * \return Whether the initialization succeeded.
  * \todo return instance count instead.
  **/
-HPEXPORT int HPCALL hpfiles_init(void);
+HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_list args));
 /**
  * \brief Tears down library internals. No other libhpfiles function can be called after this one.
  * \return Whether the teardown succeeded.
@@ -82,6 +84,17 @@ HPEXPORT const char* HPCALL hpfiles_version_get(void);
  **/
 HPEXPORT int HPCALL hpfiles_error_get(int number, char **message);
 
+/**
+ * \brief Sets the callback function used by the library for logging
+ * \param log_callback function pointer
+ */
+HPEXPORT void HPCALL hpfiles_log_set_callback(void (*log_callback)(const char *format, va_list args));
+/**
+ * \brief Sets the log level of the library, for controlling how much logging output is produced.
+ * \param log_level log level (from hplibs.h)
+ * \return the previous log level
+ */
+HPEXPORT hplibs_logging_level HPCALL hpfiles_log_set_level(hplibs_logging_level log_level);
 
 /**
  * \brief Creates an empty files_var_entry structure.
