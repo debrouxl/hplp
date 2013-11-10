@@ -35,7 +35,6 @@
 #include "hplibs.h"
 #include "hpfiles.h"
 #include "hpcables.h"
-#include "export.h"
 
 //! Opaque type for internal _calc_fncts.
 typedef struct _calc_fncts calc_fncts;

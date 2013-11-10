@@ -31,6 +31,7 @@
 
 #include <hpcalcs.h>
 #include "logging.h"
+#include "error.h"
 
 #include <inttypes.h>
 #include <stdlib.h>
@@ -94,13 +95,13 @@ static void hexdump(const char * direction, uint8_t *data, uint32_t size)
 
 
 HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_pkt * pkt) {
-    int res = -1;
+    int res;
     if (handle != NULL && pkt != NULL) {
         cable_handle * cable = handle->cable;
         if (cable != NULL) {
             hexdump("OUT", pkt->data, pkt->size);
             res = hpcables_cable_send(cable, pkt->data, pkt->size);
-            if (res == 0) {
+            if (res == ERR_SUCCESS) {
                 hpcalcs_info("%s: send succeeded", __FUNCTION__);
             }
             else {
@@ -108,23 +109,25 @@ HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_pkt * pkt) {
             }
         }
         else {
+            res = ERR_CALC_NO_CABLE;
             hpcalcs_error("%s: cable is NULL", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_pkt * pkt) {
-    int res = -1;
+    int res;
     if (handle != NULL && pkt != NULL) {
         cable_handle * cable = handle->cable;
         if (cable != NULL) {
             res = hpcables_cable_recv(cable, pkt->data, &pkt->size);
             hexdump("IN", pkt->data, pkt->size);
-            if (res == 0) {
+            if (res == ERR_SUCCESS) {
                 //hpcalcs_info("%s: recv succeeded", __FUNCTION__);
             }
             else {
@@ -132,10 +135,12 @@ HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_pkt * pkt) {
             }
         }
         else {
+            res = ERR_CALC_NO_CABLE;
             hpcalcs_error("%s: cable is NULL", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;

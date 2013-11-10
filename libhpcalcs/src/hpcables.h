@@ -32,7 +32,6 @@
 #include <stdarg.h>
 
 #include "hplibs.h"
-#include "export.h"
 
 //! Opaque type for internal _cable_fncts.
 typedef struct _cable_fncts cable_fncts;
@@ -46,6 +45,7 @@ struct _cable_fncts {
     const char * description;
     int (*open) (cable_handle * handle);
     int (*close) (cable_handle * handle);
+    int (*set_read_timeout) (cable_handle * handle, int read_timeout);
     int (*send) (cable_handle * handle, uint8_t * data, uint32_t len);
     int (*recv) (cable_handle * handle, uint8_t * data, uint32_t * len);
 };
@@ -87,7 +87,7 @@ HPEXPORT const char* HPCALL hpcables_version_get(void);
 
 /**
  * \brief Gets the error message if the error was produced by this library
- * \param number the error number (from internal error.h)
+ * \param number the error number
  * \param message out pointer for a newly allocated text error message, which must be freed by the caller
  *
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
@@ -134,10 +134,16 @@ HPEXPORT int HPCALL hpcables_handle_display(cable_handle * handle);
 HPEXPORT cable_model HPCALL hpcables_get_model(cable_handle * handle);
 
 /**
+ * \brief Gets the read timeout for the given cable handle.
+ * \param handle the cable handle
+ * \return the current read timeout, 0 if error.
+ */
+HPEXPORT int HPCALL hpcables_options_get_read_timeout(cable_handle * handle);
+/**
  * \brief Sets the timeout for the given cable handle.
  * \param handle the cable handle
  * \param timeout the new timeout.
- * \return the old timeout.
+ * \return 0 if the operation succeeded, nonzero otherwise.
  */
 HPEXPORT int HPCALL hpcables_options_set_read_timeout(cable_handle * handle, int timeout);
 

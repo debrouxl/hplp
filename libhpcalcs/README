@@ -4,7 +4,7 @@ hplp: code for communicating with recent HP calculators
 hplp (still entirely in libhpcalcs for now) is the beginning of a toolkit for
 two-way communications with HP Prime calculators.
 
-Status (2013/11/03)
+Status (2013/11/10)
 -------------------
 The code base does:
 * support communication with a single Prime calculator connected to the
@@ -80,6 +80,14 @@ TODO list
 ---------
 * ... hopefully attract _code_ contributors who have an actual HP Prime
   calculator (I don't) and have more free time than I do;
+* (wawachief) fix s_recv_file and/or the caller: file name is wrong: for "TestTux",
+   00 00 F8 01 00 00 00 06 06 02 69 56 54 is sent.
+* (wawachief) when receiving a file and the calculator sends nothing, the trace is
+hpfiles INFO: calc_prime_r_recv_file: packet is too short: 0bytes
+hpfiles INFO: hpcalcs_calc_recv_file: recv_file succeeded
+  which shows that the situation is not handled properly.
+* (wawachief) in the above case, the structure is not initialized to 0, or
+  partially reinitialized with improper values.
 * a GUI, but I won't be the one doing it. Nowadays, Qt is the main choice for
   a portable, good-looking, fast UI toolkit. GTK+ used to be a better choice
   wrt. portability, but that was years ago, and in 2013, a number of
@@ -88,6 +96,8 @@ TODO list
   calculator is plugged in and that there's a single calculator), HIDAPI
   provides some probing functions (e.g. based on vendor);
 * add error codes and their propagation to the caller, like in libti*;
+* when sending a file, filter out the leading UTF-16 LE BOM, if any, for
+  several file types;
 * actually use translation framework in the code, beyond requiring intltool
   in configure;
 * fill in torture test;
@@ -126,9 +136,11 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
 
 Changelog
 ---------
+2013/11/03 - 2013/11/xx: improve logging, create install_hplp.sh, improve
+error passing, fix bugs reported by more beta-testers.
 2013/10/22 - 2013/11/03: Created autotools-based project and test client;
 vastly expand the code, to the point it becomes releasable (if not really
-usable).
+usable). First public announcement (limited scope).
 2013/10/21: Split into multiple files, but still piggybacking hidtest.cpp.
 2013/10/20: First public PoC.
 2013/10/19: Project started.
@@ -138,10 +150,11 @@ Credits (demoscene style)
 * _many_ thanks to Xavier "critor" Andréani for testing many program versions
   on his real Prime and providing many USB packet dumps (which I analyzed
   with Wireshark) and terminal output sessions;
+* thanks to other beta-testers who reported bugs: "persalteas", "wawachief".
 * greetings to the other TI-Planet ( http://tiplanet.org/ ) admins;
 * greetings to the HP Prime developer team at HP: some of its members spend
   time attending user message boards and interacting with users and programmers,
   even in communities traditionally interested in TI calcs (Omnimaga, Cemetech,
   TI-Planet), which is a win-win move for both HP and its users;
 * fuckings to TI EdTech management imposing a closed-minded, lose-lose stance
-  on the Nspire platform, despite community input.
+  on the Nspire platform, despite repeated community input since 2007.

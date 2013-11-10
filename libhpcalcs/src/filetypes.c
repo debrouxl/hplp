@@ -30,8 +30,10 @@
 #endif
 
 #include <hpfiles.h>
-#include "filetypes.h"
 #include "logging.h"
+#include "error.h"
+
+#include "filetypes.h"
 
 HPEXPORT const char * HPCALL hpfiles_vartype2str(calc_model model, uint8_t type) {
     switch (model) {
@@ -98,7 +100,7 @@ HPEXPORT uint8_t HPCALL hpfiles_filename2vartype(calc_model model, const char * 
 HPEXPORT int HPCALL hpfiles_parsefilename(calc_model model, const char * filepath, uint8_t * out_type, char ** out_calcfilename) {
     if (filepath == NULL || out_type == NULL || out_calcfilename == NULL) {
         hpfiles_error("%s: an argument is NULL", __FUNCTION__);
-        return -1;
+        return ERR_INVALID_PARAMETER;
     }
     switch (model) {
         case CALC_PRIME:

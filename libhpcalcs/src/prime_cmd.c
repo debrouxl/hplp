@@ -32,6 +32,7 @@
 #include <hpcalcs.h>
 #include "prime_cmd.h"
 #include "logging.h"
+#include "error.h"
 
 #include <inttypes.h>
 #include <stdlib.h>
@@ -82,13 +83,13 @@ static inline uint16_t crc16_block(const uint8_t * buffer, uint32_t len) {
 }
 
 static int read_vtl_pkt(calc_handle * handle, uint8_t cmd, prime_vtl_pkt ** pkt, int packet_contains_header) {
-    int res = -1;
+    int res;
     (void)packet_contains_header;
     *pkt = prime_vtl_pkt_new(0);
     if (*pkt != NULL) {
         (*pkt)->cmd = cmd;
         res = prime_recv_data(handle, *pkt);
-        if (res == 0) {
+        if (res == ERR_SUCCESS) {
             if ((*pkt)->size > 0) {
                 if ((*pkt)->data[0] == (*pkt)->cmd) {
                     hpcalcs_debug("%s: command matches returned data", __FUNCTION__);
@@ -108,6 +109,7 @@ static int read_vtl_pkt(calc_handle * handle, uint8_t cmd, prime_vtl_pkt ** pkt,
         }
     }
     else {
+        res = ERR_MALLOC;
         hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
     }
     return res;
@@ -124,7 +126,7 @@ static uint32_t char16_strlen(char16_t * str) {
 }
 
 HPEXPORT int HPCALL calc_prime_s_check_ready(calc_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt = prime_vtl_pkt_new(2);
         if (pkt != NULL) {
@@ -139,21 +141,23 @@ HPEXPORT int HPCALL calc_prime_s_check_ready(calc_handle * handle) {
             prime_vtl_pkt_del(pkt);
         }
         else {
+            res = ERR_MALLOC;
             hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_r_check_ready(calc_handle * handle, uint8_t ** out_data, uint32_t * out_size) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt;
         res = read_vtl_pkt(handle, CMD_PRIME_CHECK_READY, &pkt, 0);
-        if (res == 0 && pkt != NULL) {
+        if (res == ERR_SUCCESS && pkt != NULL) {
             if (out_data != NULL && out_size != NULL) {
                 *out_size = pkt->size;
                 *out_data = malloc(pkt->size);
@@ -162,8 +166,8 @@ HPEXPORT int HPCALL calc_prime_r_check_ready(calc_handle * handle, uint8_t ** ou
                     res = 0;
                 }
                 else {
+                    res = ERR_MALLOC;
                     hpcalcs_error("%s: couldn't allocate memory", __FUNCTION__);
-                    res = -1;
                 }
             }
             // else do nothing. res is already 0.
@@ -174,13 +178,14 @@ HPEXPORT int HPCALL calc_prime_r_check_ready(calc_handle * handle, uint8_t ** ou
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_s_get_infos (calc_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt = prime_vtl_pkt_new(2);
         if (pkt != NULL) {
@@ -195,17 +200,19 @@ HPEXPORT int HPCALL calc_prime_s_get_infos (calc_handle * handle) {
             prime_vtl_pkt_del(pkt);
         }
         else {
+            res = ERR_MALLOC;
             hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_r_get_infos (calc_handle * handle, calc_infos * infos) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt;
         res = read_vtl_pkt(handle, CMD_PRIME_GET_INFOS, &pkt, 1);
@@ -215,11 +222,11 @@ HPEXPORT int HPCALL calc_prime_r_get_infos (calc_handle * handle, calc_infos * i
                 infos->data = malloc(pkt->size);
                 if (infos->data != NULL) {
                     memcpy(infos->data, pkt->data, pkt->size);
-                    res = 0;
+                    res = ERR_SUCCESS;
                 }
                 else {
+                    res = ERR_MALLOC;
                     hpcalcs_error("%s: couldn't allocate memory", __FUNCTION__);
-                    res = -1;
                 }
             }
             // else do nothing. res is already 0.
@@ -230,13 +237,14 @@ HPEXPORT int HPCALL calc_prime_r_get_infos (calc_handle * handle, calc_infos * i
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_s_recv_screen(calc_handle * handle, calc_screenshot_format format) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt = prime_vtl_pkt_new(3);
         if (pkt != NULL) {
@@ -252,17 +260,19 @@ HPEXPORT int HPCALL calc_prime_s_recv_screen(calc_handle * handle, calc_screensh
             prime_vtl_pkt_del(pkt);
         }
         else {
+            res = ERR_MALLOC;
             hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screenshot_format format, uint8_t ** out_data, uint32_t * out_size) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt;
         res = read_vtl_pkt(handle, CMD_PRIME_RECV_SCREEN, &pkt, 1);
@@ -290,21 +300,22 @@ HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screensh
                         *out_data = malloc(size);
                         if (*out_data != NULL) {
                             memcpy(*out_data, pkt->data + 13, size);
-                            res = 0;
+                            res = ERR_SUCCESS;
                         }
                         else {
+                            res = ERR_MALLOC;
                             hpcalcs_error("%s: couldn't allocate memory", __FUNCTION__);
-                            res = -1;
                         }
                     }
                     // else do nothing. res is already 0.
                 }
                 else {
+                    res = ERR_CALC_PACKET_FORMAT;
                     hpcalcs_warning("%s: unknown marker at beginning of image", __FUNCTION__);
-                    res = -1;
                 }
             }
             else {
+                res = ERR_CALC_PACKET_FORMAT;
                 hpcalcs_info("%s: packet is too short: %" PRIu32 "bytes", __FUNCTION__, pkt->size);
             }
             prime_vtl_pkt_del(pkt);
@@ -314,6 +325,7 @@ HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screensh
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
@@ -321,7 +333,7 @@ HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screensh
 
 // Seems to be made of a series of CMD_PRIME_RECV_FILE.
 HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry * file) {
-    int res = -1;
+    int res;
     if (handle != NULL && file != NULL) {
         uint8_t namelen = (uint8_t)char16_strlen(file->name) * 2;
         uint32_t size = 10 - 6 + namelen + file->size; // Size of the data after the header.
@@ -356,22 +368,25 @@ HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry
             prime_vtl_pkt_del(pkt);
         }
         else {
+            res = ERR_MALLOC;
             hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_r_send_file(calc_handle * handle) {
-    int res = 0;
+    int res;
     if (handle != NULL) {
         // There doesn't seem anything to do, beyond eliminating packets starting with 0xFF.
         res = calc_prime_r_check_ready(handle, NULL, NULL);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
@@ -379,7 +394,7 @@ HPEXPORT int HPCALL calc_prime_r_send_file(calc_handle * handle) {
 
 // Receiving an individual file from the calculator seems to start by a CMD_PRIME_REQ_FILE.
 HPEXPORT int HPCALL calc_prime_s_recv_file(calc_handle * handle, files_var_entry * file) {
-    int res = -1;
+    int res;
     if (handle != NULL && file != NULL) {
         uint8_t namelen = (uint8_t)char16_strlen(file->name) * 2;
         uint32_t size = 10 - 6 + namelen; // Size of the data after the header.
@@ -411,17 +426,19 @@ HPEXPORT int HPCALL calc_prime_s_recv_file(calc_handle * handle, files_var_entry
             prime_vtl_pkt_del(pkt);
         }
         else {
+            res = ERR_MALLOC;
             hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry ** out_file) {
-    int res = -1;
+    int res;
     prime_vtl_pkt * pkt;
     // TODO: if no file was received, have *out_file = NULL, but res = 0.
     if (handle != NULL) {
@@ -458,11 +475,12 @@ HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry
                             hpcalcs_info("%s: created entry for %ls with size %" PRIu32 " and type %02X", __FUNCTION__, (*out_file)->name, (*out_file)->size, (*out_file)->type);
                         }
                         else {
+                            res = ERR_MALLOC;
                             hpcalcs_error("%s: couldn't create entry", __FUNCTION__);
-                            res = -1;
                         }
                     }
                     else {
+                        res = ERR_CALC_PACKET_FORMAT;
                         hpcalcs_error("%s: weird size (packet too short ?)", __FUNCTION__);
                         // TODO: change res.
                     }
@@ -470,6 +488,7 @@ HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry
             }
             else {
                 if (pkt->data[0] != 0xF9) {
+                    res = ERR_CALC_PACKET_FORMAT;
                     hpcalcs_info("%s: packet is too short: %" PRIu32 "bytes", __FUNCTION__, pkt->size);
                 }
                 else {
@@ -487,13 +506,14 @@ HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_s_recv_backup(calc_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt = prime_vtl_pkt_new(2);
         if (pkt != NULL) {
@@ -508,24 +528,26 @@ HPEXPORT int HPCALL calc_prime_s_recv_backup(calc_handle * handle) {
             prime_vtl_pkt_del(pkt);
         }
         else {
+            res = ERR_MALLOC;
             hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_entry *** out_vars) {
-    int res= -1;
+    int res;
     if (handle != NULL) {
         uint32_t count = 0;
         files_var_entry ** entries = hpfiles_ve_create_array(count);
         if (entries != NULL) {
             for (;;) {
                 res = calc_prime_r_recv_file(handle, &entries[count]);
-                if (res == 0) {
+                if (res == ERR_SUCCESS) {
                     if (entries[count] != NULL) {
                         files_var_entry ** new_entries;
                         hpcalcs_info("%s: continuing due to non-empty entry", __FUNCTION__);
@@ -539,6 +561,7 @@ HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_ent
                             }
                         }
                         else {
+                            res = ERR_MALLOC;
                             hpcalcs_error("%s: couldn't resize entries", __FUNCTION__);
                             hpfiles_ve_delete_array(entries);
                             if (out_vars != NULL) {
@@ -549,7 +572,7 @@ HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_ent
                     }
                     else {
                         hpcalcs_info("%s: breaking due to empty file", __FUNCTION__);
-                        res = 0;
+                        res = ERR_SUCCESS;
                         break;
                     }
                 }
@@ -560,10 +583,12 @@ HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_ent
             }
         }
         else {
+            res = ERR_MALLOC;
             hpcalcs_error("%s: couldn't create entries", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;

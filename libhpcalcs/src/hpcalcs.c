@@ -32,6 +32,7 @@
 #include <hpcables.h>
 #include <hpcalcs.h>
 #include "logging.h"
+#include "error.h"
 
 #include <stdlib.h>
 
@@ -50,12 +51,12 @@ HPEXPORT int HPCALL hpcalcs_init(void (*log_callback)(const char *format, va_lis
     hpcalcs_log_set_callback(log_callback);
     hpcalcs_info("hpcalcs library version %s compiled on " __DATE__ " " __TIME__, hpcalcs_version_get());
     hpcalcs_info("%s: init succeeded", __FUNCTION__);
-    return 0;
+    return ERR_SUCCESS;
 }
 
 HPEXPORT int HPCALL hpcalcs_exit(void) {
     hpcalcs_info("%s: exit succeeded", __FUNCTION__);
-    return 0;
+    return ERR_SUCCESS;
 }
 
 
@@ -85,10 +86,13 @@ HPEXPORT calc_handle * HPCALL hpcalcs_handle_new(calc_model model) {
 }
 
 HPEXPORT int HPCALL hpcalcs_handle_del(calc_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         if (handle->attached) {
             res = hpcalcs_cable_detach(handle);
+        }
+        else {
+            res = ERR_SUCCESS;
         }
 
         free(handle->handle);
@@ -99,20 +103,20 @@ HPEXPORT int HPCALL hpcalcs_handle_del(calc_handle * handle) {
         hpcalcs_info("%s: calc handle deletion succeeded", __FUNCTION__);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcalcs_cable_attach(calc_handle * handle, cable_handle * cable) {
-    int res = -1;
+    int res;
     if (handle != NULL && cable != NULL) {
-
-        if (hpcables_cable_open(cable) == 0) {
+        res = hpcables_cable_open(cable);
+        if (res == ERR_SUCCESS) {
             handle->cable = cable;
             handle->attached = 1;
             handle->open = 1;
-            res = 0;
             hpcalcs_info("%s: cable open and attach succeeded", __FUNCTION__);
         }
         else {
@@ -120,44 +124,49 @@ HPEXPORT int HPCALL hpcalcs_cable_attach(calc_handle * handle, cable_handle * ca
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcalcs_cable_detach(calc_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
-        if (hpcables_cable_close(handle->cable) == 0) {
+        res = hpcables_cable_close(handle->cable);
+        if (res == ERR_SUCCESS) {
             handle->open = 0;
             handle->attached = 0;
             handle->cable = NULL;
-            res = 0;
             hpcalcs_info("%s: cable close and detach succeeded", __FUNCTION__);
         }
         else {
-            hpcalcs_error("%s: cable close failed", __FUNCTION__);
+            hpcalcs_error("%s: cable close and detach failed", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcalcs_handle_display(calc_handle * handle) {
+    int res;
     if (handle != NULL) {
         hpcalcs_info("Link calc handle details:");
         hpcalcs_info("\tmodel: %s", hpcalcs_model_to_string(handle->model));
         hpcalcs_info("\tattached: %d", handle->attached);
         hpcalcs_info("\topen: %d", handle->open);
         hpcalcs_info("\tbusy: %d", handle->busy);
+        res = ERR_SUCCESS;
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
 
-    return 0;
+    return res;
 }
 
 HPEXPORT calc_model HPCALL hpcalcs_get_model(calc_handle * handle) {
@@ -175,37 +184,39 @@ HPEXPORT calc_model HPCALL hpcalcs_get_model(calc_handle * handle) {
 
 #define DO_BASIC_HANDLE_CHECKS() \
     if (!handle->attached) { \
+        res = ERR_CALC_NO_CABLE; \
         hpcalcs_error("%s: no cable attached", __FUNCTION__); \
         break; \
     } \
     if (!handle->open) { \
+        res = ERR_CALC_CABLE_NOT_OPEN; \
         hpcalcs_error("%s: cable not open", __FUNCTION__); \
         break; \
     } \
     if (handle->busy) { \
+        res = ERR_CALC_BUSY; \
         hpcalcs_error("%s: cable busy", __FUNCTION__); \
         break; \
     } \
     if (handle->fncts == NULL) { \
+        res = ERR_CALC_INVALID_FNCTS; \
         hpcalcs_error("%s: fncts is NULL", __FUNCTION__); \
         break; \
-    } \
-    fncts = handle->fncts;
+    }
 
 HPEXPORT int HPCALL hpcalcs_calc_check_ready(calc_handle * handle, uint8_t ** out_data, uint32_t * out_size) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
-            const calc_fncts * fncts;
             int (*check_ready) (calc_handle *, uint8_t **, uint32_t *);
 
             DO_BASIC_HANDLE_CHECKS()
 
-            check_ready = fncts->check_ready;
+            check_ready = handle->fncts->check_ready;
             if (check_ready != NULL) {
                 handle->busy = 1;
                 res = (*check_ready)(handle, out_data, out_size);
-                if (res == 0) {
+                if (res == ERR_SUCCESS) {
                     hpcalcs_info("%s: check_ready succeeded", __FUNCTION__);
                 }
                 else {
@@ -214,26 +225,27 @@ HPEXPORT int HPCALL hpcalcs_calc_check_ready(calc_handle * handle, uint8_t ** ou
                 handle->busy = 0;
             }
             else {
+                res = ERR_CALC_INVALID_FNCTS;
                 hpcalcs_error("%s: fncts->check_ready is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcalcs_calc_get_infos(calc_handle * handle, calc_infos * infos) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
-            const calc_fncts * fncts;
             int (*get_infos) (calc_handle *, calc_infos *);
 
             DO_BASIC_HANDLE_CHECKS()
 
-            get_infos = fncts->get_infos;
+            get_infos = handle->fncts->get_infos;
             if (get_infos != NULL) {
                 handle->busy = 1;
                 res = (*get_infos)(handle, infos);
@@ -246,27 +258,28 @@ HPEXPORT int HPCALL hpcalcs_calc_get_infos(calc_handle * handle, calc_infos * in
                 handle->busy = 0;
             }
             else {
+                res = ERR_CALC_INVALID_FNCTS;
                 hpcalcs_error("%s: fncts->get_infos is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcalcs_calc_recv_screen(calc_handle * handle, calc_screenshot_format format, uint8_t ** out_data, uint32_t * out_size) {
-    int res = -1;
+    int res;
     // TODO: some checking on format, but for now, it would hamper documentation efforts.
     if (handle != NULL) {
         do {
-            const calc_fncts * fncts;
             int (*recv_screen) (calc_handle *, calc_screenshot_format, uint8_t **, uint32_t *);
 
             DO_BASIC_HANDLE_CHECKS()
 
-            recv_screen = fncts->recv_screen;
+            recv_screen = handle->fncts->recv_screen;
             if (recv_screen != NULL) {
                 handle->busy = 1;
                 res = (*recv_screen)(handle, format, out_data, out_size);
@@ -279,26 +292,27 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_screen(calc_handle * handle, calc_screensh
                 handle->busy = 0;
             }
             else {
+                res = ERR_CALC_INVALID_FNCTS;
                 hpcalcs_error("%s: fncts->get_infos is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcalcs_calc_send_file(calc_handle * handle, files_var_entry * file) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
-            const calc_fncts * fncts;
             int (*send_file) (calc_handle *, files_var_entry *);
 
             DO_BASIC_HANDLE_CHECKS()
 
-            send_file = fncts->send_file;
+            send_file = handle->fncts->send_file;
             if (send_file != NULL) {
                 handle->busy = 1;
                 res = (*send_file)(handle, file);
@@ -311,26 +325,27 @@ HPEXPORT int HPCALL hpcalcs_calc_send_file(calc_handle * handle, files_var_entry
                 handle->busy = 0;
             }
             else {
+                res = ERR_CALC_INVALID_FNCTS;
                 hpcalcs_error("%s: fncts->send_file is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcalcs_calc_recv_file(calc_handle * handle, files_var_entry * name, files_var_entry ** out_file) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
-            const calc_fncts * fncts;
             int (*recv_file) (calc_handle *, files_var_entry *, files_var_entry **);
 
             DO_BASIC_HANDLE_CHECKS()
 
-            recv_file = fncts->recv_file;
+            recv_file = handle->fncts->recv_file;
             if (recv_file != NULL) {
                 handle->busy = 1;
                 res = (*recv_file)(handle, name, out_file);
@@ -343,26 +358,27 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_file(calc_handle * handle, files_var_entry
                 handle->busy = 0;
             }
             else {
+                res = ERR_CALC_INVALID_FNCTS;
                 hpcalcs_error("%s: fncts->recv_file is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcalcs_calc_recv_backup(calc_handle * handle, files_var_entry *** out_vars) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
-            const calc_fncts * fncts;
             int (*recv_backup) (calc_handle *, files_var_entry ***);
 
             DO_BASIC_HANDLE_CHECKS()
 
-            recv_backup = fncts->recv_backup;
+            recv_backup = handle->fncts->recv_backup;
             if (recv_backup != NULL) {
                 handle->busy = 1;
                 res = (*recv_backup)(handle, out_vars);
@@ -375,11 +391,13 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_backup(calc_handle * handle, files_var_ent
                 handle->busy = 0;
             }
             else {
+                res = ERR_CALC_INVALID_FNCTS;
                 hpcalcs_error("%s: fncts->recv_backup is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;

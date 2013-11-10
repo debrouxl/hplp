@@ -34,7 +34,6 @@
 #include <uchar.h>
 
 #include "hplibs.h"
-#include "export.h"
 #include "filetypes.h"
 
 //! Maximum length of a variable name for the calculators supported by libhpfiles.

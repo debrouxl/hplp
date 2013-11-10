@@ -188,10 +188,12 @@ static int recv_screen(calc_handle * handle) {
             }
         }
         else {
+            fflush(stdin);
             printf("Canceled\n");
         }
     }
     else {
+        fflush(stdin);
         printf("Canceled\n");
     }
 
@@ -265,6 +267,7 @@ static int send_file(calc_handle * handle) {
         }
     }
     else {
+        fflush(stdin);
         printf("Canceled\n");
     }
 
@@ -311,10 +314,12 @@ static int recv_file(calc_handle * handle) {
             }
         }
         else {
+            fflush(stdin);
             printf("Canceled\n");
         }
     }
     else {
+        fflush(stdin);
         printf("Canceled\n");
     }
 
@@ -346,7 +351,7 @@ static int recv_backup(calc_handle * handle) {
 }
 
 static int vpkt_send_experiments(calc_handle * handle) {
-    int res = -1;
+    int res = 0;
     int err;
     unsigned int id;
 
@@ -376,6 +381,7 @@ static int vpkt_send_experiments(calc_handle * handle) {
         }
     }
     else {
+        fflush(stdin);
         printf("Canceled\n");
     }
 
@@ -462,6 +468,7 @@ int main(int argc, char **argv) {
 
         err = scanf("%u", &choice);
         if (err < 1) {
+            fflush(stdin);
             continue;
         }
         printf("\n");
@@ -472,7 +479,18 @@ int main(int argc, char **argv) {
 
         // Process choice
         if (choice < (int)(sizeof(fnct_menu)/sizeof(fnct_menu[0])) && fnct_menu[choice]) {
-            fnct_menu[choice](calc);
+            err = fnct_menu[choice](calc);
+            if (err) {
+                char * s;
+                err = hplibs_error_get(err, &s);
+                if (s != NULL) {
+                    printf("%d %s", err, s);
+                    free(s);
+                }
+                else {
+                    printf("%d <unknown error>\n", err);
+                }
+            }
         }
         printf("\n");
 

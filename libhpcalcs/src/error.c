@@ -28,6 +28,12 @@
 # include <config.h>
 #endif
 
+#ifndef _WIN32
+// For strdup
+#define _BSD_SOURCE
+#endif
+#include <string.h>
+
 #include <hpcalcs.h>
 #include <hpcables.h>
 #include <hpcalcs.h>
@@ -35,21 +41,16 @@
 #include "logging.h"
 #include "error.h"
 
-HPEXPORT int HPCALL hpcables_error_get (int number, char **message) {
-    if (message != NULL) {
-        *message = (char *)"";
-        return number;
-    }
-    else {
-        hpcables_error("%s: message is NULL", __FUNCTION__);
-        return number;
-    }
-}
-
 HPEXPORT int HPCALL hpfiles_error_get (int number, char **message) {
     if (message != NULL) {
-        *message = (char *)"";
-        return number;
+        if (number >= ERR_FILE_FIRST && number <= ERR_FILE_LAST) {
+            *message = strdup("TODO human-readable error message");
+            return 0;
+        }
+        else {
+            *message = NULL;
+            return number;
+        }
     }
     else {
         hpfiles_error("%s: message is NULL", __FUNCTION__);
@@ -57,10 +58,33 @@ HPEXPORT int HPCALL hpfiles_error_get (int number, char **message) {
     }
 }
 
+HPEXPORT int HPCALL hpcables_error_get (int number, char **message) {
+    if (message != NULL) {
+        if (number >= ERR_CABLE_FIRST && number <= ERR_CABLE_LAST) {
+            *message = strdup("TODO human-readable error message");
+            return 0;
+        }
+        else {
+            *message = NULL;
+            return number;
+        }
+    }
+    else {
+        hpcables_error("%s: message is NULL", __FUNCTION__);
+        return number;
+    }
+}
+
 HPEXPORT int HPCALL hpcalcs_error_get (int number, char **message) {
     if (message != NULL) {
-        *message = (char *)"";
-        return number;
+        if (number >= ERR_CALC_FIRST && number <= ERR_CALC_LAST) {
+            *message = strdup("TODO human-readable error message");
+            return 0;
+        }
+        else {
+            *message = NULL;
+            return number;
+        }
     }
     else {
         hpcalcs_error("%s: message is NULL", __FUNCTION__);
@@ -68,3 +92,47 @@ HPEXPORT int HPCALL hpcalcs_error_get (int number, char **message) {
     }
 }
 
+
+HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
+    int err = number;
+    char *s = NULL;
+
+    if (message != NULL) {
+        // Skip ERR_SUCCESS.
+        if (number > ERR_CALC_FIRST && number <= ERR_CALC_LAST) {
+            *message = strdup("TODO human-readable error message");
+            return 0;
+        }
+        else {
+            // Retrieve the error message.
+            err = hpfiles_error_get(err, &s);
+            if (err) {
+                free(s);
+                err = hpcables_error_get(err, &s);
+                if (err) {
+                    free(s);
+                    err = hpcalcs_error_get(err, &s);
+                    if (err) {
+                        // next level: not a libhp* error.
+                        free(s);
+                    }
+                    else {
+                        hpcalcs_info("%s\n", s);
+                    }
+                }
+                else {
+                    hpcables_info("%s\n", s);
+                }
+            }
+            else {
+                hpfiles_info("%s\n", s);
+            }
+        }
+    }
+    else {
+        hpcalcs_error("%s: message is NULL", __FUNCTION__);
+        return number;
+    }
+
+    return number;
+}

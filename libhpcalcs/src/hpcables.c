@@ -31,6 +31,7 @@
 
 #include <hpcables.h>
 #include "logging.h"
+#include "error.h"
 
 #include <stdlib.h>
 #include <hidapi/hidapi.h>
@@ -54,18 +55,22 @@ HPEXPORT int HPCALL hpcables_init(void (*log_callback)(const char *format, va_li
 
     res = hid_init();
     if (res == 0) {
+        res = ERR_SUCCESS;
         hpcables_info("%s: init succeeded", __FUNCTION__);
     }
     else {
+        res = ERR_LIBRARY_INIT;
         hpcables_error("%s: init failed", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcables_exit(void) {
+    int res;
     hid_exit();
+    res = ERR_SUCCESS;
     hpcables_info("%s: exit succeeded", __FUNCTION__);
-    return 0;
+    return res;
 }
 
 
@@ -96,17 +101,18 @@ HPEXPORT cable_handle * HPCALL hpcables_handle_new(cable_model model) {
 }
 
 HPEXPORT int HPCALL hpcables_handle_del(cable_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         free(handle->handle);
         handle->handle = NULL;
 
         free(handle);
         handle = NULL;
-        res = 0;
+        res = ERR_SUCCESS;
         hpcables_info("%s: handle deletion succeeded", __FUNCTION__);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
 
@@ -114,18 +120,21 @@ HPEXPORT int HPCALL hpcables_handle_del(cable_handle * handle) {
 }
 
 HPEXPORT int HPCALL hpcables_handle_display(cable_handle * handle) {
+    int res;
     if (handle != NULL) {
         hpcables_info("Link cable handle details:");
         hpcables_info("\tmodel: %s", hpcables_model_to_string(handle->model));
         hpcables_info("\tread_timeout: %d", handle->read_timeout);
         hpcables_info("\topen: %d", handle->open);
         hpcables_info("\tbusy: %d", handle->busy);
+        res = ERR_SUCCESS;
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
 
-    return 0;
+    return res;
 }
 
 HPEXPORT cable_model HPCALL hpcables_get_model(cable_handle * handle) {
@@ -140,201 +149,208 @@ HPEXPORT cable_model HPCALL hpcables_get_model(cable_handle * handle) {
     return model;
 }
 
-HPEXPORT int HPCALL hpcables_options_set_read_timeout(cable_handle * handle, int timeout) {
-    int old_timeout = 0;
-    if (handle != NULL) {
-        do {
-            if (!handle->open) {
-                hpcables_error("%s: cable not open", __FUNCTION__);
-                break;
-            }
-            if (handle->busy) {
-                hpcables_error("%s: cable busy", __FUNCTION__);
-                break;
-            }
+#define DO_BASIC_HANDLE_CHECKS() \
+    if (!handle->open) { \
+        res = ERR_CABLE_NOT_OPEN; \
+        hpcalcs_error("%s: cable not open", __FUNCTION__); \
+        break; \
+    } \
+    DO_BASIC_HANDLE_CHECKS2()
 
-            handle->busy = 1;
-            old_timeout = handle->read_timeout;
-            handle->read_timeout = timeout;
-            handle->busy = 0;
-        } while (0);
+#define DO_BASIC_HANDLE_CHECKS2() \
+    if (handle->busy) { \
+        res = ERR_CABLE_BUSY; \
+        hpcalcs_error("%s: cable busy", __FUNCTION__); \
+        break; \
+    } \
+    if (handle->fncts == NULL) { \
+        res = ERR_CABLE_INVALID_FNCTS; \
+        hpcalcs_error("%s: fncts is NULL", __FUNCTION__); \
+        break; \
+    }
+
+HPEXPORT int HPCALL hpcables_options_get_read_timeout(cable_handle * handle) {
+    int timeout = 0;
+    if (handle != NULL) {
+        timeout = handle->read_timeout;
     }
     else {
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
-    return old_timeout;
+    return timeout;
 }
 
-HPEXPORT int HPCALL hpcables_cable_open(cable_handle * handle) {
-    int res = -1;
+HPEXPORT int HPCALL hpcables_options_set_read_timeout(cable_handle * handle, int read_timeout) {
+    int res;
     if (handle != NULL) {
         do {
-            const cable_fncts * fncts;
-            if (handle->open) {
-                hpcables_error("%s: cable open", __FUNCTION__);
-                break;
-            }
-            if (handle->busy) {
-                hpcables_error("%s: cable busy", __FUNCTION__);
-                break;
-            }
+            int (*set_read_timeout) (cable_handle *, int);
 
-            fncts = handle->fncts;
-            if (fncts != NULL) {
-                int (*open) (cable_handle *) = fncts->open;
-                if (open != NULL) {
-                    handle->busy = 1;
-                    res = (*open)(handle);
-                    if (res == 0) {
-                        handle->open = 1;
-                        hpcables_info("%s: send succeeded", __FUNCTION__);
-                    }
-                    else {
-                        hpcables_error("%s: open failed", __FUNCTION__);
-                    }
-                    handle->busy = 0;
+            DO_BASIC_HANDLE_CHECKS2()
+
+            set_read_timeout = handle->fncts->set_read_timeout;
+            if (set_read_timeout != NULL) {
+                handle->busy = 1;
+                res = (*set_read_timeout)(handle, read_timeout);
+                if (res == ERR_SUCCESS) {
+                    hpcables_info("%s: set_read_timeout succeeded", __FUNCTION__);
                 }
                 else {
-                    hpcables_error("%s: fncts->open is NULL", __FUNCTION__);
+                    hpcables_error("%s: set_read_timeout failed", __FUNCTION__);
                 }
+                handle->busy = 0;
             }
             else {
-                hpcables_error("%s: fncts is NULL", __FUNCTION__);
+                res = ERR_CABLE_INVALID_FNCTS;
+                hpcables_error("%s: fncts->set_read_timeout is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
+        hpcables_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL hpcables_cable_open(cable_handle * handle) {
+    int res;
+    if (handle != NULL) {
+        do {
+            int (*open) (cable_handle *);
+
+            if (handle->open) {
+                res = ERR_CABLE_OPEN;
+                hpcables_error("%s: cable already open", __FUNCTION__);
+                break;
+            }
+            DO_BASIC_HANDLE_CHECKS2()
+
+            open = handle->fncts->open;
+            if (open != NULL) {
+                handle->busy = 1;
+                res = (*open)(handle);
+                if (res == ERR_SUCCESS) {
+                    handle->open = 1;
+                    hpcables_info("%s: open succeeded", __FUNCTION__);
+                }
+                else {
+                    hpcables_error("%s: open failed", __FUNCTION__);
+                }
+                handle->busy = 0;
+            }
+            else {
+                res = ERR_CABLE_INVALID_FNCTS;
+                hpcables_error("%s: fncts->open is NULL", __FUNCTION__);
+            }
+        } while (0);
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcables_cable_close(cable_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
-            const cable_fncts * fncts;
-            if (!handle->open) {
-                hpcables_error("%s: cable not open", __FUNCTION__);
-                break;
-            }
-            if (handle->busy) {
-                hpcables_error("%s: cable busy", __FUNCTION__);
-                break;
-            }
+            int (*close) (cable_handle *);
 
-            fncts = handle->fncts;
-            if (fncts != NULL) {
-                int (*close) (cable_handle *) = fncts->close;
-                if (close != NULL) {
-                    handle->busy = 1;
-                    res = (*close)(handle);
-                    if (res == 0) {
-                        handle->open = 0;
-                        hpcables_info("%s: send succeeded", __FUNCTION__);
-                    }
-                    else {
-                        hpcables_error("%s: close failed", __FUNCTION__);
-                    }
-                    handle->busy = 0;
+            DO_BASIC_HANDLE_CHECKS()
+
+            close = handle->fncts->close;
+            if (close != NULL) {
+                handle->busy = 1;
+                res = (*close)(handle);
+                if (res == ERR_SUCCESS) {
+                    handle->open = 0;
+                    hpcables_info("%s: close succeeded", __FUNCTION__);
                 }
                 else {
-                    hpcables_error("%s: fncts->close is NULL", __FUNCTION__);
+                    hpcables_error("%s: close failed", __FUNCTION__);
                 }
+                handle->busy = 0;
             }
             else {
-                hpcables_error("%s: fncts is NULL", __FUNCTION__);
+                res = ERR_CABLE_INVALID_FNCTS;
+                hpcables_error("%s: fncts->close is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcables_cable_send (cable_handle * handle, uint8_t * data, uint32_t len) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
-            const cable_fncts * fncts;
-            if (!handle->open) {
-                hpcables_error("%s: cable not open", __FUNCTION__);
-                break;
-            }
-            if (handle->busy) {
-                hpcables_error("%s: cable busy", __FUNCTION__);
-                break;
-            }
+            int (*send) (cable_handle *, uint8_t *, uint32_t);
 
-            fncts = handle->fncts;
-            if (fncts != NULL) {
-                int (*send) (cable_handle *, uint8_t *, uint32_t) = fncts->send;
-                if (send != NULL) {
-                    handle->busy = 1;
-                    res = (*send)(handle, data, len);
-                    if (res == 0) {
-                        //hpcables_info("%s: send succeeded", __FUNCTION__);
-                    }
-                    else {
-                        hpcables_warning("%s: send failed", __FUNCTION__);
-                    }
-                    handle->busy = 0;
+            DO_BASIC_HANDLE_CHECKS()
+
+            send = handle->fncts->send;
+            if (send != NULL) {
+                handle->busy = 1;
+                res = (*send)(handle, data, len);
+                if (res == ERR_SUCCESS) {
+                    //hpcables_info("%s: send succeeded", __FUNCTION__);
                 }
                 else {
-                    hpcables_error("%s: fncts->send is NULL", __FUNCTION__);
+                    hpcables_warning("%s: send failed", __FUNCTION__);
                 }
+                handle->busy = 0;
             }
             else {
-                hpcables_error("%s: fncts is NULL", __FUNCTION__);
+                res = ERR_CABLE_INVALID_FNCTS;
+                hpcables_error("%s: fncts->send is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL hpcables_cable_recv (cable_handle * handle, uint8_t * data, uint32_t * len) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
-            const cable_fncts * fncts;
-            if (!handle->open) {
-                hpcables_error("%s: cable not open", __FUNCTION__);
-                break;
-            }
-            if (handle->busy) {
-                hpcables_error("%s: cable busy", __FUNCTION__);
-                break;
-            }
+            int (*recv) (cable_handle *, uint8_t *, uint32_t *);
 
-            fncts = handle->fncts;
-            if (fncts != NULL) {
-                int (*recv) (cable_handle *, uint8_t *, uint32_t *) = fncts->recv;
-                if (recv != NULL) {
-                    handle->busy = 1;
-                    res = (*recv)(handle, data, len);
-                    if (res == 0) {
-                        //hpcables_info("%s: recv succeeded", __FUNCTION__);
-                    }
-                    else {
-                        hpcables_warning("%s: recv failed", __FUNCTION__);
-                    }
-                    handle->busy = 0;
+            DO_BASIC_HANDLE_CHECKS()
+
+            recv = handle->fncts->recv;
+            if (recv != NULL) {
+                handle->busy = 1;
+                res = (*recv)(handle, data, len);
+                if (res == ERR_SUCCESS) {
+                    //hpcables_info("%s: recv succeeded", __FUNCTION__);
                 }
                 else {
-                    hpcables_error("%s: fncts->recv is NULL", __FUNCTION__);
+                    hpcables_warning("%s: recv failed", __FUNCTION__);
                 }
+                handle->busy = 0;
             }
             else {
-                hpcables_error("%s: fncts is NULL", __FUNCTION__);
+                res = ERR_CABLE_INVALID_FNCTS;
+                hpcables_error("%s: fncts->recv is NULL", __FUNCTION__);
             }
         } while (0);
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
+
+#undef DO_BASIC_HANDLE_CHECKS2
+#undef DO_BASIC_HANDLE_CHECKS

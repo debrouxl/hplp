@@ -37,6 +37,7 @@
 #include <hpfiles.h>
 #include "typesprime.h"
 #include "logging.h"
+#include "error.h"
 
 #include <inttypes.h>
 #include <strings.h>
@@ -123,7 +124,7 @@ uint8_t prime_filename2byte(const char * filepath) {
 }
 
 int prime_parsefilename(const char * filepath, uint8_t * out_type, char ** out_calcfilename) {
-    int res = -1;
+    int res = ERR_FILE_FILENAME;
     uint8_t type = PRIME_TYPE_UNKNOWN;
     // The way to get the basename and file extension is platform-dependent, obviously...
 #ifndef _WIN32
@@ -153,13 +154,13 @@ int prime_parsefilename(const char * filepath, uint8_t * out_type, char ** out_c
         }
     }
     if (type != PRIME_TYPE_UNKNOWN) {
-        res = 0;
+        res = ERR_SUCCESS;
         *out_type = type;
         if (out_calcfilename != NULL) {
             char * calcfilename = strdup(file);
             if (calcfilename != NULL) {
 #ifndef _WIN32
-                extension = strrchr(file, '.');
+                extension = strrchr(calcfilename, '.');
                 if (extension != NULL) {
                     *extension = 0; // Strip extension.
                 }

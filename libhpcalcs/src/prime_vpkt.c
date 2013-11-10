@@ -30,6 +30,8 @@
 
 #include <hpcalcs.h>
 #include "logging.h"
+#include "error.h"
+
 #include "prime_cmd.h"
 
 #include <inttypes.h>
@@ -68,7 +70,7 @@ HPEXPORT void HPCALL prime_vtl_pkt_del(prime_vtl_pkt * pkt) {
 }
 
 HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
-    int res = -1;
+    int res;
     if (handle != NULL && pkt != NULL) {
         prime_raw_pkt raw;
         uint32_t i, q, r;
@@ -109,10 +111,6 @@ HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
             raw.size = r + 1;
             raw.data[1] = pkt_id;
             memcpy(raw.data + 2, pkt->data + offset, r);
-            /*raw.size = r + 1;
-            raw.data[0] = pkt->cmd;
-            memcpy(raw.data + 1, pkt->data + offset, r);
-            offset += r;*/
 
             res = prime_send(handle, &raw);
             if (res) {
@@ -122,19 +120,16 @@ HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                 hpcalcs_info("%s: send remaining succeeded", __FUNCTION__);
             }
         }
-
-        /*raw.size = (uint8_t)pkt->size;
-        memcpy(&raw.data, pkt->data, PRIME_RAW_DATA_SIZE);
-        res = prime_send(handle, &raw);*/
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;
 }
 
 HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
-    int res = -1;
+    int res;
     if (handle != NULL && pkt != NULL) {
         prime_raw_pkt raw;
         uint32_t expected_size = 0;
@@ -169,8 +164,8 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                 }
                 // Sanity check. 0x00 is used for most packets, but dumps show 0x01 in some packets during the sequence for sending a file to the calculator.
                 else if (raw.data[0] != 0x00 && raw.data[0] != 0x01) {
+                    res = ERR_CALC_PACKET_FORMAT;
                     hpcalcs_error("%s: unknown packet starts neither with 0xFF, neither with 0x00, nor with 0x01", __FUNCTION__);
-                    res = -1;
                     break;
                 }
 
@@ -200,8 +195,8 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                             else {
                                 // Most of the packet returned 
                                 if (pkt->cmd != CMD_PRIME_CHECK_READY) {
+                                    res = ERR_CALC_PACKET_FORMAT;
                                     hpcalcs_error("%s: expected 0x01 as third byte in the packet", __FUNCTION__);
-                                    res = -1;
                                 }
                             }
                             break; 
@@ -210,7 +205,7 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                             expected_size = 0;
                             break;
                     }
-                    if (res == -1) {
+                    if (res != 0) {
                         break;
                     }
                 }
@@ -224,8 +219,8 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                     offset += raw.size - 1;
                 }
                 else {
+                    res = ERR_MALLOC;
                     hpcalcs_error("%s: cannot reallocate memory", __FUNCTION__);
-                    res = -1;
                     break;
                 }
             }
@@ -251,6 +246,7 @@ shorten_packet:
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;

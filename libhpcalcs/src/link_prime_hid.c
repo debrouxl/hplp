@@ -32,13 +32,14 @@
 #include <hplibs.h>
 #include <hpcalcs.h>
 #include "logging.h"
+#include "error.h"
 
 #include <hidapi/hidapi.h>
 
 extern const cable_fncts cable_prime_hid_fncts;
 
 static int cable_prime_hid_open (cable_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         hid_device * device_handle = hid_open(USB_VID_HP, USB_PID_PRIME, NULL);
         if (device_handle) {
@@ -48,82 +49,111 @@ static int cable_prime_hid_open (cable_handle * handle) {
             handle->read_timeout = 2000;
             handle->open = 1;
             handle->busy = 0;
-            res = 0;
+            res = ERR_SUCCESS;
             hpcables_info("%s: cable open succeeded", __FUNCTION__);
         }
         else {
+            res = ERR_CABLE_NOT_OPEN;
             hpcables_error("%s: cable open failed", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
 static int cable_prime_hid_close (cable_handle * handle) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
-            hid_close(device_handle);
-            res = 0;
-            hpcables_info("%s: cable close succeeded", __FUNCTION__);
+            if (handle->open) {
+                hid_close(device_handle);
+                res = ERR_SUCCESS;
+                hpcables_info("%s: cable close succeeded", __FUNCTION__);
+            }
+            else {
+                res = ERR_CABLE_NOT_OPEN;
+                hpcables_error("%s: cable was not open", __FUNCTION__);
+            }
         }
         else {
+            res = ERR_INVALID_HANDLE;
             hpcables_error("%s: device_handle is NULL", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_HANDLE;
         hpcables_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
 }
 
+static int cable_prime_set_read_timeout (cable_handle * handle, int read_timeout) {
+    int res;
+    if (handle != NULL) {
+        handle->read_timeout = read_timeout;
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcables_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+
 static int cable_prime_hid_send (cable_handle * handle, uint8_t * data, uint32_t len) {
-    int res = -1;
+    int res;
     if (handle != NULL && data != NULL) {
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
             res = hid_write(device_handle, data, len);
             if (res >= 0) {
+                res = ERR_SUCCESS;
                 hpcables_info("%s: wrote %d bytes", __FUNCTION__, res);
-                res = 0; // Indicate success.
             }
             else {
+                res = ERR_CABLE_WRITE_ERROR;
                 hpcables_error("%s: write failed %ls", __FUNCTION__, hid_error(device_handle));
             }
         }
         else {
+            res = ERR_INVALID_HANDLE;
             hpcables_error("%s: device_handle is NULL", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcables_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;
 }
 
 static int cable_prime_hid_recv (cable_handle * handle, uint8_t * data, uint32_t * len) {
-    int res = -1;
+    int res;
     if (handle != NULL && data != NULL && len != NULL) {
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
             res = hid_read_timeout(device_handle, data, PRIME_RAW_DATA_SIZE, handle->read_timeout);
             if (res >= 0) {
-                hpcables_info("%s: read %d bytes", __FUNCTION__, res);
                 *len = res;
-                res = 0; // Indicate success
+                res = ERR_SUCCESS;
+                hpcables_info("%s: read %d bytes", __FUNCTION__, res);
             }
             else {
+                res = ERR_CABLE_READ_ERROR;
                 hpcables_error("%s: read failed", __FUNCTION__);
             }
         }
         else {
+            res = ERR_INVALID_HANDLE;
             hpcables_error("%s: device_handle is NULL", __FUNCTION__);
         }
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpcables_error("%s: an argument is NULL", __FUNCTION__);
     }
     return res;
@@ -136,6 +166,7 @@ const cable_fncts cable_prime_hid_fncts =
     "Prime HID cable",
     &cable_prime_hid_open,
     &cable_prime_hid_close,
+    &cable_prime_set_read_timeout,
     &cable_prime_hid_send,
     &cable_prime_hid_recv
 };

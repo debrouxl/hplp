@@ -31,6 +31,7 @@
 
 #include <hpfiles.h>
 #include "logging.h"
+#include "error.h"
 
 #include <inttypes.h>
 #include <string.h>
@@ -42,12 +43,12 @@ HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_lis
     hpfiles_log_set_callback(log_callback);
     hpfiles_info("hpfiles library version %s compiled on " __DATE__ " " __TIME__, hpfiles_version_get());
     hpfiles_info("%s: init succeeded", __FUNCTION__);
-    return 0;
+    return ERR_SUCCESS;
 }
 
 HPEXPORT int HPCALL hpfiles_exit(void) {
     hpfiles_info("%s: exit succeeded", __FUNCTION__);
-    return 0;
+    return ERR_SUCCESS;
 }
 
 
@@ -157,16 +158,17 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_dup(files_var_entry * src) {
 
 
 HPEXPORT int hpfiles_ve_display(files_var_entry * ve) {
-    int res = 0;
+    int res;
     if (ve != NULL) {
         hpfiles_info("Displaying var entry %p", ve);
         hpfiles_info("Name: %ls", ve->name);
         hpfiles_info("Type: %u (%02X)", ve->type, ve->type);
         hpfiles_info("Size: %" PRIu32 " (%02" PRIX32 ")", ve->size, ve->size);
         hpfiles_info("Data: %p", ve->data);
-        res = 1;
+        res = ERR_SUCCESS;
     }
     else {
+        res = ERR_INVALID_PARAMETER;
         hpfiles_error("%s: ve is NULL", __FUNCTION__);
     }
     return res;

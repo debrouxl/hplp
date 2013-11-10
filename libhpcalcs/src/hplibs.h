@@ -28,6 +28,8 @@
 #ifndef __HPLIBS_H__
 #define __HPLIBS_H__
 
+#include "export.h"
+
 //! Enumeration of cable types.
 typedef enum {
     CABLE_NONE = 0,
@@ -59,5 +61,21 @@ typedef enum {
 //! Size of a raw packet for the Prime.
 #define PRIME_RAW_DATA_SIZE (64)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * \brief Gets the error message if the error was produced by a libhp* library
+ * \param number the error number (from above)
+ * \param message out pointer for a newly allocated text error message, which must be freed by the caller
+ *
+ * \return the error number.
+ **/
+HPEXPORT int HPCALL hplibs_error_get(int number, char **message);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
