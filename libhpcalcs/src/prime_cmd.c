@@ -493,9 +493,9 @@ HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry
                 }
                 else {
                     hpcalcs_info("%s: skipping F9 packet", __FUNCTION__);
-                    if (out_file != NULL) {
-                        *out_file = NULL;
-                    }
+                }
+                if (out_file != NULL) {
+                    *out_file = NULL;
                 }
             }
             // else do nothing. res is already 0.

@@ -74,20 +74,13 @@ https://github.com/signal11/hidapi.git
 Unless your Linux distro packages it, you need to compile and install it
 yourself (it is also an autotools-based project).
 The code base shall depend on libpng (probably 1.6, due to its more friendly
-API) when screenshot color conversion is implemented.
+API, even if Debian doesn't package it) when screenshot color conversion is
+implemented.
 
 TODO list
 ---------
 * ... hopefully attract _code_ contributors who have an actual HP Prime
   calculator (I don't) and have more free time than I do;
-* (wawachief) fix s_recv_file and/or the caller: file name is wrong: for "TestTux",
-   00 00 F8 01 00 00 00 06 06 02 69 56 54 is sent.
-* (wawachief) when receiving a file and the calculator sends nothing, the trace is
-hpfiles INFO: calc_prime_r_recv_file: packet is too short: 0bytes
-hpfiles INFO: hpcalcs_calc_recv_file: recv_file succeeded
-  which shows that the situation is not handled properly.
-* (wawachief) in the above case, the structure is not initialized to 0, or
-  partially reinitialized with improper values.
 * a GUI, but I won't be the one doing it. Nowadays, Qt is the main choice for
   a portable, good-looking, fast UI toolkit. GTK+ used to be a better choice
   wrt. portability, but that was years ago, and in 2013, a number of

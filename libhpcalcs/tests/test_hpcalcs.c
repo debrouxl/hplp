@@ -46,7 +46,9 @@
 #undef VERSION
 #define VERSION "Test program"
 
+#ifdef _WIN32
 static FILE * log_file = NULL;
+#endif
 
 static void output_log_callback(const char *format, va_list args) {
     // Windows' terminal is extremely slow, cannot print the traces there.
@@ -67,7 +69,7 @@ static void output_log_callback(const char *format, va_list args) {
 #endif
 }
 
-// NOTE: this pair of crude routines is just for demo and testing purposes !
+// NOTE: this triplet of crude routines is just for demo and testing purposes !!
 // In the general case, a proper i18n library (not offered by the C standard library) should be used !
 static void crude_convert_UTF16LE_to_8bit(const char16_t * input, char * output) {
     const char * in_ptr = (const char *)input;
@@ -94,6 +96,13 @@ static void crude_convert_8bit_to_UTF16LE(const char * input, char16_t * output)
     } while (chr != 0);
 }
 
+static void crude_convert_wchar_t_to_UTF16LE(const wchar_t * input, char16_t * output) {
+    wchar_t chr = 0;
+    do {
+        chr = *input++;
+        *output++ = (char16_t)chr;
+    } while (chr != 0);
+}
 
 static void produce_output_file(calc_handle * handle, files_var_entry * entry) {
     char filename[FILES_VARNAME_MAXLEN + 13];
@@ -280,12 +289,11 @@ static int recv_file(calc_handle * handle) {
     files_var_entry request;
     files_var_entry * entry;
     char typestr[11];
+    wchar_t filename[FILES_VARNAME_MAXLEN + 1];
 
     memset((void *)&request, 0, sizeof(request));
     printf("\nEnter input filename (without computer-side extension): ");
-    // FIXME This is not valid in general, as scanf("%ls") produces wchar_t.
-    // A library with proper UTF-16LE support should be used.
-    err = scanf("%" xstr(FILES_VARNAME_MAXLEN) "ls", request.name);
+    err = scanf("%" xstr(FILES_VARNAME_MAXLEN) "ls", filename);
     if (err >= 1) {
         printf("Enter file type:");
 
@@ -298,6 +306,7 @@ static int recv_file(calc_handle * handle) {
                     wcscat(request.name, L".");
                     crude_convert_8bit_to_UTF16LE(fext, request.name + wcslen(request.name) + 1);
                 }*/
+                crude_convert_wchar_t_to_UTF16LE(filename, request.name);
                 request.type = type;
                 res = hpcalcs_calc_recv_file(handle, &request, &entry);
                 printf("hpcalcs_calc_recv_file finished\n");
