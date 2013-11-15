@@ -88,13 +88,6 @@ TODO list
 * add devices probing code (the hpcables part currently assumes that the
   calculator is plugged in and that there's a single calculator), HIDAPI
   provides some probing functions (e.g. based on vendor);
-* add error codes and their propagation to the caller, like in libti*;
-* add workaround for char16_t on platforms which don't have it:
-  * check availability of the uchar.h header, and of u"string", in
-    configure.ac;
-  * otherwise, use
-    typedef __CHAR16_TYPE__ char16_t; (if GCC >= 4.4 or clang)
-    typedef uint16_t char16_t; (generic fallback)
 * when receiving a backup fails, return the current state of the backup
   instead of destroying everything (will be better than nothing !).
   Error code: BACKUP_FAILED_SOME_DATA_AVAILABLE.
@@ -163,7 +156,8 @@ Credits (demoscene style)
   on his real Prime and providing many USB packet dumps (which I analyzed
   with Wireshark) and terminal output sessions;
 * thanks to other beta-testers who reported bugs: persalteas (Linux),
-  wawachief (Linux & MacOS X), DJ Omnimaga (Windows), Adriweb (MacOS X).
+  wawachief (Linux & MacOS X), DJ Omnimaga (Windows), Adriweb (MacOS X,
+  Windows).
 * greetings to the other TI-Planet ( http://tiplanet.org/ ) admins;
 * greetings to the HP Prime developer team at HP: some of its members spend
   time attending user message boards and interacting with users and programmers,

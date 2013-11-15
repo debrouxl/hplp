@@ -21,7 +21,7 @@
 PREFIX="$HOME/lpg/packages"
 
 # Common flags and definitions.
-CCFLAGS="-std=c1x -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings -Wredundant-decls -Werror=declaration-after-statement -Werror=implicit-function-declaration -D_FORTIFY_SOURCE=2"
+CCFLAGS="-std=c99 -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings -Wredundant-decls -Werror=declaration-after-statement -Werror=implicit-function-declaration -D_FORTIFY_SOURCE=2"
 CCPPFLAGS="-I/$HOME/lpg/deps/gtk-win32/include -I$HOME/lpg/depsprefix/include" # The gtk dev files contains a libintl for Windows
 CLDFLAGS="-L$HOME/lpg/deps/gtk-win32/lib -L$HOME/lpg/depsprefix/lib -static-libgcc" # The gtk dev files contains a libintl for Windows
 CHOST="i686-w64-mingw32"

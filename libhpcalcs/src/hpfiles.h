@@ -31,7 +31,16 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <uchar.h>
+
+// As of 2013/11, too many environments still don't support <uchar.h>.
+// Since the only thing from this header libhpfiles uses (for now) is char16_t:
+// * on modern GCC and Clang (the main targets of this code base), use the builtin __CHAR16_TYPE__ preprocessor define;
+// * otherwise, fall back to uint16_t.
+#ifdef __CHAR16_TYPE__
+typedef __CHAR16_TYPE__ char16_t;
+#else
+typedef uint16_t char16_t;
+#endif
 
 #include "hplibs.h"
 #include "filetypes.h"
