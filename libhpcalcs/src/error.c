@@ -37,14 +37,21 @@
 #include <hpcalcs.h>
 #include <hpcables.h>
 #include <hpcalcs.h>
-
 #include "logging.h"
 #include "error.h"
+#include "gettext.h"
 
 HPEXPORT int HPCALL hpfiles_error_get (int number, char **message) {
     if (message != NULL) {
         if (number >= ERR_FILE_FIRST && number <= ERR_FILE_LAST) {
-            *message = strdup("TODO human-readable error message");
+            switch (number) {
+                case ERR_FILE_FILENAME:
+                    *message = strdup(_("Cannot understand filename"));
+                    break;
+                default:
+                    *message = strdup(_("<Unknown error code>"));
+                    break;
+            }
             return 0;
         }
         else {
@@ -61,7 +68,29 @@ HPEXPORT int HPCALL hpfiles_error_get (int number, char **message) {
 HPEXPORT int HPCALL hpcables_error_get (int number, char **message) {
     if (message != NULL) {
         if (number >= ERR_CABLE_FIRST && number <= ERR_CABLE_LAST) {
-            *message = strdup("TODO human-readable error message");
+            switch (number) {
+                case ERR_CABLE_NOT_OPEN:
+                    *message = strdup(_("Cable is not open"));
+                    break;
+                case ERR_CABLE_OPEN:
+                    *message = strdup(_("Cable is already open"));
+                    break;
+                case ERR_CABLE_BUSY:
+                    *message = strdup(_("Cable is busy"));
+                    break;
+                case ERR_CABLE_WRITE_ERROR:
+                    *message = strdup(_("Error writing to cable"));
+                    break;
+                case ERR_CABLE_READ_ERROR:
+                    *message = strdup(_("Error reading from cable"));
+                    break;
+                case ERR_CABLE_INVALID_FNCTS:
+                    *message = strdup(_("Invalid cable functions"));
+                    break;
+                default:
+                    *message = strdup(_("<Unknown error code>"));
+                    break;
+            }
             return 0;
         }
         else {
@@ -78,7 +107,26 @@ HPEXPORT int HPCALL hpcables_error_get (int number, char **message) {
 HPEXPORT int HPCALL hpcalcs_error_get (int number, char **message) {
     if (message != NULL) {
         if (number >= ERR_CALC_FIRST && number <= ERR_CALC_LAST) {
-            *message = strdup("TODO human-readable error message");
+            switch (number) {
+                case ERR_CALC_NO_CABLE:
+                    *message = strdup(_("No cable attached"));
+                    break;
+                case ERR_CALC_CABLE_NOT_OPEN:
+                    *message = strdup(_("Cable is not open"));
+                    break;
+                case ERR_CALC_BUSY:
+                    *message = strdup(_("Calc is busy"));
+                    break;
+                case ERR_CALC_INVALID_FNCTS:
+                    *message = strdup(_("Invalid cable functions"));
+                    break;
+                case ERR_CALC_PACKET_FORMAT:
+                    *message = strdup(_("Unhandled packet format"));
+                    break;
+                default:
+                    *message = strdup(_("<Unknown error code>"));
+                    break;
+            }
             return 0;
         }
         else {
@@ -100,7 +148,26 @@ HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
     if (message != NULL) {
         // Skip ERR_SUCCESS.
         if (number > ERR_CALC_FIRST && number <= ERR_CALC_LAST) {
-            *message = strdup("TODO human-readable error message");
+            switch (number) {
+                case ERR_MALLOC:
+                    *message = strdup(_("Failed to allocate memory"));
+                    break;
+                case ERR_INVALID_HANDLE:
+                    *message = strdup(_("Invalid handle pointer"));
+                    break;
+                case ERR_INVALID_PARAMETER:
+                    *message = strdup(_("Invalid function parameter"));
+                    break;
+                case ERR_INVALID_MODEL:
+                    *message = strdup(_("Invalid model"));
+                    break;
+                case ERR_LIBRARY_INIT:
+                    *message = strdup(_("Problem initializing the library"));
+                    break;
+                default:
+                    *message = strdup(_("<Unknown error code>"));
+                    break;
+            }
             return 0;
         }
         else {

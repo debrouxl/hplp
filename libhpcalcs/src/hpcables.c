@@ -29,12 +29,15 @@
 # include <config.h>
 #endif
 
+#include <stdlib.h>
+
+#include <hidapi.h>
+
 #include <hpcables.h>
 #include "logging.h"
 #include "error.h"
+#include "gettext.h"
 
-#include <stdlib.h>
-#include <hidapi/hidapi.h>
 
 extern const cable_fncts cable_prime_hid_fncts;
 
@@ -50,18 +53,21 @@ int hpcables_instance_count = 0;
 HPEXPORT int HPCALL hpcables_init(void (*log_callback)(const char *format, va_list args)) {
     int res;
 
+    // TODO: when (if) libhpcables is split from libhpfiles, copy and adjust locale setting code from hpcalcs.c.
+
     hpcables_log_set_callback(log_callback);
-    hpcables_info("hpcables library version %s compiled on " __DATE__ " " __TIME__, hpcables_version_get());
+    hpcables_info(_("hpcables library version %s compiled on %s"), hpcables_version_get(), __DATE__ " " __TIME__);
 
     res = hid_init();
     if (res == 0) {
         res = ERR_SUCCESS;
-        hpcables_info("%s: init succeeded", __FUNCTION__);
+        hpcables_info(_("%s: init succeeded"), __FUNCTION__);
     }
     else {
         res = ERR_LIBRARY_INIT;
-        hpcables_error("%s: init failed", __FUNCTION__);
+        hpcables_error(_("%s: init failed"), __FUNCTION__);
     }
+
     return res;
 }
 
@@ -69,7 +75,7 @@ HPEXPORT int HPCALL hpcables_exit(void) {
     int res;
     hid_exit();
     res = ERR_SUCCESS;
-    hpcables_info("%s: exit succeeded", __FUNCTION__);
+    hpcables_info(_("%s: exit succeeded"), __FUNCTION__);
     return res;
 }
 

@@ -75,14 +75,16 @@ echo Will use "SRCDIR=$SRCDIR"
 if [ "x$CC" = "x" ]; then
     #CC=clang
     CC=gcc
-    CFLAGS="-std=c1x"
+    CFLAGS="-std=c1x -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings"
 fi
 if [ "x$CXX" = "x" ]; then
     #CXX=clang++
     CXX=g++
-    CFLAGS="-std=c1x"
+    CXXFLAGS="-std=c1x -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings"
 fi
 
+# No special linker flags, by default.
+LDFLAGS=""
 
 
 # Subroutine: clone/update repository copies.
@@ -109,7 +111,7 @@ handle_one_module() {
   # Add --libdir=/usr/lib64 on e.g. 64-bit Fedora 14, which insists on searching for 64-bit libs in /usr/lib64.
   # Or modify PKG_CONFIG_PATH as described above.
   autoreconf -i -v -f
-  ./configure "--prefix=$PREFIX" CC=$CC CXX=$CXX CFLAGS=$CFLAGS $@ || return 1
+  ./configure "--prefix=$PREFIX" "CC=$CC" "CXX=$CXX" "CPPFLAGS=$CPPFLAGS" "CFLAGS=$CFLAGS" "CXXFLAGS=$CXXFLAGS" "LDFLAGS=$LDFLAGS" $@ || return 1
   echo "Building $module_name"
   make || return 1
   echo "Installing $module_name"
@@ -169,10 +171,14 @@ echo -e "1) configured \033[1mPREFIX\033[m and \033[1mSRCDIR\033[m the way you w
 echo -e "   (as well as \033[1mCC\033[m and \033[1mCXX\033[m if you're into using non-GCC compilers);"
 echo -e "2a) if you're using \033[1m64-bit Fedora\033[m (or any distro which installs libraries to non-standard paths), added --libdir=/usr/lib64 to the marked line, or..."
 echo -e "2b) configured \033[1mPKG_CONFIG_PATH\033[m if necessary"
-echo -e "3) installed the build dependencies listed in the script."
-echo -e "        For instance, on Debian and derivatives, you would run:"
-echo -e "        (sudo) apt-get install build-essential git autoconf automake libtool gettext xdg-utils intltool"
+echo    "3) installed the build dependencies listed in the script."
+echo    "      - For instance, on Debian and derivatives, you would run:"
+echo    "        (sudo) apt-get install build-essential git autoconf automake libtool gettext xdg-utils"
 echo -e "        \033[1mthen you would proceed to compile hidapi yourself, as Debian does not package it\033[m"
+echo    "      - On MacOS X, for instance:"
+echo    '        ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)" # to obtain brew if you do not have it yet'
+echo    "        brew install git autoconf automake libtool gettext hidapi && brew link --force gettext"
+echo -e "        \033[1mthen you will need to adjust some CFLAGS and LDFLAGS due to e.g. gettext\033[m"
 echo -e "\033[4mOtherwise, the build will fail!\033[m."
 echo -e "\033[1mENTER to proceed, CTRL + C to abort\033[m."
 read

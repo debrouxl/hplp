@@ -29,12 +29,14 @@
 # include <config.h>
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+
 #include <hpcables.h>
 #include <hpcalcs.h>
 #include "logging.h"
 #include "error.h"
-
-#include <stdlib.h>
+#include "gettext.h"
 
 extern const calc_fncts calc_prime_fncts;
 
@@ -49,13 +51,17 @@ int hpcalcs_instance_count = 0;
 
 HPEXPORT int HPCALL hpcalcs_init(void (*log_callback)(const char *format, va_list args)) {
     hpcalcs_log_set_callback(log_callback);
-    hpcalcs_info("hpcalcs library version %s compiled on " __DATE__ " " __TIME__, hpcalcs_version_get());
-    hpcalcs_info("%s: init succeeded", __FUNCTION__);
+
+    // TODO: when (if) libhpfiles is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
+
+    hpcalcs_info(_("hpcalcs library version %s compiled on %s"), hpcalcs_version_get(), __DATE__ " " __TIME__);
+    hpcalcs_info(_("%s: init succeeded"), __FUNCTION__);
+
     return ERR_SUCCESS;
 }
 
 HPEXPORT int HPCALL hpcalcs_exit(void) {
-    hpcalcs_info("%s: exit succeeded", __FUNCTION__);
+    hpcalcs_info(_("%s: exit succeeded"), __FUNCTION__);
     return ERR_SUCCESS;
 }
 

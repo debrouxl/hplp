@@ -29,12 +29,12 @@
 # include <config.h>
 #endif
 
+#include <hidapi.h>
+
 #include <hplibs.h>
 #include <hpcalcs.h>
 #include "logging.h"
 #include "error.h"
-
-#include <hidapi/hidapi.h>
 
 extern const cable_fncts cable_prime_hid_fncts;
 

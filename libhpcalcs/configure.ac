@@ -56,12 +56,14 @@ AC_CHECK_TOOL(RC, windres, windres)
 
 # Checks for libraries.
 # Translation
-AC_PROG_INTLTOOL([0.40.0])
+AM_GNU_GETTEXT(external)
+AM_GNU_GETTEXT_VERSION([0.17])
 
-#GETTEXT_PACKAGE=libhpcalcs
-#AC_SUBST(GETTEXT_PACKAGE)
-#AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [libhpcalcs])
-#AM_GLIB_GNU_GETTEXT
+#AC_PROG_INTLTOOL([0.40.0])
+
+GETTEXT_PACKAGE=libhpcalcs
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [libhpcalcs])
 
 case "$host" in
   *-*-linux*) HIDAPI_PKG="hidapi-hidraw" ;;

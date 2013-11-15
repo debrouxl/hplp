@@ -29,25 +29,64 @@
 # include <config.h>
 #endif
 
-#include <hpfiles.h>
-#include "logging.h"
-#include "error.h"
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 #include <inttypes.h>
 #include <string.h>
+
+#include <hpfiles.h>
+#include "logging.h"
+#include "error.h"
+#include "gettext.h"
 
 // not static, must be shared between instances
 int hpfiles_instance_count = 0;
 
 HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_list args)) {
+
+    // Set up locale info, if NLS support is enabled.
+#ifdef ENABLE_NLS
+    {
+        char locale_dir[65536];
+
+#ifdef __WIN32__
+        HANDLE hDll;
+        int i;
+
+        hDll = GetModuleHandle("libhpcalcs-0.dll");
+        GetModuleFileName(hDll, locale_dir, 65525);
+
+        for (i = (int)strlen(locale_dir); i >= 0; i--) {
+            if (locale_dir[i] == '\\') {
+                break;
+            }
+        }
+        locale_dir[i] = '\0';
+
+        strcat(locale_dir, "\\locale");
+#else
+        strcpy(locale_dir, LOCALEDIR);
+#endif
+
+        hpcalcs_info("setlocale: %s", setlocale(LC_ALL, ""));
+        hpcalcs_info("bindtextdomain: %s", bindtextdomain(PACKAGE, locale_dir));
+        bind_textdomain_codeset(PACKAGE, "UTF-8"/*"ISO-8859-15"*/);
+        hpcalcs_info("textdomain: %s", textdomain(NULL));
+    }
+#endif
+
     hpfiles_log_set_callback(log_callback);
-    hpfiles_info("hpfiles library version %s compiled on " __DATE__ " " __TIME__, hpfiles_version_get());
-    hpfiles_info("%s: init succeeded", __FUNCTION__);
+    hpfiles_info(_("hpfiles library version %s compiled on %s"), hpfiles_version_get(), __DATE__ " " __TIME__);
+    hpfiles_info(_("%s: init succeeded"), __FUNCTION__);
+
     return ERR_SUCCESS;
 }
 
 HPEXPORT int HPCALL hpfiles_exit(void) {
-    hpfiles_info("%s: exit succeeded", __FUNCTION__);
+    hpfiles_info(_("%s: exit succeeded"), __FUNCTION__);
     return ERR_SUCCESS;
 }
 

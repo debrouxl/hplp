@@ -53,6 +53,9 @@ static FILE * log_file = NULL;
 static void output_log_callback(const char *format, va_list args) {
     // Windows' terminal is extremely slow, cannot print the traces there.
 #ifndef _WIN32
+    // Using args twice, once for printing to stdout and once for printing to a file, triggers crashes.
+    // Therefore, let's have thid function print only to stdout.
+    // Should there be a need to print to a file, on non-Windows, people can rely on "tee".
     vprintf(format, args);
 #else
     if (log_file == NULL) {

@@ -30,7 +30,6 @@
 
 #include <stdint.h>
 #include <stdarg.h>
-#include <uchar.h>
 
 #include "hplibs.h"
 #include "hpfiles.h"
