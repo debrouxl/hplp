@@ -276,6 +276,39 @@ HPEXPORT int HPCALL hpcalcs_calc_get_infos(calc_handle * handle, calc_infos * in
     return res;
 }
 
+HPEXPORT int HPCALL hpcalcs_calc_set_date_time(calc_handle * handle, time_t timestamp) {
+    int res;
+    if (handle != NULL) {
+        do {
+            int (*set_date_time) (calc_handle *, time_t);
+
+            DO_BASIC_HANDLE_CHECKS()
+
+            set_date_time = handle->fncts->set_date_time;
+            if (set_date_time != NULL) {
+                handle->busy = 1;
+                res = (*set_date_time)(handle, timestamp);
+                if (res == 0) {
+                    hpcalcs_info("%s: set_date_time succeeded", __FUNCTION__);
+                }
+                else {
+                    hpcalcs_error("%s: set_date_time failed", __FUNCTION__);
+                }
+                handle->busy = 0;
+            }
+            else {
+                res = ERR_CALC_INVALID_FNCTS;
+                hpcalcs_error("%s: fncts->set_date_time is NULL", __FUNCTION__);
+            }
+        } while (0);
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
 HPEXPORT int HPCALL hpcalcs_calc_recv_screen(calc_handle * handle, calc_screenshot_format format, uint8_t ** out_data, uint32_t * out_size) {
     int res;
     // TODO: some checking on format, but for now, it would hamper documentation efforts.

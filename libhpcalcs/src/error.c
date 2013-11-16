@@ -123,6 +123,9 @@ HPEXPORT int HPCALL hpcalcs_error_get (int number, char **message) {
                 case ERR_CALC_PACKET_FORMAT:
                     *message = strdup(_("Unhandled packet format"));
                     break;
+                case ERR_CALC_SPLIT_TIMESTAMP:
+                    *message = strdup(_("Unable to get time constituents"));
+                    break;
                 default:
                     *message = strdup(_("<Unknown error code>"));
                     break;

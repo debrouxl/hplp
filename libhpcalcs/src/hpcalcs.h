@@ -30,6 +30,7 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "hplibs.h"
 #include "hpfiles.h"
@@ -44,10 +45,11 @@ typedef struct _calc_handle calc_handle;
 typedef enum {
     CALC_FNCT_CHECK_READY = 0,
     CALC_FNCT_GET_INFOS = 1,
-    CALC_FNCT_RECV_SCREEN = 2,
-    CALC_FNCT_SEND_FILE = 3,
-    CALC_FNCT_RECV_FILE = 4,
-    CALC_FNCT_RECV_BACKUP = 5,
+    CALC_FNCT_SET_DATE_TIME = 2,
+    CALC_FNCT_RECV_SCREEN = 3,
+    CALC_FNCT_SEND_FILE = 4,
+    CALC_FNCT_RECV_FILE = 5,
+    CALC_FNCT_RECV_BACKUP = 6,
     CALC_FNCT_LAST // Keep this one last
 } calc_fncts_idx;
 
@@ -56,6 +58,7 @@ typedef enum {
     CALC_OPS_NONE = 0,
     CALC_OPS_CHECK_READY = (1 << CALC_FNCT_CHECK_READY),
     CALC_OPS_GET_INFOS = (1 << CALC_FNCT_GET_INFOS),
+    CALC_OPS_SET_DATE_TIME = (1 << CALC_FNCT_SET_DATE_TIME),
     CALC_OPS_RECV_SCREEN = (1 << CALC_FNCT_RECV_SCREEN),
     CALC_OPS_SEND_FILE = (1 << CALC_FNCT_SEND_FILE),
     CALC_OPS_RECV_FILE = (1 << CALC_FNCT_RECV_FILE),
@@ -87,6 +90,7 @@ struct _calc_fncts {
     int features;
     int (*check_ready) (calc_handle * handle, uint8_t ** out_data, uint32_t * out_size);
     int (*get_infos) (calc_handle * handle, calc_infos * infos);
+    int (*set_date_time) (calc_handle * handle, time_t timestamp);
     int (*recv_screen) (calc_handle * handle, calc_screenshot_format format, uint8_t ** out_data, uint32_t * out_size);
     int (*send_file) (calc_handle * handle, files_var_entry * file);
     int (*recv_file) (calc_handle * handle, files_var_entry * request, files_var_entry ** out_file);
@@ -211,7 +215,7 @@ HPEXPORT int HPCALL hpcalcs_cable_detach(calc_handle * handle);
 /**
  * \brief Checks whether the calculator is ready
  * \param handle the calculator handle.
- * \param out_data storage area for information contained in the calculator's reply
+ * \param out_data storage area for information contained in the calculator's reply.
  * \param out_size storage area for size of the information contained in the calculator's reply.
  * \return 0 upon success, nonzero otherwise.
  */
@@ -219,10 +223,17 @@ HPEXPORT int HPCALL hpcalcs_calc_check_ready(calc_handle * handle, uint8_t ** ou
 /**
  * \brief Retrieves some information, such as firmware version, from the calculator.
  * \param handle the calculator handle.
- * \param infos storage area for information contained in the reply
+ * \param infos storage area for information contained in the reply.
  * \return 0 upon success, nonzero otherwise.
  */
 HPEXPORT int HPCALL hpcalcs_calc_get_infos(calc_handle * handle, calc_infos * infos);
+/**
+ * \brief Sets the calculator's date and time from a standard C89 / *nix timestamp.
+ * \param handle the calculator handle.
+ * \param timestamp the timestamp since the Epoch (1970).
+ * \return 0 upon success, nonzero otherwise.
+ */
+HPEXPORT int HPCALL hpcalcs_calc_set_date_time(calc_handle * handle, time_t timestamp);
 /**
  * \brief Retrieves a screenshot from the calculator
  * \param handle the calculator handle.

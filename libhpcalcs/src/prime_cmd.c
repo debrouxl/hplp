@@ -243,6 +243,68 @@ HPEXPORT int HPCALL calc_prime_r_get_infos (calc_handle * handle, calc_infos * i
     return res;
 }
 
+HPEXPORT int HPCALL calc_prime_s_set_date_time(calc_handle * handle, time_t timestamp) {
+    int res;
+    if (handle != NULL) {
+        struct tm * brokendowntime = localtime(&timestamp);
+        if (brokendowntime != NULL) {
+            uint32_t size = 10; // Size of the data after the header.
+            prime_vtl_pkt * pkt = prime_vtl_pkt_new(size + 6); // Add size of the header.
+            if (pkt != NULL) {
+                uint8_t * ptr;
+
+                pkt->cmd = CMD_PRIME_SET_DATE_TIME;
+                ptr = pkt->data;
+//                *ptr++ = 0x00; // Report number
+//                *ptr++ = 0x00; // ?
+                *ptr++ = CMD_PRIME_SET_DATE_TIME;
+                *ptr++ = 0x01;
+                *ptr++ = (uint8_t)((size >> 24) & 0xFF);
+                *ptr++ = (uint8_t)((size >> 16) & 0xFF);
+                *ptr++ = (uint8_t)((size >>  8) & 0xFF);
+                *ptr++ = (uint8_t)((size      ) & 0xFF);
+                *ptr++ = 0x00; // ?
+                *ptr++ = 0x00; // ?
+                *ptr++ = 0x54; // 84 decimal, ?
+                *ptr++ = 0x1E; // 30 decimal, ?
+                *ptr++ = brokendowntime->tm_year - (2000 - 1900); // tm_year: The number of years since 1900.
+                *ptr++ = brokendowntime->tm_mon + 1; // tm_mon: the number of months since January, in the range 0 to 11.
+                *ptr++ = brokendowntime->tm_mday;
+                *ptr++ = brokendowntime->tm_hour;
+                *ptr++ = brokendowntime->tm_min;
+                *ptr++ = brokendowntime->tm_sec;
+                res = prime_send_data(handle, pkt);
+                prime_vtl_pkt_del(pkt);
+            }
+            else {
+                res = ERR_MALLOC;
+                hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
+            }
+        }
+        else {
+            res = ERR_CALC_SPLIT_TIMESTAMP;
+            hpcalcs_error("%s: couldn't split timestamp", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_r_set_date_time(calc_handle * handle) {
+    int res = 0;
+    if (handle != NULL) {
+        // There doesn't seem anything to do.
+        //res = calc_prime_r_check_ready(handle, NULL, NULL);
+    }
+    else {
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
 HPEXPORT int HPCALL calc_prime_s_recv_screen(calc_handle * handle, calc_screenshot_format format) {
     int res;
     if (handle != NULL) {

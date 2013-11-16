@@ -34,13 +34,16 @@
 #define CMD_PRIME_RECV_BACKUP (0xF9)
 #define CMD_PRIME_REQ_FILE (0xF8)
 #define CMD_PRIME_RECV_FILE (0xF7)
-#define CMD_PRIME_UNKNOWN (0xE7)
+#define CMD_PRIME_SET_DATE_TIME (0xE7)
 
 HPEXPORT int HPCALL calc_prime_s_check_ready(calc_handle * handle);
 HPEXPORT int HPCALL calc_prime_r_check_ready(calc_handle * handle, uint8_t ** out_data, uint32_t * out_size);
 
-HPEXPORT int HPCALL calc_prime_s_get_infos (calc_handle * handle);
-HPEXPORT int HPCALL calc_prime_r_get_infos (calc_handle * handle, calc_infos * infos);
+HPEXPORT int HPCALL calc_prime_s_get_infos(calc_handle * handle);
+HPEXPORT int HPCALL calc_prime_r_get_infos(calc_handle * handle, calc_infos * infos);
+
+HPEXPORT int HPCALL calc_prime_s_set_date_time(calc_handle * handle, time_t timestamp);
+HPEXPORT int HPCALL calc_prime_r_set_date_time(calc_handle * handle);
 
 HPEXPORT int HPCALL calc_prime_s_recv_screen(calc_handle * handle, calc_screenshot_format format);
 HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screenshot_format format, uint8_t ** out_data, uint32_t * out_size);

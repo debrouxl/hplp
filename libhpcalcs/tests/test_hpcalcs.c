@@ -65,7 +65,7 @@ static void output_log_callback(const char *format, va_list args) {
             fprintf(log_file, "Opening log file at %s", ctime(&curtime));
         }
     }
-    else {
+    if (log_file != NULL) {
         vfprintf(log_file, format, args);
         fflush(log_file);
     }
@@ -157,7 +157,21 @@ static int get_infos(calc_handle * handle) {
         // TODO: do something with infos.
     }
     else {
-        printf("hpcalcs_calc_check_ready failed\n");
+        printf("hpcalcs_calc_get_infos failed\n");
+    }
+
+    return res;
+}
+
+static int set_date_time(calc_handle * handle) {
+    int res;
+
+    res = hpcalcs_calc_set_date_time(handle, time(NULL));
+    if (res == 0) {
+        printf("Set date time success\n");
+    }
+    else {
+        printf("hpcalcs_calc_set_date_time failed\n");
     }
 
     return res;
@@ -400,12 +414,13 @@ static int vpkt_send_experiments(calc_handle * handle) {
     return res;
 }
 
-#define NITEMS	8
+#define NITEMS	9
 
 static const char *str_menu[NITEMS] = {
     "Exit",
     "Check whether calc is ready",
     "Get calculator information",
+    "Set date and time",
     "Get screenshot",
     "Send file",
     "Receive file",
@@ -419,6 +434,7 @@ static const FNCT_MENU fnct_menu[NITEMS] = {
     NULL,
     is_ready,
     get_infos,
+    set_date_time,
     recv_screen,
     send_file,
     recv_file,

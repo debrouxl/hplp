@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-11-15 20:19+0100\n"
+"POT-Creation-Date: 2013-11-16 09:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Cannot understand filename"
 msgstr ""
 
-#: src/error.c:52 src/error.c:91 src/error.c:127 src/error.c:168
+#: src/error.c:52 src/error.c:91 src/error.c:130 src/error.c:171
 msgid "<Unknown error code>"
 msgstr ""
 
@@ -61,23 +61,27 @@ msgstr ""
 msgid "Unhandled packet format"
 msgstr ""
 
-#: src/error.c:153
-msgid "Failed to allocate memory"
+#: src/error.c:127
+msgid "Unable to get time constituents"
 msgstr ""
 
 #: src/error.c:156
-msgid "Invalid handle pointer"
+msgid "Failed to allocate memory"
 msgstr ""
 
 #: src/error.c:159
-msgid "Invalid function parameter"
+msgid "Invalid handle pointer"
 msgstr ""
 
 #: src/error.c:162
-msgid "Invalid model"
+msgid "Invalid function parameter"
 msgstr ""
 
 #: src/error.c:165
+msgid "Invalid model"
+msgstr ""
+
+#: src/error.c:168
 msgid "Problem initializing the library"
 msgstr ""
 
