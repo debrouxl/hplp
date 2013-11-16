@@ -35,10 +35,10 @@
 #define PRIME_TYPE_MATRIX (0x04) // variables M0-M9, for instance
 #define PRIME_TYPE_NOTE (0x05)
 #define PRIME_TYPE_PRGM (0x06) // programs with identical data are sent twice during backup ??
-// 0x07: maybe APPNOTE ?
-// 0x08: maybe APPPRGM ?
+#define PRIME_TYPE_APPNOTE (0x07) // XXX Tentative
+#define PRIME_TYPE_APPPRGM (0x08) // XXX Tentative
 #define PRIME_TYPE_COMPLEX (0x09) // variables Z0-Z9, for instance
-#define PRIME_TYPE_REAL (0x0A) // variables A-Z, 0x3B8 (??), for instance
+#define PRIME_TYPE_REAL (0x0A) // variables A-Z, 0x3B8 (theta), for instance
 #define PRIME_TYPE_TESTMODECONFIG (0x0B)
 #define PRIME_TYPE_UNKNOWN (0xFF)
 

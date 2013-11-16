@@ -53,8 +53,8 @@ const char * PRIME_CONST[][3] = {
     { "MATRIX", "hpmatrix", "Matrix" },
     { "NOTE", "hpnote", "Note" },
     { "PRGM", "hpprgm", "Program" },
-    { "", "unknown", "Unknown" }, // Maybe appnote ?
-    { "", "unknown", "Unknown" }, // Maybe appprgm ?
+    { "APPNOTE", "hpappnote", "App Note" }, // XXX Tentative
+    { "APPPRGM", "hpappprgm", "App Program" }, // XXX Tentative
     { "COMPLEX", "hpcomplex", "Complex" }, // Extension synthetized, not found with the connectivity kit or emulator ?
     { "REAL", "hpreal", "Real" }, // Extension synthetized, not found with the connectivity kit or emulator ?
     { "TESTMODECONFIG", "", "Real" }, // The extension is embedded in the file name.
