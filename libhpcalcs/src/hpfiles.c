@@ -201,7 +201,9 @@ HPEXPORT int hpfiles_ve_display(files_var_entry * ve) {
     if (ve != NULL) {
         hpfiles_info("Displaying var entry %p", ve);
         hpfiles_info("Name: %ls", ve->name);
+        hpfiles_info("Model: %u (%02X)", ve->model, ve->model);
         hpfiles_info("Type: %u (%02X)", ve->type, ve->type);
+        hpfiles_info("Invalid: %u", ve->invalid);
         hpfiles_info("Size: %" PRIu32 " (%02" PRIX32 ")", ve->size, ve->size);
         hpfiles_info("Data: %p", ve->data);
         res = ERR_SUCCESS;

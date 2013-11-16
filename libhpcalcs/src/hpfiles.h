@@ -55,6 +55,8 @@ typedef struct
     char16_t name[FILES_VARNAME_MAXLEN+1];
 
     uint8_t type;
+    uint8_t model;
+    uint8_t invalid; ///< Set to nonzero by e.g. hpcalcs_calc_recv_file() if a packet loss was detected.
     uint32_t size;
     uint8_t* data;
 } files_var_entry;

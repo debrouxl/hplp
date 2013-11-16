@@ -115,6 +115,9 @@ static void produce_output_file(calc_handle * handle, files_var_entry * entry) {
     printf("Receive file success\n");
     hpfiles_ve_display(entry);
     crude_convert_UTF16LE_to_8bit(entry->name, filename);
+    if (entry->invalid) {
+        printf("NOTE: the data for file %s is corrupted (packet loss in transfer) !\n", filename);
+    }
     extension = hpfiles_vartype2fext(hpcalcs_get_model(handle), entry->type);
     if (extension[0] != 0) {
         strcat(filename, ".");
@@ -357,20 +360,18 @@ static int recv_backup(calc_handle * handle) {
     files_var_entry ** entries;
 
     res = hpcalcs_calc_recv_backup(handle, &entries);
-    if (res == 0) {
-        if (entries != NULL) {
-            files_var_entry ** ptr = entries;
-            while (*ptr != NULL) {
-                produce_output_file(handle, *ptr++);
-            }
-            hpfiles_ve_delete_array(entries);
+    if (res != 0) {
+        printf("hpcalcs_calc_recv_backup failed\nWill nevertheless attempt to salvage data, if possible\n");
+    }
+    if (entries != NULL) {
+        files_var_entry ** ptr = entries;
+        while (*ptr != NULL) {
+            produce_output_file(handle, *ptr++);
         }
-        else {
-            printf("hpcalcs_calc_recv_backup returned NULL entries\n");
-        }
+        hpfiles_ve_delete_array(entries);
     }
     else {
-        printf("hpcalcs_calc_recv_backup failed\n");
+        printf("hpcalcs_calc_recv_backup returned NULL entries, no data available\n");
     }
 
     return res;

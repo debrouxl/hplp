@@ -518,7 +518,6 @@ HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry
                 hpcalcs_info("%s: embedded=%" PRIX16 " computed=%" PRIX16, __FUNCTION__, embedded_crc, computed_crc);
                 if (computed_crc != embedded_crc) {
                     hpcalcs_error("%s: CRC mismatch", __FUNCTION__);
-                    // TODO: change res.
                 }
 
                 if (out_file != NULL) {
@@ -534,6 +533,7 @@ HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry
                         if (*out_file != NULL) {
                             (*out_file)->type = pkt->data[6];
                             memcpy((*out_file)->name, &pkt->data[10], namelen);
+                            (*out_file)->invalid = (computed_crc != embedded_crc);
                             hpcalcs_info("%s: created entry for %ls with size %" PRIu32 " and type %02X", __FUNCTION__, (*out_file)->name, (*out_file)->size, (*out_file)->type);
                         }
                         else {
@@ -608,6 +608,9 @@ HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_ent
         files_var_entry ** entries = hpfiles_ve_create_array(count);
         if (entries != NULL) {
             for (;;) {
+                if (out_vars != NULL) {
+                    *out_vars = entries;
+                }
                 res = calc_prime_r_recv_file(handle, &entries[count]);
                 if (res == ERR_SUCCESS) {
                     if (entries[count] != NULL) {
@@ -618,17 +621,10 @@ HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_ent
                         if (new_entries != NULL) {
                             entries = new_entries;
                             entries[count] = NULL;
-                            if (out_vars != NULL) {
-                                *out_vars = entries;
-                            }
                         }
                         else {
                             res = ERR_MALLOC;
                             hpcalcs_error("%s: couldn't resize entries", __FUNCTION__);
-                            hpfiles_ve_delete_array(entries);
-                            if (out_vars != NULL) {
-                                *out_vars = NULL;
-                            }
                             break;
                         }
                     }

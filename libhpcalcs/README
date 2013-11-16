@@ -88,19 +88,14 @@ TODO list
 * add devices probing code (the hpcables part currently assumes that the
   calculator is plugged in and that there's a single calculator), HIDAPI
   provides some probing functions (e.g. based on vendor);
-* when receiving a backup fails, return the current state of the backup
-  instead of destroying everything (will be better than nothing !).
-  Error code: BACKUP_FAILED_SOME_DATA_AVAILABLE.
-  A heuristic might be to assume that some packets were lost, and traverse
-  backwards the contents of the current file to find a (00) F7 01 xx xx xx xx
-  packet ? That could fail in some circumstances, but in others, could salvage
-  more data.
+* modify the way recv_backup works for more reliability.
   Implementation notes:
   * recv_backup should attempt to receive as much data as the calculator sends,
-    and then split the received data;
+    and then split the received data. The main heuristic would be to assume
+    that some packets were lost, and traverse backwards the contents of the
+    current file to find a (00) F7 01 xx xx xx xx packet ? While this could
+    fail in some circumstances, it should usually salvage more data.
   * recv_file shall probably be refactored as well;
-  * a field in file_entry for indicating whether the data is valid should be
-    added.
 * when sending a file, filter out the leading UTF-16 LE BOM, if any, for
   several file types;
 * actually use translation framework in the code, beyond requiring intltool
