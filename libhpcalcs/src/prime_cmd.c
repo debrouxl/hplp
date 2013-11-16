@@ -404,6 +404,16 @@ HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry
         if (pkt != NULL) {
             uint8_t * ptr;
             uint16_t crc16;
+            uint32_t offset = 0;
+
+            // Some text editors add the UTF-16LE BOM at the beginning of the file, but the SDKV0.30 firmware version chokes on it.
+            // Therefore, skip the BOM.
+            if (   (file->type == PRIME_TYPE_PRGM || file->type == PRIME_TYPE_NOTE)
+                && (file->data[0] == 0xFF && file->data[1] == 0xFE)
+               ) {
+                offset = 2;
+                size -= 2;
+            }
 
             pkt->cmd = CMD_PRIME_RECV_FILE;
             ptr = pkt->data;
@@ -421,7 +431,7 @@ HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry
             *ptr++ = 0x00;
             memcpy(ptr, file->name, namelen);
             ptr += namelen;
-            memcpy(ptr, file->data, file->size);
+            memcpy(ptr, file->data + offset, file->size - offset);
             crc16 = crc16_block(pkt->data, size); // Yup, the last 6 bytes of the packet are excluded from the CRC.
             pkt->data[8] = crc16 & 0xFF;
             pkt->data[9] = (crc16 >> 8) & 0xFF;

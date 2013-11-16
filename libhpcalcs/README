@@ -4,7 +4,7 @@ hplp: code for communicating with recent HP calculators
 hplp (still entirely in libhpcalcs for now) is the beginning of a toolkit for
 two-way communications with HP Prime calculators.
 
-Status (2013/11/10)
+Status (2013/11/16)
 -------------------
 The code base does:
 * support communication with a single Prime calculator connected to the
@@ -13,7 +13,8 @@ The code base does:
   versions, if HP performs backwards-incompatible changes in the protocol
   (like TI does);
 * implement six operations (without _known_ bugs): ready check, get calculator
-  information, receive screenshot, send file, receive file, receive backup;
+  information, receive screenshot, send file, receive file, receive backup,
+  set date and time;
 * provide a terminal-based UI: the test program "test_hpcalcs".
 
 The code base doesn't:
@@ -96,10 +97,9 @@ TODO list
     current file to find a (00) F7 01 xx xx xx xx packet ? While this could
     fail in some circumstances, it should usually salvage more data.
   * recv_file shall probably be refactored as well;
-* when sending a file, filter out the leading UTF-16 LE BOM, if any, for
-  several file types;
-* actually use translation framework in the code, beyond requiring intltool
-  in configure;
+* implement screenshot color conversion, with libpng 1.6 (which has a much more
+friendly "simplified" API than previous versions), even if Debian doesn't
+package libpng 1.6 (or even 1.4);
 * fill in torture test;
 * somehow gain better knowledge of the protocol, so as to be able to...
 * ... add more operations and data structures. 
