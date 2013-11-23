@@ -89,7 +89,6 @@ HPEXPORT const char* HPCALL hpcables_version_get(void);
  * \brief Gets the error message if the error was produced by this library
  * \param number the error number
  * \param message out pointer for a newly allocated text error message, which must be freed by the caller
- *
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
  **/
 HPEXPORT int HPCALL hpcables_error_get(int number, char **message);

@@ -33,6 +33,7 @@
 #include "prime_cmd.h"
 #include "logging.h"
 #include "error.h"
+#include "utils.h"
 
 #include <inttypes.h>
 #include <stdlib.h>
@@ -113,16 +114,6 @@ static int read_vtl_pkt(calc_handle * handle, uint8_t cmd, prime_vtl_pkt ** pkt,
         hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
     }
     return res;
-}
-
-// Plain C equivalent of char_traits<char16_t>::length.
-static uint32_t char16_strlen(char16_t * str) {
-    uint32_t i = 0;
-    while (*str) {
-        i++;
-        str++;
-    }
-    return i;
 }
 
 HPEXPORT int HPCALL calc_prime_s_check_ready(calc_handle * handle) {

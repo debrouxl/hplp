@@ -58,8 +58,10 @@ typedef enum {
     ERR_CALC_INVALID_FNCTS,
     ERR_CALC_PACKET_FORMAT,
     ERR_CALC_SPLIT_TIMESTAMP,
-    ERR_CALC_LAST = 511
+    ERR_CALC_LAST = 511,
 
+    ERR_OPER_FIRST = 512,
+    ERR_OPER_LAST = 639
 } hplibs_error;
 
 #endif

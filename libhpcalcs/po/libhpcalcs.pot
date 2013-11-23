@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-11-16 09:01+0100\n"
+"POT-Creation-Date: 2013-11-23 20:13+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,8 @@ msgstr ""
 msgid "Cannot understand filename"
 msgstr ""
 
-#: src/error.c:52 src/error.c:91 src/error.c:130 src/error.c:171
+#: src/error.c:52 src/error.c:91 src/error.c:130 src/error.c:151
+#: src/error.c:191
 msgid "<Unknown error code>"
 msgstr ""
 
@@ -65,23 +66,23 @@ msgstr ""
 msgid "Unable to get time constituents"
 msgstr ""
 
-#: src/error.c:156
+#: src/error.c:176
 msgid "Failed to allocate memory"
 msgstr ""
 
-#: src/error.c:159
+#: src/error.c:179
 msgid "Invalid handle pointer"
 msgstr ""
 
-#: src/error.c:162
+#: src/error.c:182
 msgid "Invalid function parameter"
 msgstr ""
 
-#: src/error.c:165
+#: src/error.c:185
 msgid "Invalid model"
 msgstr ""
 
-#: src/error.c:168
+#: src/error.c:188
 msgid "Problem initializing the library"
 msgstr ""
 
@@ -90,7 +91,7 @@ msgstr ""
 msgid "hpcables library version %s compiled on %s"
 msgstr ""
 
-#: src/hpcables.c:64 src/hpcalcs.c:58 src/hpfiles.c:83
+#: src/hpcables.c:64 src/hpcalcs.c:58 src/hpfiles.c:84
 #, c-format
 msgid "%s: init succeeded"
 msgstr ""
@@ -100,7 +101,7 @@ msgstr ""
 msgid "%s: init failed"
 msgstr ""
 
-#: src/hpcables.c:78 src/hpcalcs.c:64 src/hpfiles.c:89
+#: src/hpcables.c:78 src/hpcalcs.c:64 src/hpfiles.c:90
 #, c-format
 msgid "%s: exit succeeded"
 msgstr ""
@@ -110,7 +111,7 @@ msgstr ""
 msgid "hpcalcs library version %s compiled on %s"
 msgstr ""
 
-#: src/hpfiles.c:82
+#: src/hpfiles.c:83
 #, c-format
 msgid "hpfiles library version %s compiled on %s"
 msgstr ""

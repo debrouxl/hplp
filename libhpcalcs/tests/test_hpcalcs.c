@@ -41,6 +41,7 @@
 #include "../src/hpfiles.h"
 #include "../src/hpcables.h"
 #include "../src/hpcalcs.h"
+#include "../src/hpopers.h"
 #include "../src/prime_cmd.h"
 
 #undef VERSION
@@ -463,6 +464,10 @@ int main(int argc, char **argv) {
     if (res) {
         return 1;
     }
+    res = hpopers_init(output_log_callback);
+    if (res) {
+        return 1;
+    }
 
     cable = hpcables_handle_new(model1);
     if (cable == NULL) {
@@ -536,6 +541,7 @@ del_cable:
 
 final_teardown:
     printf("Exiting program\n");
+    hpopers_exit();
     hpcalcs_exit();
     hpcables_exit();
     hpfiles_exit();

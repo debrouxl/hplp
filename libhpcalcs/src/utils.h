@@ -1,5 +1,5 @@
 /*
- * libhpfiles, libhpcables, libhpcalcs: hand-helds support libraries.
+ * libhpfiles, libhpcables, libhpcalcs - hand-helds support library
  * Copyright (C) 2013 Lionel Debroux
  * Code patterns and snippets borrowed from libticables & libticalcs:
  * Copyright (C) 1999-2009 Romain Liévin
@@ -22,35 +22,15 @@
  */
 
 /**
- * \file logging.h Logging primitives.
+ * \file utils.h Files / Cables / Calcs: utility functions, e.g. UTF-16LE handling.
  */
 
-#ifndef __HPLIBS_LOGGING_H__
-#define __HPLIBS_LOGGING_H__
+#ifndef __HPLIBS_UTILS_H__
+#define __HPLIBS_UTILS_H__
 
-#include <stdarg.h>
-
-void hpfiles_debug (const char *format, ...);
-void hpfiles_info (const char *format, ...);
-void hpfiles_warning (const char *format, ...);
-void hpfiles_error (const char *format, ...);
-
-
-void hpcables_debug (const char *format, ...);
-void hpcables_info (const char *format, ...);
-void hpcables_warning (const char *format, ...);
-void hpcables_error (const char *format, ...);
-
-
-void hpcalcs_debug (const char *format, ...);
-void hpcalcs_info (const char *format, ...);
-void hpcalcs_warning (const char *format, ...);
-void hpcalcs_error (const char *format, ...);
-
-
-void hpopers_debug (const char *format, ...);
-void hpopers_info (const char *format, ...);
-void hpopers_warning (const char *format, ...);
-void hpopers_error (const char *format, ...);
+//! Plain C equivalent of char_traits<char16_t>::length.
+uint32_t char16_strlen(char16_t * str);
+//! strncpy applied to char16_t.
+char16_t * char16_strncpy(char16_t * dst, const char16_t * src, uint32_t n);
 
 #endif

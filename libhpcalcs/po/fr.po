@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-11-16 09:01+0100\n"
+"POT-Creation-Date: 2013-11-23 20:13+0100\n"
 "PO-Revision-Date: 2013-11-11 16:58+0100\n"
 "Last-Translator: Lionel Debroux <lionel_debroux@yahoo.fr>\n"
 "Language-Team: Français <lionel_debroux@yahoo.fr>\n"
@@ -20,7 +20,8 @@ msgstr ""
 msgid "Cannot understand filename"
 msgstr "Nom de fichier non géré"
 
-#: src/error.c:52 src/error.c:91 src/error.c:130 src/error.c:171
+#: src/error.c:52 src/error.c:91 src/error.c:130 src/error.c:151
+#: src/error.c:191
 msgid "<Unknown error code>"
 msgstr "<Code d'erreur inconnu>"
 
@@ -64,23 +65,23 @@ msgstr "Format de paquet non géré"
 msgid "Unable to get time constituents"
 msgstr "Impossible d'obtenir les éléments du temps"
 
-#: src/error.c:156
+#: src/error.c:176
 msgid "Failed to allocate memory"
 msgstr "Impossible d'allouer de la mémoire"
 
-#: src/error.c:159
+#: src/error.c:179
 msgid "Invalid handle pointer"
 msgstr "Pointeur handle invalide"
 
-#: src/error.c:162
+#: src/error.c:182
 msgid "Invalid function parameter"
 msgstr "Paramètre de fonction invalide"
 
-#: src/error.c:165
+#: src/error.c:185
 msgid "Invalid model"
 msgstr "Modèle invalide"
 
-#: src/error.c:168
+#: src/error.c:188
 msgid "Problem initializing the library"
 msgstr "Problème d'initialisation de la librairie"
 
@@ -89,7 +90,7 @@ msgstr "Problème d'initialisation de la librairie"
 msgid "hpcables library version %s compiled on %s"
 msgstr "librairie hpcables version %s compilée le %s"
 
-#: src/hpcables.c:64 src/hpcalcs.c:58 src/hpfiles.c:83
+#: src/hpcables.c:64 src/hpcalcs.c:58 src/hpfiles.c:84
 #, c-format
 msgid "%s: init succeeded"
 msgstr "%s: init réussie"
@@ -99,7 +100,7 @@ msgstr "%s: init réussie"
 msgid "%s: init failed"
 msgstr "%s: init ratée"
 
-#: src/hpcables.c:78 src/hpcalcs.c:64 src/hpfiles.c:89
+#: src/hpcables.c:78 src/hpcalcs.c:64 src/hpfiles.c:90
 #, c-format
 msgid "%s: exit succeeded"
 msgstr "%s: désinitialisation réussie"
@@ -109,7 +110,7 @@ msgstr "%s: désinitialisation réussie"
 msgid "hpcalcs library version %s compiled on %s"
 msgstr "librairie hpcalcs version %s compilée le %s"
 
-#: src/hpfiles.c:82
+#: src/hpfiles.c:83
 #, c-format
 msgid "hpfiles library version %s compiled on %s"
 msgstr "librairie hpfiles version %s compilée le %s"

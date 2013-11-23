@@ -40,6 +40,7 @@
 #include <hpfiles.h>
 #include "logging.h"
 #include "error.h"
+#include "utils.h"
 #include "gettext.h"
 
 // not static, must be shared between instances
@@ -71,10 +72,10 @@ HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_lis
         strcpy(locale_dir, LOCALEDIR);
 #endif
 
-        hpcalcs_info("setlocale: %s", setlocale(LC_ALL, ""));
-        hpcalcs_info("bindtextdomain: %s", bindtextdomain(PACKAGE, locale_dir));
+        hpfiles_info("setlocale: %s", setlocale(LC_ALL, ""));
+        hpfiles_info("bindtextdomain: %s", bindtextdomain(PACKAGE, locale_dir));
         bind_textdomain_codeset(PACKAGE, "UTF-8"/*"ISO-8859-15"*/);
-        hpcalcs_info("textdomain: %s", textdomain(NULL));
+        hpfiles_info("textdomain: %s", textdomain(NULL));
     }
 #endif
 
@@ -113,6 +114,10 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_size(uint32_t size) {
         }
     }
 
+    if (ve == NULL) {
+        hpfiles_error("%s: failed to create ve", __FUNCTION__);
+    }
+
     return ve;
 }
 
@@ -121,13 +126,74 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, ui
     if (ve != NULL) {
         ve->data = (uint8_t *)malloc(size);
         if (ve->data != NULL) {
-            memcpy(ve->data, data, size);
+            if (data != NULL) {
+                memcpy(ve->data, data, size);
+            }
             ve->size = size;
         }
         else {
             free(ve);
             ve = NULL;
         }
+    }
+
+    if (ve == NULL) {
+        hpfiles_error("%s: failed to create ve", __FUNCTION__);
+    }
+
+    return ve;
+}
+
+HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data_and_name(uint8_t * data, uint32_t size, const char16_t * name) {
+    files_var_entry * ve = hpfiles_ve_create_with_data(data, size);
+    if (ve != NULL) {
+        char16_strncpy(ve->name, name, FILES_VARNAME_MAXLEN);
+    }
+
+    if (ve == NULL) {
+        hpfiles_error("%s: failed to create ve", __FUNCTION__);
+    }
+
+    return ve;
+}
+
+HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_from_file(FILE * file, const char16_t * filename) {
+    files_var_entry * ve = NULL;
+    if (file != NULL) {
+        if (!fseek(file, 0, SEEK_END)) {
+            long size = ftell(file);
+            if (size != -1) {
+                if (!fseek(file, 0, SEEK_END)) {
+                    // No calculator has 4 GB memory, let alone handle 4 GB variables, so let's (potentially) truncate long to uint32_t.
+                    ve = hpfiles_ve_create_with_size((uint32_t)size);
+                    if (ve != NULL) {
+                        if (fread(ve->data, 1, (uint32_t)size, file) == (uint32_t)size) {
+                            char16_strncpy(ve->name, filename, FILES_VARNAME_MAXLEN);
+                        }
+                        else {
+                            hpfiles_error("%s: couldn't read from file", __FUNCTION__);
+                        }
+                    }
+                    // else fall through
+                }
+                else {
+                    hpfiles_error("%s: couldn't seek to BOF", __FUNCTION__);
+                }
+            }
+            else {
+                hpfiles_error("%s: couldn't obtain file size", __FUNCTION__);
+            }
+        }
+        else {
+            hpfiles_error("%s: couldn't seek to EOF", __FUNCTION__);
+        }
+    }
+    else {
+        hpfiles_error("%s: file is NULL", __FUNCTION__);
+    }
+
+    if (ve == NULL) {
+        hpfiles_error("%s: failed to create ve", __FUNCTION__);
     }
 
     return ve;
@@ -190,6 +256,10 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_dup(files_var_entry * src) {
     }
     else {
         hpfiles_error("%s: src is NULL", __FUNCTION__);
+    }
+
+    if (dst == NULL) {
+        hpfiles_error("%s: failed to create ve", __FUNCTION__);
     }
 
     return dst;

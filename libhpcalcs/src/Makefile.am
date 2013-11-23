@@ -8,7 +8,7 @@ SUBDIRS =
 lib_LTLIBRARIES = libhpcalcs.la
 libhpcalcs_includedir = $(includedir)/hplp
 libhpcalcs_include_HEADERS = \
-	hplibs.h export.h hpfiles.h hpcables.h hpcalcs.h \
+	hplibs.h export.h hpfiles.h hpcables.h hpcalcs.h hpopers.h \
 	filetypes.h typesprime.h \
 	prime_cmd.h
 
@@ -33,8 +33,8 @@ libhpcalcs_la_LIBADD = $(LIBINTL) \
 endif
 
 libhpcalcs_la_SOURCES = *.h \
-	hpfiles.c hpcables.c hpcalcs.c \
-	error.c logging.c type2str.c \
+	hpfiles.c hpcables.c hpcalcs.c hpopers.c \
+	error.c logging.c utils.c type2str.c \
 	filetypes.c typesprime.c \
 	link_prime_hid.c \
 	prime_rpkt.c prime_vpkt.c prime_cmd.c calc_prime.c

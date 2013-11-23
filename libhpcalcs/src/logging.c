@@ -53,14 +53,17 @@ hplibs_logging_level hpcables_log_level = LOG_LEVEL_ALL;
 void (*hpcalcs_log_callback)(const char *format, va_list args);
 hplibs_logging_level hpcalcs_log_level = LOG_LEVEL_ALL;
 
+void (*hpopers_log_callback)(const char *format, va_list args);
+hplibs_logging_level hpopers_log_level = LOG_LEVEL_ALL;
+
 
 #define DEBUG_FUNC_BODY(lib, level) \
     if (lib##_log_callback != NULL && lib##_log_level <= LOG_LEVEL_##level) { \
         va_list args; \
         char * format2; \
         va_start (args, format); \
-        format2 = (char *)alloca(strlen(format) + sizeof("hpfiles " #level ": ") + 10); \
-        sprintf(format2, "hpfiles " #level ": %s\n", format); \
+        format2 = (char *)alloca(strlen(format) + sizeof(#lib " " #level ": ") + 10); \
+        sprintf(format2, #lib " " #level ": %s\n", format); \
         (*lib##_log_callback)(format2, args); \
     }
 
@@ -144,4 +147,32 @@ void hpcalcs_warning (const char *format, ...) {
 
 void hpcalcs_error (const char *format, ...) {
     DEBUG_FUNC_BODY(hpcalcs, ERROR)
+}
+
+
+
+HPEXPORT void HPCALL hpopers_log_set_callback(void (*log_callback)(const char *format, va_list args)) {
+    hpopers_log_callback = log_callback;
+}
+
+HPEXPORT hplibs_logging_level HPCALL hpopers_log_set_level(hplibs_logging_level log_level) {
+    hplibs_logging_level ret = hpopers_log_level;
+    hpopers_log_level = log_level;
+    return ret;
+}
+
+void hpopers_debug (const char *format, ...) {
+    DEBUG_FUNC_BODY(hpopers, DEBUG)
+}
+
+void hpopers_info (const char *format, ...) {
+    DEBUG_FUNC_BODY(hpopers, INFO)
+}
+
+void hpopers_warning (const char *format, ...) {
+    DEBUG_FUNC_BODY(hpopers, WARN)
+}
+
+void hpopers_error (const char *format, ...) {
+    DEBUG_FUNC_BODY(hpopers, ERROR)
 }

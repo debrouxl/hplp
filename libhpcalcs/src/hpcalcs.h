@@ -50,7 +50,7 @@ typedef enum {
     CALC_FNCT_SEND_FILE = 4,
     CALC_FNCT_RECV_FILE = 5,
     CALC_FNCT_RECV_BACKUP = 6,
-    CALC_FNCT_LAST // Keep this one last
+    CALC_FNCT_LAST ///< Keep this one last
 } calc_fncts_idx;
 
 //! Used in the bit field of _calc_fncts, indicating whether a given calculator supports a given operation.
@@ -73,7 +73,7 @@ typedef enum {
     CALC_SCREENSHOT_FORMAT_PRIME_PNG_320x240x4 = 9,
     CALC_SCREENSHOT_FORMAT_PRIME_PNG_160x120x16 = 10,
     CALC_SCREENSHOT_FORMAT_PRIME_PNG_160x120x4 = 11,
-    CALC_SCREENSHOT_FORMAT_LAST // Keep this one last
+    CALC_SCREENSHOT_FORMAT_LAST ///< Keep this one last
 } calc_screenshot_format;
 
 //! Structure containing information returned by the calculator. This will change a lot when the returned data is better documented.
@@ -246,7 +246,7 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_screen(calc_handle * handle, calc_screensh
 /**
  * \brief Sends a file to the calculator.
  * \param handle the calculator handle.
- * \param file information about the the file to be sent.
+ * \param file information about the file to be sent.
  * \return 0 upon success, nonzero otherwise.
  */
 HPEXPORT int HPCALL hpcalcs_calc_send_file(calc_handle * handle, files_var_entry * file);
@@ -265,6 +265,7 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_file(calc_handle * handle, files_var_entry
  * \return 0 upon success, nonzero otherwise.
  */
 HPEXPORT int HPCALL hpcalcs_calc_recv_backup(calc_handle * handle, files_var_entry *** out_vars);
+
 
 /**
  * \brief Sends the given raw packet to the Prime calculator using given calculator handle.

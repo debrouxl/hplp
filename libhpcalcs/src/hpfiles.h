@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 // As of 2013/11, too many environments still don't support <uchar.h>.
 // Since the only thing from this header libhpfiles uses (for now) is char16_t:
@@ -89,7 +90,6 @@ HPEXPORT const char* HPCALL hpfiles_version_get(void);
  * \brief Gets the error message if the error was produced by this library
  * \param number the error number (from internal error.h)
  * \param message out pointer for a newly allocated text error message, which must be freed by the caller
- *
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
  **/
 HPEXPORT int HPCALL hpfiles_error_get(int number, char **message);
@@ -105,6 +105,7 @@ HPEXPORT void HPCALL hpfiles_log_set_callback(void (*log_callback)(const char *f
  * \return the previous log level
  */
 HPEXPORT hplibs_logging_level HPCALL hpfiles_log_set_level(hplibs_logging_level log_level);
+
 
 /**
  * \brief Creates an empty files_var_entry structure.
@@ -124,6 +125,21 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_size(uint32_t size);
  * \return Pointer to files_var_entry, NULL if failed.
  */
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, uint32_t size);
+/**
+ * \brief Creates and fills a files_var_entry structure with the given data.
+ * \param data the data to be copied
+ * \param size the size of the data.
+ * \param name the file name on the calculator side.
+ * \return Pointer to files_var_entry, NULL if failed.
+ */
+HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data_and_name(uint8_t * data, uint32_t size, const char16_t * name);
+/**
+ * \brief Creates and fills a files_var_entry structure from the given file, if it exists.
+ * \param file the FILE pointer to be used for filling in a files_var_entry instance.
+ * \param filename the UTF-16LE name of the file on the calculator side, can be NULL if you want to set it later.
+ * \return Pointer to files_var_entry, NULL if failed.
+ */
+HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_from_file(FILE * file, const char16_t * filename);
 /**
  * \brief Destroys the given files_var_entry instance (embedded data + the entry itself).
  * \param entry the entry
@@ -218,7 +234,6 @@ HPEXPORT const char * HPCALL hpfiles_vartype2fext(calc_model model, uint8_t type
  * \param model the calculator model
  * \param type the file type as string.
  * \return the file type ID corresponding to the given extension, if any.
- * \note may have to use char16_t instead of char...
  */
 HPEXPORT uint8_t HPCALL hpfiles_fext2vartype(calc_model model, const char * type);
 /**
@@ -226,7 +241,6 @@ HPEXPORT uint8_t HPCALL hpfiles_fext2vartype(calc_model model, const char * type
  * \param model the calculator model
  * \param filepath the file path as string.
  * \return the file type ID corresponding to the given file, if any.
- * \note may have to use char16_t instead of char...
  */
 HPEXPORT uint8_t HPCALL hpfiles_filename2vartype(calc_model model, const char * filepath);
 /**

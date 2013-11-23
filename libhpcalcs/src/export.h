@@ -1,4 +1,5 @@
-/* libhpfiles, libhpcables, libhpcalcs - hand-helds support library
+/*
+ * libhpfiles, libhpcables, libhpcalcs - hand-helds support library
  * Copyright (C) 2013 Lionel Debroux
  * Code patterns and snippets borrowed from libticables & libticalcs:
  * Copyright (C) 1999-2009 Romain Liévin

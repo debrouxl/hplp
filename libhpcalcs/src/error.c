@@ -143,6 +143,26 @@ HPEXPORT int HPCALL hpcalcs_error_get (int number, char **message) {
     }
 }
 
+HPEXPORT int HPCALL hpopers_error_get (int number, char **message) {
+    if (message != NULL) {
+        if (number >= ERR_OPER_FIRST && number <= ERR_OPER_LAST) {
+            switch (number) {
+                default:
+                    *message = strdup(_("<Unknown error code>"));
+                    break;
+            }
+            return 0;
+        }
+        else {
+            *message = NULL;
+            return number;
+        }
+    }
+    else {
+        hpopers_error("%s: message is NULL", __FUNCTION__);
+        return number;
+    }
+}
 
 HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
     int err = number;
@@ -183,8 +203,15 @@ HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
                     free(s);
                     err = hpcalcs_error_get(err, &s);
                     if (err) {
-                        // next level: not a libhp* error.
                         free(s);
+                        err = hpopers_error_get(err, &s);
+                        if (err) {
+                            // next level: not a libhp* error.
+                            free(s);
+                        }
+                        else {
+                            hpopers_info("%s\n", s);
+                        }
                     }
                     else {
                         hpcalcs_info("%s\n", s);
