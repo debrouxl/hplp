@@ -30,6 +30,6 @@
 
 #include "typesprime.h"
 
-#define FILE_TYPE_UNKNOWN (0xFF)
+#define HPLIBS_FILE_TYPE_UNKNOWN (0xFF)
 
 #endif

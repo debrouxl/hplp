@@ -261,7 +261,7 @@ static int send_file(calc_handle * handle) {
             if (entry != NULL) {
                 char * calcfilename = NULL;
                 if (!hpfiles_parsefilename(hpcalcs_get_model(handle), filename, &type, &calcfilename)) {
-                    if (type != FILE_TYPE_UNKNOWN && calcfilename != NULL) {
+                    if (type != HPLIBS_FILE_TYPE_UNKNOWN && calcfilename != NULL) {
                         entry->type = type;
                         if (fread(entry->data, 1, size, f) == size) {
                             crude_convert_8bit_to_UTF16LE(calcfilename, entry->name);
@@ -321,7 +321,7 @@ static int recv_file(calc_handle * handle) {
         err = scanf("%10s", typestr);
         if (err >= 1) {
             uint8_t type = hpfiles_str2vartype(hpcalcs_get_model(handle), typestr);
-            if (type != FILE_TYPE_UNKNOWN) {
+            if (type != HPLIBS_FILE_TYPE_UNKNOWN) {
                 /*const char * fext = hpfiles_vartype2fext(hpcalcs_get_model(handle), type);
                 if (fext != NULL && fext[0] != 0) {
                     wcscat(request.name, L".");

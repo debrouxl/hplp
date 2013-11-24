@@ -48,14 +48,14 @@ HPEXPORT const char * HPCALL hpfiles_vartype2str(calc_model model, uint8_t type)
 HPEXPORT uint8_t HPCALL hpfiles_str2vartype(calc_model model, const char * type) {
     if (type == NULL) {
         hpfiles_error("%s: invalid type argument", __FUNCTION__);
-        return FILE_TYPE_UNKNOWN;
+        return HPLIBS_FILE_TYPE_UNKNOWN;
     }
     switch (model) {
         case CALC_PRIME:
             return prime_str2vartype(type);
         default:
             hpfiles_error("%s: invalid model argument", __FUNCTION__);
-            return FILE_TYPE_UNKNOWN;
+            return HPLIBS_FILE_TYPE_UNKNOWN;
     }
 }
 
@@ -72,28 +72,28 @@ HPEXPORT const char * HPCALL hpfiles_vartype2fext(calc_model model, uint8_t type
 HPEXPORT uint8_t HPCALL hpfiles_fext2vartype(calc_model model, const char * type) {
     if (type == NULL) {
         hpfiles_error("%s: invalid type argument", __FUNCTION__);
-        return FILE_TYPE_UNKNOWN;
+        return HPLIBS_FILE_TYPE_UNKNOWN;
     }
     switch (model) {
         case CALC_PRIME:
             return prime_fext2byte(type);
         default:
             hpfiles_error("%s: invalid model argument", __FUNCTION__);
-            return FILE_TYPE_UNKNOWN;
+            return HPLIBS_FILE_TYPE_UNKNOWN;
     }
 }
 
 HPEXPORT uint8_t HPCALL hpfiles_filename2vartype(calc_model model, const char * filepath) {
     if (filepath == NULL) {
         hpfiles_error("%s: invalid filepath argument", __FUNCTION__);
-        return FILE_TYPE_UNKNOWN;
+        return HPLIBS_FILE_TYPE_UNKNOWN;
     }
     switch (model) {
         case CALC_PRIME:
             return prime_filename2byte(filepath);
         default:
             hpfiles_error("%s: invalid model argument", __FUNCTION__);
-            return FILE_TYPE_UNKNOWN;
+            return HPLIBS_FILE_TYPE_UNKNOWN;
     }
 }
 
@@ -107,6 +107,6 @@ HPEXPORT int HPCALL hpfiles_parsefilename(calc_model model, const char * filepat
             return prime_parsefilename(filepath, out_type, out_calcfilename);
         default:
             hpfiles_error("%s: invalid model argument", __FUNCTION__);
-            return FILE_TYPE_UNKNOWN;
+            return HPLIBS_FILE_TYPE_UNKNOWN;
     }
 }
