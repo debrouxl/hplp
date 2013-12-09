@@ -652,3 +652,46 @@ HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_ent
     }
     return res;
 }
+
+HPEXPORT int HPCALL calc_prime_s_send_key(calc_handle * handle, uint32_t code) {
+    int res;
+    if (handle != NULL) {
+        prime_vtl_pkt * pkt = prime_vtl_pkt_new(8);
+        if (pkt != NULL) {
+            uint8_t * ptr;
+
+            pkt->cmd = CMD_PRIME_SEND_KEY;
+            ptr = pkt->data;
+            *ptr++ = CMD_PRIME_SEND_KEY;
+            *ptr++ = 0x01;
+            *ptr++ = 0x00;
+            *ptr++ = 0x00;
+            *ptr++ = 0x00;
+            *ptr++ = 0x01;
+            *ptr++ = (uint8_t)code;
+            res = prime_send_data(handle, pkt);
+            prime_vtl_pkt_del(pkt);
+        }
+        else {
+            res = ERR_MALLOC;
+            hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_INVALID_PARAMETER;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_r_send_key(calc_handle * handle) {
+    int res = 0;
+    if (handle != NULL) {
+        // There doesn't seem anything to do, beyond eliminating packets starting with 0xFF.
+        res = calc_prime_r_check_ready(handle, NULL, NULL);
+    }
+    else {
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}

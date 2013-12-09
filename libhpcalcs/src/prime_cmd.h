@@ -34,6 +34,7 @@
 #define CMD_PRIME_RECV_BACKUP (0xF9)
 #define CMD_PRIME_REQ_FILE (0xF8)
 #define CMD_PRIME_RECV_FILE (0xF7)
+#define CMD_PRIME_SEND_KEY (0xEC)
 #define CMD_PRIME_SET_DATE_TIME (0xE7)
 
 HPEXPORT int HPCALL calc_prime_s_check_ready(calc_handle * handle);
@@ -56,5 +57,8 @@ HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry
 
 HPEXPORT int HPCALL calc_prime_s_recv_backup(calc_handle * handle);
 HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_entry *** out_vars);
+
+HPEXPORT int HPCALL calc_prime_s_send_key(calc_handle * handle, uint32_t code);
+HPEXPORT int HPCALL calc_prime_r_send_key(calc_handle * handle);
 
 #endif

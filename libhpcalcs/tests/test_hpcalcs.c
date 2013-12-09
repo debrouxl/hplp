@@ -378,6 +378,29 @@ static int recv_backup(calc_handle * handle) {
     return res;
 }
 
+static int send_key(calc_handle * handle) {
+    int res = 0;
+    int err;
+    unsigned int type;
+
+    printf("Enter key ID:");
+    err = scanf("%u", &type);
+    if (err >= 1) {
+        res = hpcalcs_calc_send_key(handle, type);
+        if (res == 0) {
+            printf("hpcalcs_calc_send_key succeeded\n");
+        }
+        else {
+            printf("hpcalcs_calc_send_key failed\n");
+        }
+    }
+    else {
+        printf("Canceled\n");
+    }
+
+    return res;
+}
+
 static int vpkt_send_experiments(calc_handle * handle) {
     int res = 0;
     int err;
@@ -416,7 +439,7 @@ static int vpkt_send_experiments(calc_handle * handle) {
     return res;
 }
 
-#define NITEMS	9
+#define NITEMS	10
 
 static const char *str_menu[NITEMS] = {
     "Exit",
@@ -427,6 +450,7 @@ static const char *str_menu[NITEMS] = {
     "Send file",
     "Receive file",
     "Receive backup",
+    "Send key",
     "Virtual packet send experiments"
 };
 
@@ -441,6 +465,7 @@ static const FNCT_MENU fnct_menu[NITEMS] = {
     send_file,
     recv_file,
     recv_backup,
+    send_key,
     vpkt_send_experiments
 };
 

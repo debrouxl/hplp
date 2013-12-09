@@ -4,17 +4,19 @@ hplp: code for communicating with recent HP calculators
 hplp (still entirely in libhpcalcs for now) is the beginning of a toolkit for
 two-way communications with HP Prime calculators.
 
-Status (2013/11/16)
+Status (2013/12/09)
 -------------------
 The code base does:
+* work on Windows, Linux and MacOS X;
 * support communication with a single Prime calculator connected to the
   computer. The communication is known to work with the "SDKV0.30" firmware
-  version from mid-August 2013, but might not work with other older or newer
-  versions, if HP performs backwards-incompatible changes in the protocol
-  (like TI does);
-* implement six operations (without _known_ bugs): ready check, get calculator
-  information, receive screenshot, send file, receive file, receive backup,
-  set date and time;
+  version from mid-August 2013, and seems to work with the "SDKV0.32" firmware
+  version from late November 2013, but might not work with other older or
+  newer versions, if HP performs backwards-incompatible changes in the
+  protocol (like TI does);
+* implement eight operations (without _known_ bugs): ready check,
+  get calculator information, set date and time, receive screenshot, send file,
+  receive file, receive backup, send key;
 * provide a terminal-based UI: the test program "test_hpcalcs".
 
 The code base doesn't:
@@ -25,14 +27,13 @@ The code base doesn't:
 * provide a user-friendly GUI for the above, but a GUI can definitely build
   upon the library easily enough;
 * implement _proper_ conversion from UTF-16 LE to other charsets on its own:
-  that's a task for libicu, Qt or other libraries;
+  that's a task for libicu, Qt or other libraries.
 
 Goals
 -----
 Laying the groundwork for GUIs dealing with two-way communication with HP
-Prime calculators, and possibly 39gII (Prime and 39gII are supposed to be
-somewhat similar), using USB HID class, and possibly later fake MSD for
-firmware upgrades.
+Prime calculators, and possibly 39gII (Prime and 39gII are similar), using
+USB HID class, and possibly later fake MSD for firmware upgrades.
 
 Non-goals
 ---------
@@ -74,8 +75,7 @@ For now, the main external dependency is HIDAPI:
 https://github.com/signal11/hidapi.git
 Unless your Linux distro packages it, you need to compile and install it
 yourself (it is also an autotools-based project).
-The code base shall depend on libpng (probably 1.6, due to its more friendly
-API, even if Debian doesn't package it) when screenshot color conversion is
+The code base shall depend on libpng when screenshot color conversion is
 implemented.
 
 TODO list
@@ -89,6 +89,28 @@ TODO list
 * add devices probing code (the hpcables part currently assumes that the
   calculator is plugged in and that there's a single calculator), HIDAPI
   provides some probing functions (e.g. based on vendor);
+  Implementation notes:
+  * in order to minimize API breakage if/when implementing OS upgrade is
+    implemented, a data structure should be added for indicating what type of
+    device we're dealing with. For instance:
+struct cable_probing_info {
+    cable_model cable; // HID and MSD will be different cables
+    calc_model calc; // HID and MSD will probably be different calcs
+    union info {
+        struct usb_info {
+            uint16_t usb_vid;
+            uint16_t usb_pid;
+            enum <...> device_mode; // indicating whether HID or MSD mode
+        };
+    };
+};
+* add 39gII support, probably, as the Prime is similar to the 39gII. That's
+  where the usefulness of the cables / calcs separation and cables generic
+  API will become most obvious.
+  Implementation notes:
+  * move the upper layer from prime_cmd into a new file called by both
+    prime_cmd and the new file (like e.g. dusb_cmd in libticalcs).
+  * the 39gII has 00 00 CRC.
 * modify the way recv_backup works for more reliability.
   Implementation notes:
   * recv_backup should attempt to receive as much data as the calculator sends,
@@ -97,9 +119,16 @@ TODO list
     current file to find a (00) F7 01 xx xx xx xx packet ? While this could
     fail in some circumstances, it should usually salvage more data.
   * recv_file shall probably be refactored as well;
-* implement screenshot color conversion, with libpng 1.6 (which has a much more
-friendly "simplified" API than previous versions), even if Debian doesn't
-package libpng 1.6 (or even 1.4);
+  * Marcus Von Cube reported that when receiving a backup fails, the test
+    program crashes:
+"
+hpcalcs INFO: prime_send_data: send remaining failed
+hpcalcs ERROR: calc_prime_recv_backup: s_recv_backup failed
+hpcalcs ERROR: hpcalcs_calc_recv_backup: recv_backup failed
+hpfiles INFO: Displaying var entry 83EC8B55
+hpfiles INFO: Name: 
+"
+* implement screenshot color conversion, with libpng;
 * fill in torture test;
 * somehow gain better knowledge of the protocol, so as to be able to...
 * ... add more operations and data structures. 
@@ -110,9 +139,6 @@ package libpng 1.6 (or even 1.4);
   but I'm not really confident about it ;)
   Need to find a library for MSD. libusbx does not recommend using it
   in MSD mode.
-* add 39gII support, probably, as the Prime is supposed to be somewhat similar
-  to the 39gII. That's where the usefulness of the cables / calcs separation
-  and cables generic API will become most obvious.
 * certainly more... at least, if users and programmers think the software
   fits a purpose :-)
 
@@ -136,8 +162,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
 
 Changelog
 ---------
-2013/11/03 - 2013/11/xx: improve logging, create install_hplp.sh, improve
-error passing, fix bugs reported by more beta-testers.
+2013/11/03 - 2013/12/xx: improve logging, create install_hplp.sh, improve
+error passing, fix bugs reported by more beta-testers, add more operations.
 2013/10/22 - 2013/11/03: Created autotools-based project and test client;
 vastly expand the code, to the point it becomes releasable (if not really
 usable). First public announcement (limited scope).
@@ -150,9 +176,12 @@ Credits (demoscene style)
 * _many_ thanks to Xavier "critor" Andréani for testing many program versions
   on his real Prime and providing many USB packet dumps (which I analyzed
   with Wireshark) and terminal output sessions;
-* thanks to other beta-testers who reported bugs: persalteas (Linux),
-  wawachief (Linux & MacOS X), DJ Omnimaga (Windows), Adriweb (MacOS X,
-  Windows).
+* many thanks to Marcus Von Cube for providing USB packet dumps for the 39gII,
+  which show that it's quite similar to the Prime;
+* thanks to other beta-testers who reported bugs:
+  * with the Prime: persalteas (Linux), wawachief (Linux & MacOS X), DJ
+    Omnimaga (Windows), Adriweb (MacOS X, Windows);
+  * with the 39gII: Marcus Von Cube;
 * greetings to the other TI-Planet ( http://tiplanet.org/ ) admins;
 * greetings to the HP Prime developer team at HP: some of its members spend
   time attending user message boards and interacting with users and programmers,

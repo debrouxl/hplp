@@ -442,4 +442,37 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_backup(calc_handle * handle, files_var_ent
     return res;
 }
 
+HPEXPORT int HPCALL hpcalcs_calc_send_key(calc_handle * handle, uint32_t code) {
+    int res = -1;
+    if (handle != NULL) {
+        do {
+            int (*send_key) (calc_handle *, uint32_t);
+
+            DO_BASIC_HANDLE_CHECKS()
+
+            send_key = handle->fncts->send_key;
+            if (send_key != NULL) {
+                handle->busy = 1;
+                res = (*send_key)(handle, code);
+                if (res == 0) {
+                    hpcalcs_info("%s: send_key succeeded", __FUNCTION__);
+                }
+                else {
+                    hpcalcs_error("%s: send_key failed", __FUNCTION__);
+                }
+                handle->busy = 0;
+            }
+            else {
+                res = ERR_CALC_INVALID_FNCTS;
+                hpcalcs_error("%s: fncts->send_key is NULL", __FUNCTION__);
+            }
+        } while (0);
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
 #undef DO_BASIC_HANDLE_CHECKS
