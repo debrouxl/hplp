@@ -36,5 +36,6 @@ libhpcalcs_la_SOURCES = *.h \
 	hpfiles.c hpcables.c hpcalcs.c hpopers.c \
 	error.c logging.c utils.c type2str.c \
 	filetypes.c typesprime.c \
-	link_prime_hid.c \
-	prime_rpkt.c prime_vpkt.c prime_cmd.c calc_prime.c
+	link_prime_hid.c link_nul.c \
+	prime_rpkt.c prime_vpkt.c prime_cmd.c calc_prime.c \
+	calc_none.c

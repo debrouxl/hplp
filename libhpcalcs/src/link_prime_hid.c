@@ -91,7 +91,7 @@ static int cable_prime_hid_close (cable_handle * handle) {
     return res;
 }
 
-static int cable_prime_set_read_timeout (cable_handle * handle, int read_timeout) {
+static int cable_prime_hid_set_read_timeout (cable_handle * handle, int read_timeout) {
     int res;
     if (handle != NULL) {
         handle->read_timeout = read_timeout;
@@ -166,7 +166,7 @@ const cable_fncts cable_prime_hid_fncts =
     "Prime HID cable",
     &cable_prime_hid_open,
     &cable_prime_hid_close,
-    &cable_prime_set_read_timeout,
+    &cable_prime_hid_set_read_timeout,
     &cable_prime_hid_send,
     &cable_prime_hid_recv
 };

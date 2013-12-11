@@ -38,10 +38,11 @@
 #include "error.h"
 #include "gettext.h"
 
+extern const calc_fncts calc_none_fncts;
 extern const calc_fncts calc_prime_fncts;
 
 const calc_fncts * hpcalcs_all_calcs[CALC_MAX] = {
-    NULL,
+    &calc_none_fncts,
     &calc_prime_fncts
 };
 
@@ -73,7 +74,7 @@ HPEXPORT const char* HPCALL hpcalcs_version_get (void) {
 
 HPEXPORT calc_handle * HPCALL hpcalcs_handle_new(calc_model model) {
     calc_handle * handle = NULL;
-    if (model > CALC_NONE && model < CALC_MAX) {
+    if (model < CALC_MAX) {
         handle = (calc_handle *)calloc(1, sizeof(*handle));
 
         if (handle != NULL) {

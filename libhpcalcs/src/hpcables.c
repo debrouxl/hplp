@@ -39,10 +39,11 @@
 #include "gettext.h"
 
 
+extern const cable_fncts cable_nul_fncts;
 extern const cable_fncts cable_prime_hid_fncts;
 
 const cable_fncts * hpcables_all_cables[CABLE_MAX] = {
-    NULL,
+    &cable_nul_fncts,
     &cable_prime_hid_fncts
 };
 
@@ -87,7 +88,7 @@ HPEXPORT const char* HPCALL hpcables_version_get (void) {
 
 HPEXPORT cable_handle * HPCALL hpcables_handle_new(cable_model model) {
     cable_handle * handle = NULL;
-    if (model > CABLE_NONE && model < CABLE_MAX) {
+    if (model < CABLE_MAX) {
         handle = (cable_handle *)calloc(1, sizeof(*handle));
 
         if (handle != NULL) {
@@ -144,7 +145,7 @@ HPEXPORT int HPCALL hpcables_handle_display(cable_handle * handle) {
 }
 
 HPEXPORT cable_model HPCALL hpcables_get_model(cable_handle * handle) {
-    cable_model model = CABLE_NONE;
+    cable_model model = CABLE_NUL;
     if (handle != NULL) {
         model = handle->model;
     }

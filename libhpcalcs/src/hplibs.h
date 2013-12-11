@@ -32,7 +32,7 @@
 
 //! Enumeration of cable types.
 typedef enum {
-    CABLE_NONE = 0,
+    CABLE_NUL = 0,
     CABLE_PRIME_HID,
     CABLE_MAX
 } cable_model;
