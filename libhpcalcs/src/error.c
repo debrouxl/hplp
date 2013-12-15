@@ -41,7 +41,9 @@
 #include "error.h"
 #include "gettext.h"
 
-HPEXPORT int HPCALL hpfiles_error_get (int number, char **message) {
+HPEXPORT int HPCALL hpfiles_error_get(int number, char **message) {
+    int ret = number;
+    //hpfiles_debug("%s: entering", __FUNCTION__);
     if (message != NULL) {
         if (number >= ERR_FILE_FIRST && number <= ERR_FILE_LAST) {
             switch (number) {
@@ -52,20 +54,22 @@ HPEXPORT int HPCALL hpfiles_error_get (int number, char **message) {
                     *message = strdup(_("<Unknown error code>"));
                     break;
             }
-            return 0;
+            ret = 0;
         }
         else {
             *message = NULL;
-            return number;
         }
     }
     else {
         hpfiles_error("%s: message is NULL", __FUNCTION__);
-        return number;
     }
+    //hpfiles_debug("%s: exiting %d", __FUNCTION__, ret);
+    return ret;
 }
 
-HPEXPORT int HPCALL hpcables_error_get (int number, char **message) {
+HPEXPORT int HPCALL hpcables_error_get(int number, char **message) {
+    int ret = number;
+    //hpcables_debug("%s: entering", __FUNCTION__);
     if (message != NULL) {
         if (number >= ERR_CABLE_FIRST && number <= ERR_CABLE_LAST) {
             switch (number) {
@@ -91,20 +95,22 @@ HPEXPORT int HPCALL hpcables_error_get (int number, char **message) {
                     *message = strdup(_("<Unknown error code>"));
                     break;
             }
-            return 0;
+            ret = 0;
         }
         else {
             *message = NULL;
-            return number;
         }
     }
     else {
         hpcables_error("%s: message is NULL", __FUNCTION__);
-        return number;
     }
+    //hpcables_debug("%s: exiting %d", __FUNCTION__, ret);
+    return ret;
 }
 
-HPEXPORT int HPCALL hpcalcs_error_get (int number, char **message) {
+HPEXPORT int HPCALL hpcalcs_error_get(int number, char **message) {
+    int ret = number;
+    //hpcalcs_debug("%s: entering", __FUNCTION__);
     if (message != NULL) {
         if (number >= ERR_CALC_FIRST && number <= ERR_CALC_LAST) {
             switch (number) {
@@ -130,20 +136,22 @@ HPEXPORT int HPCALL hpcalcs_error_get (int number, char **message) {
                     *message = strdup(_("<Unknown error code>"));
                     break;
             }
-            return 0;
+            ret = 0;
         }
         else {
             *message = NULL;
-            return number;
         }
     }
     else {
         hpcalcs_error("%s: message is NULL", __FUNCTION__);
-        return number;
     }
+    //hpcalcs_debug("%s: exiting %d", __FUNCTION__, ret);
+    return ret;
 }
 
-HPEXPORT int HPCALL hpopers_error_get (int number, char **message) {
+HPEXPORT int HPCALL hpopers_error_get(int number, char **message) {
+    int ret = number;
+    //hpopers_debug("%s: entering", __FUNCTION__);
     if (message != NULL) {
         if (number >= ERR_OPER_FIRST && number <= ERR_OPER_LAST) {
             switch (number) {
@@ -151,17 +159,17 @@ HPEXPORT int HPCALL hpopers_error_get (int number, char **message) {
                     *message = strdup(_("<Unknown error code>"));
                     break;
             }
-            return 0;
+            ret = 0;
         }
         else {
             *message = NULL;
-            return number;
         }
     }
     else {
         hpopers_error("%s: message is NULL", __FUNCTION__);
-        return number;
     }
+    //hpopers_debug("%s: exiting %d", __FUNCTION__, ret);
+    return ret;
 }
 
 HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
@@ -170,7 +178,7 @@ HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
 
     if (message != NULL) {
         // Skip ERR_SUCCESS.
-        if (number > ERR_CALC_FIRST && number <= ERR_CALC_LAST) {
+        if (number > ERR_HPLIBS_GENERIC_FIRST && number <= ERR_HPLIBS_GENERIC_LAST) {
             switch (number) {
                 case ERR_MALLOC:
                     *message = strdup(_("Failed to allocate memory"));
@@ -208,6 +216,7 @@ HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
                         if (err) {
                             // next level: not a libhp* error.
                             free(s);
+                            s = NULL;
                         }
                         else {
                             hpopers_info("%s\n", s);
@@ -224,6 +233,8 @@ HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
             else {
                 hpfiles_info("%s\n", s);
             }
+
+            *message = s;
         }
     }
     else {

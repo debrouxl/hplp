@@ -114,6 +114,8 @@ handle_one_module() {
   ./configure "--prefix=$PREFIX" "CC=$CC" "CXX=$CXX" "CPPFLAGS=$CPPFLAGS" "CFLAGS=$CFLAGS" "CXXFLAGS=$CXXFLAGS" "LDFLAGS=$LDFLAGS" $@ || return 1
   echo "Building $module_name"
   make || return 1
+  echo "Checking $module_name"
+  make check || return 1
   echo "Installing $module_name"
   make install || return 1
   cd -
@@ -196,6 +198,7 @@ handle_repository_copies hplp
 echo "=== libhpcalcs ==="
 handle_one_module hplp/libhpcalcs || exit 1
 
-echo "=================================================="
-echo "=== libhp* installed successfully ==="
-echo "=================================================="
+echo "==================================================="
+echo "========== libhp* installed successfully =========="
+echo "==================================================="
+echo -e "\033[1mUnder Linux, if you want to use test_hpcalcs without being root, don't forget to create udev definitions (as described in the \033[4mREADME\033[m\033[1m) !\033[m"

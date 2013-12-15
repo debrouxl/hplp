@@ -22,12 +22,14 @@
  */
 
 /**
- * \file link_prime_hid.h Cables: Prime HID cable.
+ * \file link_prime_hid.c Cables: Prime HID cable.
  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+
+#include <inttypes.h>
 
 #include <hidapi.h>
 
@@ -38,7 +40,7 @@
 
 extern const cable_fncts cable_prime_hid_fncts;
 
-static int cable_prime_hid_open (cable_handle * handle) {
+static int cable_prime_hid_open(cable_handle * handle) {
     int res;
     if (handle != NULL) {
         hid_device * device_handle = hid_open(USB_VID_HP, USB_PID_PRIME, NULL);
@@ -64,13 +66,16 @@ static int cable_prime_hid_open (cable_handle * handle) {
     return res;
 }
 
-static int cable_prime_hid_close (cable_handle * handle) {
+static int cable_prime_hid_close(cable_handle * handle) {
     int res;
     if (handle != NULL) {
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
             if (handle->open) {
                 hid_close(device_handle);
+                handle->model = CABLE_NUL;
+                handle->handle = NULL;
+                handle->fncts = NULL;
                 res = ERR_SUCCESS;
                 hpcables_info("%s: cable close succeeded", __FUNCTION__);
             }
@@ -91,7 +96,7 @@ static int cable_prime_hid_close (cable_handle * handle) {
     return res;
 }
 
-static int cable_prime_hid_set_read_timeout (cable_handle * handle, int read_timeout) {
+static int cable_prime_hid_set_read_timeout(cable_handle * handle, int read_timeout) {
     int res;
     if (handle != NULL) {
         handle->read_timeout = read_timeout;
@@ -104,19 +109,25 @@ static int cable_prime_hid_set_read_timeout (cable_handle * handle, int read_tim
 }
 
 
-static int cable_prime_hid_send (cable_handle * handle, uint8_t * data, uint32_t len) {
+static int cable_prime_hid_send(cable_handle * handle, uint8_t * data, uint32_t len) {
     int res;
     if (handle != NULL && data != NULL) {
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
-            res = hid_write(device_handle, data, len);
-            if (res >= 0) {
-                res = ERR_SUCCESS;
-                hpcables_info("%s: wrote %d bytes", __FUNCTION__, res);
+            if (handle->open) {
+                res = hid_write(device_handle, data, len);
+                if (res >= 0) {
+                    res = ERR_SUCCESS;
+                    hpcables_info("%s: wrote %d bytes", __FUNCTION__, res);
+                }
+                else {
+                    res = ERR_CABLE_WRITE_ERROR;
+                    hpcables_error("%s: write failed %ls", __FUNCTION__, hid_error(device_handle));
+                }
             }
             else {
-                res = ERR_CABLE_WRITE_ERROR;
-                hpcables_error("%s: write failed %ls", __FUNCTION__, hid_error(device_handle));
+                res = ERR_CABLE_NOT_OPEN;
+                hpcables_error("%s: cable was not open", __FUNCTION__);
             }
         }
         else {
@@ -131,20 +142,26 @@ static int cable_prime_hid_send (cable_handle * handle, uint8_t * data, uint32_t
     return res;
 }
 
-static int cable_prime_hid_recv (cable_handle * handle, uint8_t * data, uint32_t * len) {
+static int cable_prime_hid_recv(cable_handle * handle, uint8_t * data, uint32_t * len) {
     int res;
     if (handle != NULL && data != NULL && len != NULL) {
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
-            res = hid_read_timeout(device_handle, data, PRIME_RAW_DATA_SIZE, handle->read_timeout);
-            if (res >= 0) {
-                *len = res;
-                res = ERR_SUCCESS;
-                hpcables_info("%s: read %d bytes", __FUNCTION__, res);
+            if (handle->open) {
+                res = hid_read_timeout(device_handle, data, PRIME_RAW_DATA_SIZE, handle->read_timeout);
+                if (res >= 0) {
+                    *len = res;
+                    res = ERR_SUCCESS;
+                    hpcables_info("%s: read %" PRIu32 "bytes", __FUNCTION__, *len);
+                }
+                else {
+                    res = ERR_CABLE_READ_ERROR;
+                    hpcables_error("%s: read failed", __FUNCTION__);
+                }
             }
             else {
-                res = ERR_CABLE_READ_ERROR;
-                hpcables_error("%s: read failed", __FUNCTION__);
+                res = ERR_CABLE_NOT_OPEN;
+                hpcables_error("%s: cable was not open", __FUNCTION__);
             }
         }
         else {

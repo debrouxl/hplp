@@ -4,7 +4,12 @@ hplp: code for communicating with recent HP calculators
 hplp (still entirely in libhpcalcs for now) is the beginning of a toolkit for
 two-way communications with HP Prime calculators.
 
-Status (2013/12/09)
+See below for detailed build instructions. Note that
+the install_hplp.sh script provided alongside this README
+( https://raw.github.com/debrouxl/hplp/master/install_hplp.sh )
+automates part of the build process.
+
+Status (2013/12/15)
 -------------------
 The code base does:
 * work on Windows, Linux and MacOS X;
@@ -20,8 +25,8 @@ The code base does:
 * provide a terminal-based UI: the test program "test_hpcalcs".
 
 The code base doesn't:
-* perform color conversion on PNG screenshots (libhpcalcs should depend on
-  libpng to uncompress the files, and recompress them after mangling);
+* perform color conversion on PNG screenshots (libhpcalcs should use libpng to
+  uncompress the files, mangle pixels, and recompress to PNG);
 * provide a way to select one of multiple HP calculators (probing USB
   devices);
 * provide a user-friendly GUI for the above, but a GUI can definitely build
@@ -43,6 +48,114 @@ As far as I'm concerned, working _by myself_ on:
 * a GUI comparable to HP's Connectivity Kit. However, other people should
   obviously do it, in order to make the software much more usable !
 
+Build process summary
+---------------------
+As mentioned above, the repository contains an script for automating the
+part of the build strictly related to libhpcalcs / hplp: install_hplp.sh .
+
+The build process is that of pretty much any autotools-based piece of
+software:
+$ autoreconf -i -f
+$ ./configure
+$ ./make check
+# make install
+
+The terminal-based test program is in tests/test_hpcalcs.
+
+For now, the main external dependency of libhpcalcs is HIDAPI:
+https://github.com/signal11/hidapi.git
+Unless your Linux distro packages it (few do), you need to compile and
+install it yourself (it is also an autotools-based project: configure,
+make, make install).
+
+Detailed build & configuration process for Debian, Ubuntu, Mint and derivatives
+(courtesy of Jonathan Cameron)
+-------------------------------------------------------------------------------
+
+1. Install build dependencies (packages required for building libhpcalcs).
+As root (with root shell, or sudo)
+# (sudo) apt-get install build-essential git autoconf automake autopoint libtool gettext xdg-utils libpng-dev libudev-dev libusb-1.0-0-dev autotools-dev
+
+2. Install hidapi:
+
+$ mkdir -p $HOME/lpg # or anywhere else you see fit
+$ cd $HOME/lpg
+$ git clone https://github.com/signal11/hidapi.git hidapi
+$ cd hidapi
+
+Follow the directions from the README.txt file:
+
+$ ./bootstrap
+$ ./configure --prefix=/usr
+$ make
+
+As root (with root shell, or sudo):
+# (sudo) make install     <----- as root, or using sudo
+
+3. Install libhpcalcs
+
+Download
+https://raw.github.com/debrouxl/hplp/master/install_hplp.sh
+and copy it to, for instance, $HOME/hplp
+
+$ cd $HOME/lpg
+$ chmod +x install_hplp.sh
+# (sudo) ./install_hplp.sh
+
+4. Test hplp
+
+As root, verify that you can run test_hpcalcs.
+Plug in your HP Prime to the computer and turn it on.
+Wait about 10 seconds and then run:
+
+$ $HOME/lpg/hplp/libhpcalcs/tests/test_hpcalcs
+
+You should see the menu of possible operations.
+If you do, hplp is working and you are successfully communicating with your Prime.
+
+5. Set up for normal users to access the Prime with the test software.
+
+   a. If you are on your own isolated computer (e.g, laptop),
+      then add the following udev rules to the new file
+      /etc/udev/rules.d/82-hp-prime.rules :
+
+        # HP Prime Calculator
+        SUBSYSTEM=="usb",  ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0441", MODE="0666"
+        KERNEL=="hidraw*", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0441", MODE="0666"
+
+      Note that anyone on your system will be able to access your Prime with
+      the hplp software.
+
+      If you are on a shared system and you want to avoid anyone accessing the
+      device but you, do this instead:
+
+        # HP Prime Calculator
+        SUBSYSTEM=="usb",  ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0441", ACTION=="add", GROUP="dialout", MODE="0664"
+        KERNEL=="hidraw*", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0441", ACTION=="add", GROUP="dialout", MODE="0664"
+
+        and add yourself to the 'dialout' group.  You may need to switch to
+        the new group for this to work (eg: newgrp dialout).
+
+      To activate the new udev rule, turn off your HP Prime, turn it back on,
+      and wait for about 10 seconds. Then, check the permissions for the device
+      (in /dev/hidraw? and /dev/usb/hiddev?).
+
+
+NOTES:
+  * technically, compilation doesn't require being root, only the 'make install'
+    commands for hidapi and libhpcalcs (embedded into install_hplp.sh) require
+    root (and even then, only if installing to /usr or some root-only location).
+    install_hplp.sh cannot use sudo on its own, as it's not necessarily
+    configured by default.
+  * in the above directions, the source location to be $HOME/lpg. You may prefer
+    some other location, just replace $HOME/lpg by your location.
+  * the install prefix is forced to /usr, so that you don't have to adjust the
+    LD_LIBRARY_PATH environment variable, or add a line in /etc/ld.so.conf, or
+    add a file in /etc/ld.so.conf.d.
+    The install prefix is controlled by using the --prefix option to configure,
+    for hidapi and within install_hplp.sh.
+
+
 Technical notes
 ---------------
 The code leverages HIDAPI, and it was strongly inspired by the time-proven
@@ -59,24 +172,6 @@ the apparent complexity.
 Obviously, until the calculator's protocol is better documented, the API
 will change in backwards-incompatible manners (for instance, the output
 parameters of check ready and get infos operations).
-
-Build process
--------------
-The build process is that of pretty much any autotools-based piece of
-software:
-$ autoreconf -i -f
-$ ./configure
-$ ./make check
-# make install
-
-The terminal-based test program is in tests/test_hpcalcs.
-
-For now, the main external dependency is HIDAPI:
-https://github.com/signal11/hidapi.git
-Unless your Linux distro packages it, you need to compile and install it
-yourself (it is also an autotools-based project).
-The code base shall depend on libpng when screenshot color conversion is
-implemented.
 
 TODO list
 ---------
@@ -178,14 +273,17 @@ Credits (demoscene style)
   with Wireshark) and terminal output sessions;
 * many thanks to Marcus Von Cube for providing USB packet dumps for the 39gII,
   which show that it's quite similar to the Prime;
+* thanks to Jonathan Cameron for writing a more detailed build procedure for
+  Debian and derivatives;
 * thanks to other beta-testers who reported bugs:
   * with the Prime: persalteas (Linux), wawachief (Linux & MacOS X), DJ
-    Omnimaga (Windows), Adriweb (MacOS X, Windows);
+    Omnimaga (Windows), Adriweb (MacOS X & Windows), Jonathan Cameron (Linux),
+    Cristian Arezzini (Linux);
   * with the 39gII: Marcus Von Cube;
 * greetings to the other TI-Planet ( http://tiplanet.org/ ) admins;
 * greetings to the HP Prime developer team at HP: some of its members spend
   time attending user message boards and interacting with users and programmers,
   even in communities traditionally interested in TI calcs (Omnimaga, Cemetech,
   TI-Planet), which is a win-win move for both HP and its users;
-* fuckings to TI EdTech management imposing a closed-minded, lose-lose stance
-  on the Nspire platform, despite repeated community input since 2007.
+* fuck TI EdTech management imposing a closed-minded, lose-lose stance on the
+  Nspire platform, despite repeated community input since 2007.

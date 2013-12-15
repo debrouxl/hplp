@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-12-11 21:49+0100\n"
+"POT-Creation-Date: 2013-12-15 13:31+0100\n"
 "PO-Revision-Date: 2013-11-11 16:58+0100\n"
 "Last-Translator: Lionel Debroux <lionel_debroux@yahoo.fr>\n"
 "Language-Team: Français <lionel_debroux@yahoo.fr>\n"
@@ -16,72 +16,72 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/error.c:49
+#: src/error.c:51
 msgid "Cannot understand filename"
 msgstr "Nom de fichier non géré"
 
-#: src/error.c:52 src/error.c:91 src/error.c:130 src/error.c:151
-#: src/error.c:191
+#: src/error.c:54 src/error.c:95 src/error.c:136 src/error.c:159
+#: src/error.c:199
 msgid "<Unknown error code>"
 msgstr "<Code d'erreur inconnu>"
 
-#: src/error.c:73 src/error.c:115
+#: src/error.c:77 src/error.c:121
 msgid "Cable is not open"
 msgstr "Le câble n'est pas ouvert"
 
-#: src/error.c:76
+#: src/error.c:80
 msgid "Cable is already open"
 msgstr "Le câble est déjà ouvert"
 
-#: src/error.c:79
+#: src/error.c:83
 msgid "Cable is busy"
 msgstr "Le câble est occupé"
 
-#: src/error.c:82
+#: src/error.c:86
 msgid "Error writing to cable"
 msgstr "Erreur d'écriture vers le câble"
 
-#: src/error.c:85
+#: src/error.c:89
 msgid "Error reading from cable"
 msgstr "Erreur de lecture depuis le câble"
 
-#: src/error.c:88 src/error.c:121
+#: src/error.c:92 src/error.c:127
 msgid "Invalid cable functions"
 msgstr "Fonctions câble invalides"
 
-#: src/error.c:112
+#: src/error.c:118
 msgid "No cable attached"
 msgstr "Aucun câble associé"
 
-#: src/error.c:118
+#: src/error.c:124
 msgid "Calc is busy"
 msgstr "La calculatrice est occupée"
 
-#: src/error.c:124
+#: src/error.c:130
 msgid "Unhandled packet format"
 msgstr "Format de paquet non géré"
 
-#: src/error.c:127
+#: src/error.c:133
 msgid "Unable to get time constituents"
 msgstr "Impossible d'obtenir les éléments du temps"
 
-#: src/error.c:176
+#: src/error.c:184
 msgid "Failed to allocate memory"
 msgstr "Impossible d'allouer de la mémoire"
 
-#: src/error.c:179
+#: src/error.c:187
 msgid "Invalid handle pointer"
 msgstr "Pointeur handle invalide"
 
-#: src/error.c:182
+#: src/error.c:190
 msgid "Invalid function parameter"
 msgstr "Paramètre de fonction invalide"
 
-#: src/error.c:185
+#: src/error.c:193
 msgid "Invalid model"
 msgstr "Modèle invalide"
 
-#: src/error.c:188
+#: src/error.c:196
 msgid "Problem initializing the library"
 msgstr "Problème d'initialisation de la librairie"
 

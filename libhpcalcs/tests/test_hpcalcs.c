@@ -55,7 +55,7 @@ static void output_log_callback(const char *format, va_list args) {
     // Windows' terminal is extremely slow, cannot print the traces there.
 #ifndef _WIN32
     // Using args twice, once for printing to stdout and once for printing to a file, triggers crashes.
-    // Therefore, let's have thid function print only to stdout.
+    // Therefore, let's have this function print only to stdout.
     // Should there be a need to print to a file, on non-Windows, people can rely on "tee".
     vprintf(format, args);
 #else
@@ -188,7 +188,7 @@ static int recv_screen(calc_handle * handle) {
     unsigned int format;
     int err;
 
-    printf("Choose a format:");
+    printf("Choose a format (for Prime, usually 8 to 11):");
 
     err = scanf("%u", &format);
     if (err >= 1) {

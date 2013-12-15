@@ -93,6 +93,7 @@ HPEXPORT cable_handle * HPCALL hpcables_handle_new(cable_model model) {
 
         if (handle != NULL) {
             handle->model = model;
+            handle->handle = NULL;
             handle->fncts = hpcables_all_cables[model];
             hpcables_info("%s: handle allocation succeeded", __FUNCTION__);
         }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-12-11 21:49+0100\n"
+"POT-Creation-Date: 2013-12-15 13:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,72 +17,72 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/error.c:49
+#: src/error.c:51
 msgid "Cannot understand filename"
 msgstr ""
 
-#: src/error.c:52 src/error.c:91 src/error.c:130 src/error.c:151
-#: src/error.c:191
+#: src/error.c:54 src/error.c:95 src/error.c:136 src/error.c:159
+#: src/error.c:199
 msgid "<Unknown error code>"
 msgstr ""
 
-#: src/error.c:73 src/error.c:115
+#: src/error.c:77 src/error.c:121
 msgid "Cable is not open"
 msgstr ""
 
-#: src/error.c:76
+#: src/error.c:80
 msgid "Cable is already open"
 msgstr ""
 
-#: src/error.c:79
+#: src/error.c:83
 msgid "Cable is busy"
 msgstr ""
 
-#: src/error.c:82
+#: src/error.c:86
 msgid "Error writing to cable"
 msgstr ""
 
-#: src/error.c:85
+#: src/error.c:89
 msgid "Error reading from cable"
 msgstr ""
 
-#: src/error.c:88 src/error.c:121
+#: src/error.c:92 src/error.c:127
 msgid "Invalid cable functions"
 msgstr ""
 
-#: src/error.c:112
+#: src/error.c:118
 msgid "No cable attached"
 msgstr ""
 
-#: src/error.c:118
+#: src/error.c:124
 msgid "Calc is busy"
 msgstr ""
 
-#: src/error.c:124
+#: src/error.c:130
 msgid "Unhandled packet format"
 msgstr ""
 
-#: src/error.c:127
+#: src/error.c:133
 msgid "Unable to get time constituents"
 msgstr ""
 
-#: src/error.c:176
+#: src/error.c:184
 msgid "Failed to allocate memory"
 msgstr ""
 
-#: src/error.c:179
+#: src/error.c:187
 msgid "Invalid handle pointer"
 msgstr ""
 
-#: src/error.c:182
+#: src/error.c:190
 msgid "Invalid function parameter"
 msgstr ""
 
-#: src/error.c:185
+#: src/error.c:193
 msgid "Invalid model"
 msgstr ""
 
-#: src/error.c:188
+#: src/error.c:196
 msgid "Problem initializing the library"
 msgstr ""
 
