@@ -214,6 +214,12 @@ HPEXPORT int HPCALL hpcalcs_cable_attach(calc_handle * handle, cable_handle * ca
  * \return 0 upon success, nonzero otherwise.
  **/
 HPEXPORT int HPCALL hpcalcs_cable_detach(calc_handle * handle);
+/**
+ * \brief Retrieves the cable handle attached to the given calculator handle, if any.
+ * \param handle the calculator handle.
+ * \return NULL if an error occurred, otherwise a cable handle.
+ **/
+HPEXPORT cable_handle * HPCALL hpcalcs_cable_get(calc_handle * handle);
 
 /**
  * \brief Checks whether the calculator is ready

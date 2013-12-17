@@ -165,7 +165,7 @@ HPEXPORT int HPCALL hpcables_cable_close(cable_handle * handle);
  * \param len the size of the data to be sent.
  * \return 0 if the operation succeeded, nonzero otherwise.
  **/
-HPEXPORT int HPCALL hpcables_cable_send (cable_handle * handle, uint8_t * data, uint32_t len);
+HPEXPORT int HPCALL hpcables_cable_send(cable_handle * handle, uint8_t * data, uint32_t len);
 /**
  * \brief Receive data through the given cable.
  * \param handle the cable handle.
@@ -173,7 +173,7 @@ HPEXPORT int HPCALL hpcables_cable_send (cable_handle * handle, uint8_t * data, 
  * \param len storage area for the length of the received data.
  * \return 0 if the operation succeeded, nonzero otherwise.
  **/
-HPEXPORT int HPCALL hpcables_cable_recv (cable_handle * handle, uint8_t * data, uint32_t * len);
+HPEXPORT int HPCALL hpcables_cable_recv(cable_handle * handle, uint8_t * data, uint32_t * len);
 
 /**
  * \brief Converts a calculator model to a printable string.

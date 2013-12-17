@@ -158,6 +158,18 @@ HPEXPORT int HPCALL hpcalcs_cable_detach(calc_handle * handle) {
     return res;
 }
 
+HPEXPORT cable_handle * HPCALL hpcalcs_cable_get(calc_handle * handle) {
+    cable_handle * res = NULL;
+    if (handle != NULL) {
+        res = handle->cable;
+        hpcalcs_info("%s: cable get succeeded", __FUNCTION__);
+    }
+    else {
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
 HPEXPORT int HPCALL hpcalcs_handle_display(calc_handle * handle) {
     int res;
     if (handle != NULL) {
