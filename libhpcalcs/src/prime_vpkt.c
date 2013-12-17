@@ -72,22 +72,22 @@ HPEXPORT void HPCALL prime_vtl_pkt_del(prime_vtl_pkt * pkt) {
 HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
     int res;
     if (handle != NULL && pkt != NULL) {
-        prime_raw_pkt raw;
+        prime_raw_hid_pkt raw;
         uint32_t i, q, r;
         uint32_t offset = 0;
         uint8_t pkt_id = 0;
 
         memset((void *)&raw, 0, sizeof(raw));
-        q = (pkt->size) / (PRIME_RAW_DATA_SIZE - 1);
-        r = (pkt->size) % (PRIME_RAW_DATA_SIZE - 1);
+        q = (pkt->size) / (PRIME_RAW_HID_DATA_SIZE - 1);
+        r = (pkt->size) % (PRIME_RAW_HID_DATA_SIZE - 1);
 
         hpcalcs_info("%s: q:%" PRIu32 "\tr:%" PRIu32, __FUNCTION__, q, r);
 
         for (i = 1; i <= q; i++) {
-            raw.size = PRIME_RAW_DATA_SIZE + 1;
+            raw.size = PRIME_RAW_HID_DATA_SIZE + 1;
             raw.data[1] = pkt_id;
-            memcpy(raw.data + 2, pkt->data + offset, PRIME_RAW_DATA_SIZE - 1);
-            offset += PRIME_RAW_DATA_SIZE - 1;
+            memcpy(raw.data + 2, pkt->data + offset, PRIME_RAW_HID_DATA_SIZE - 1);
+            offset += PRIME_RAW_HID_DATA_SIZE - 1;
 
             res = prime_send(handle, &raw);
             if (res) {
@@ -131,7 +131,7 @@ HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
 HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
     int res;
     if (handle != NULL && pkt != NULL) {
-        prime_raw_pkt raw;
+        prime_raw_hid_pkt raw;
         uint32_t expected_size = 0;
         uint32_t offset = 0;
         uint32_t read_pkts_count = 0;
@@ -225,7 +225,7 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                 }
             }
 
-            if (raw.size < PRIME_RAW_DATA_SIZE) {
+            if (raw.size < PRIME_RAW_HID_DATA_SIZE) {
                 hpcalcs_info("%s: breaking due to short packet (1)", __FUNCTION__);
                 goto shorten_packet;
             }

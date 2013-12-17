@@ -58,8 +58,8 @@ typedef enum {
 //! USB Product ID of the Prime calculator.
 #define USB_PID_PRIME (0x0441)
 
-//! Size of a raw packet for the Prime.
-#define PRIME_RAW_DATA_SIZE (64)
+//! Size of a raw HID packet for the Prime.
+#define PRIME_RAW_HID_DATA_SIZE (64)
 
 #ifdef __cplusplus
 extern "C" {

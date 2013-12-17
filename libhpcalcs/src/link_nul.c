@@ -22,7 +22,7 @@
  */
 
 /**
- * \file link_prime_hid.h Cables: Prime HID cable.
+ * \file link_nul.c Cables: Null cable.
  */
 
 #ifdef HAVE_CONFIG_H

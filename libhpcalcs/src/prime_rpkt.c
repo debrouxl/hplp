@@ -94,7 +94,7 @@ static void hexdump(const char * direction, uint8_t *data, uint32_t size)
 }
 
 
-HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_pkt * pkt) {
+HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_hid_pkt * pkt) {
     int res;
     if (handle != NULL && pkt != NULL) {
         cable_handle * cable = handle->cable;
@@ -120,7 +120,7 @@ HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_pkt * pkt) {
     return res;
 }
 
-HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_pkt * pkt) {
+HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt) {
     int res;
     if (handle != NULL && pkt != NULL) {
         cable_handle * cable = handle->cable;

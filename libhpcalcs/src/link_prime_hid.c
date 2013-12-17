@@ -148,7 +148,7 @@ static int cable_prime_hid_recv(cable_handle * handle, uint8_t * data, uint32_t 
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
             if (handle->open) {
-                res = hid_read_timeout(device_handle, data, PRIME_RAW_DATA_SIZE, handle->read_timeout);
+                res = hid_read_timeout(device_handle, data, PRIME_RAW_HID_DATA_SIZE, handle->read_timeout);
                 if (res >= 0) {
                     *len = res;
                     res = ERR_SUCCESS;

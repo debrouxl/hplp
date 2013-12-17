@@ -116,8 +116,8 @@ struct _calc_handle {
 typedef struct
 {
     uint32_t size;
-    uint8_t data[PRIME_RAW_DATA_SIZE + 1];
-} prime_raw_pkt;
+    uint8_t data[PRIME_RAW_HID_DATA_SIZE + 1];
+} prime_raw_hid_pkt;
 
 
 //! Structure defining a virtual packet for the Prime, used at the middle layer of the protocol implementation (fragmented to / reassembled from raw packets).
@@ -283,14 +283,14 @@ HPEXPORT int HPCALL hpcalcs_calc_send_key(calc_handle * handle, uint32_t code);
  * \param pkt the raw packet.
  * \return 0 upon success, nonzero otherwise.
  */
-HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_pkt * pkt);
+HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_hid_pkt * pkt);
 /**
  * \brief Receives a raw packet from the Prime calculator using given calculator handle, and store the result to given packet.
  * \param handle the calculator handle.
  * \param pkt the dest raw packet.
  * \return 0 upon success, nonzero otherwise.
  */
-HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_pkt * pkt);
+HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt);
 
 
 /**
