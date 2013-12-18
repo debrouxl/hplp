@@ -9,7 +9,8 @@ the install_hplp.sh script provided alongside this README
 ( https://raw.github.com/debrouxl/hplp/master/install_hplp.sh )
 automates part of the build process.
 
-Status (2013/12/15)
+
+Status (2013/12/18)
 -------------------
 The code base does:
 * work on Windows, Linux and MacOS X;
@@ -19,9 +20,17 @@ The code base does:
   version from late November 2013, but might not work with other older or
   newer versions, if HP performs backwards-incompatible changes in the
   protocol (like TI does);
-* implement eight operations (without _known_ bugs): ready check,
-  get calculator information, set date and time, receive screenshot, send file,
-  receive file, receive backup, send key;
+* implement nine operations (without _known_ bugs):
+  * ready check;
+  * get calculator information;
+  * set date and time;
+  * receive screenshot;
+  * send file (for now, the leading metadata of *.hpprgm, if any, needs to be
+    stripped manually);
+  * receive file;
+  * receive backup;
+  * send key (remote control);
+  * send chat;
 * provide a terminal-based UI: the test program "test_hpcalcs".
 
 The code base doesn't:
@@ -34,11 +43,13 @@ The code base doesn't:
 * implement _proper_ conversion from UTF-16 LE to other charsets on its own:
   that's a task for libicu, Qt or other libraries.
 
+
 Goals
 -----
 Laying the groundwork for GUIs dealing with two-way communication with HP
 Prime calculators, and possibly 39gII (Prime and 39gII are similar), using
 USB HID class, and possibly later fake MSD for firmware upgrades.
+
 
 Non-goals
 ---------
@@ -47,6 +58,7 @@ As far as I'm concerned, working _by myself_ on:
   calculators;
 * a GUI comparable to HP's Connectivity Kit. However, other people should
   obviously do it, in order to make the software much more usable !
+
 
 Build process summary
 ---------------------
@@ -67,6 +79,7 @@ https://github.com/signal11/hidapi.git
 Unless your Linux distro packages it (few do), you need to compile and
 install it yourself (it is also an autotools-based project: configure,
 make, make install).
+
 
 Detailed build & configuration process for Debian, Ubuntu, Mint and derivatives
 (courtesy of Jonathan Cameron)
@@ -173,6 +186,7 @@ Obviously, until the calculator's protocol is better documented, the API
 will change in backwards-incompatible manners (for instance, the output
 parameters of check ready and get infos operations).
 
+
 TODO list
 ---------
 * ... hopefully attract _code_ contributors who have an actual HP Prime
@@ -181,6 +195,9 @@ TODO list
   a portable, good-looking, fast UI toolkit. GTK+ used to be a better choice
   wrt. portability, but that was years ago, and in 2013, a number of
   applications and desktop environments are switching from GTK+ to Qt;
+* strip out leading program metadata, if any, from .hpprgm files, like the
+  UTF-16LE BOM is already stripped;
+* add support for .hpappprgm and .hpappnote files;
 * add devices probing code (the hpcables part currently assumes that the
   calculator is plugged in and that there's a single calculator), HIDAPI
   provides some probing functions (e.g. based on vendor);
@@ -237,6 +254,7 @@ hpfiles INFO: Name:
 * certainly more... at least, if users and programmers think the software
   fits a purpose :-)
 
+
 License
 -------
 Copyright (C) 2013 Lionel Debroux
@@ -255,6 +273,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
 
+
 Changelog
 ---------
 2013/11/03 - 2013/12/xx: improve logging, create install_hplp.sh, improve
@@ -265,6 +284,7 @@ usable). First public announcement (limited scope).
 2013/10/21: Split into multiple files, but still piggybacking hidtest.cpp.
 2013/10/20: First public PoC.
 2013/10/19: Project started.
+
 
 Credits (demoscene style)
 -------------------------

@@ -51,6 +51,7 @@ typedef enum {
     CALC_FNCT_RECV_FILE = 5,
     CALC_FNCT_RECV_BACKUP = 6,
     CALC_FNCT_SEND_KEY = 7,
+    CALC_FNCT_SEND_CHAT = 8,
     CALC_FNCT_LAST ///< Keep this one last
 } calc_fncts_idx;
 
@@ -64,7 +65,8 @@ typedef enum {
     CALC_OPS_SEND_FILE = (1 << CALC_FNCT_SEND_FILE),
     CALC_OPS_RECV_FILE = (1 << CALC_FNCT_RECV_FILE),
     CALC_OPS_RECV_BACKUP = (1 << CALC_FNCT_RECV_BACKUP),
-    CALC_OPS_SEND_KEY = (1 << CALC_FNCT_SEND_KEY)
+    CALC_OPS_SEND_KEY = (1 << CALC_FNCT_SEND_KEY),
+    CALC_OPS_SEND_CHAT = (1 << CALC_FNCT_SEND_CHAT)
 } calc_features_operations;
 
 //! Screenshot formats supported by the calculators, list is known to be incomplete.
@@ -98,6 +100,7 @@ struct _calc_fncts {
     int (*recv_file) (calc_handle * handle, files_var_entry * request, files_var_entry ** out_file);
     int (*recv_backup) (calc_handle * handle, files_var_entry *** out_vars);
     int (*send_key) (calc_handle * handle, uint32_t code);
+    int (*send_chat) (calc_handle * handle, uint16_t * data, uint32_t size);
 };
 
 //! Internal structure containing state about the calculator, returned and passed around by the user.
@@ -281,6 +284,14 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_backup(calc_handle * handle, files_var_ent
  * \return 0 upon success, nonzero otherwise.
  */
 HPEXPORT int HPCALL hpcalcs_calc_send_key(calc_handle * handle, uint32_t code);
+/**
+ * \brief Sends chat data to the calculator.
+ * \param handle the calculator handle.
+ * \param data the data to be sent (UTF-16LE string, with U+0000 terminator, without UTF-16 LE BOM).
+ * \param size the size of the data to be sent.
+ * \return 0 upon success, nonzero otherwise.
+ */
+HPEXPORT int HPCALL hpcalcs_calc_send_chat(calc_handle * handle, uint16_t * data, uint32_t size);
 
 
 /**

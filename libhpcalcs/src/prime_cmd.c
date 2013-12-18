@@ -695,3 +695,46 @@ HPEXPORT int HPCALL calc_prime_r_send_key(calc_handle * handle) {
     }
     return res;
 }
+
+HPEXPORT int HPCALL calc_prime_s_send_chat(calc_handle * handle, uint16_t * data, uint32_t size) {
+    int res;
+    if (handle != NULL) {
+        prime_vtl_pkt * pkt = prime_vtl_pkt_new(size + 7);
+        if (pkt != NULL) {
+            uint8_t * ptr;
+
+            pkt->cmd = CMD_PRIME_SEND_CHAT;
+            ptr = pkt->data;
+            *ptr++ = CMD_PRIME_SEND_CHAT;
+            *ptr++ = 0x01;
+            *ptr++ = (uint8_t)((size >> 24) & 0xFF);
+            *ptr++ = (uint8_t)((size >> 16) & 0xFF);
+            *ptr++ = (uint8_t)((size >>  8) & 0xFF);
+            *ptr++ = (uint8_t)((size      ) & 0xFF);
+            memcpy(ptr, data, size);
+            res = prime_send_data(handle, pkt);
+            prime_vtl_pkt_del(pkt);
+        }
+        else {
+            res = ERR_MALLOC;
+            hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_INVALID_PARAMETER;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_r_send_chat(calc_handle * handle) {
+    int res = 0;
+    if (handle != NULL) {
+        // There doesn't seem anything to do, beyond eliminating packets starting with 0xFF.
+        res = calc_prime_r_check_ready(handle, NULL, NULL);
+    }
+    else {
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}

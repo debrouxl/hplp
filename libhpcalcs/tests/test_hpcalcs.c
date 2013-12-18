@@ -401,6 +401,23 @@ static int send_key(calc_handle * handle) {
     return res;
 }
 
+static int send_chat(calc_handle * handle) {
+    int res = 0;
+    int err;
+    unsigned int type;
+    static const uint16_t chat_data[] = { 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!', 0 };
+
+    res = hpcalcs_calc_send_chat(handle, chat_data, sizeof(chat_data));
+    if (res == 0) {
+        printf("hpcalcs_calc_send_chat succeeded\n");
+    }
+    else {
+        printf("hpcalcs_calc_send_chat failed\n");
+    }
+
+    return res;
+}
+
 static int vpkt_send_experiments(calc_handle * handle) {
     int res = 0;
     int err;
@@ -439,7 +456,7 @@ static int vpkt_send_experiments(calc_handle * handle) {
     return res;
 }
 
-#define NITEMS	10
+#define NITEMS	11
 
 static const char *str_menu[NITEMS] = {
     "Exit",
@@ -451,6 +468,7 @@ static const char *str_menu[NITEMS] = {
     "Receive file",
     "Receive backup",
     "Send key",
+    "Send chat",
     "Virtual packet send experiments"
 };
 
@@ -466,6 +484,7 @@ static const FNCT_MENU fnct_menu[NITEMS] = {
     recv_file,
     recv_backup,
     send_key,
+    send_chat,
     vpkt_send_experiments
 };
 
