@@ -10,7 +10,7 @@ the install_hplp.sh script provided alongside this README
 automates part of the build process.
 
 
-Status (2013/12/18)
+Status (2013/12/23)
 -------------------
 The code base does:
 * work on Windows, Linux and MacOS X;
@@ -20,7 +20,7 @@ The code base does:
   version from late November 2013, but might not work with other older or
   newer versions, if HP performs backwards-incompatible changes in the
   protocol (like TI does);
-* implement nine operations (without _known_ bugs):
+* implement ten operations (without _known_ bugs):
   * ready check;
   * get calculator information;
   * set date and time;
@@ -31,6 +31,7 @@ The code base does:
   * receive backup;
   * send key (remote control);
   * send chat;
+  * receive chat;
 * provide a terminal-based UI: the test program "test_hpcalcs".
 
 The code base doesn't:
@@ -298,7 +299,7 @@ Credits (demoscene style)
 * thanks to other beta-testers who reported bugs:
   * with the Prime: persalteas (Linux), wawachief (Linux & MacOS X), DJ
     Omnimaga (Windows), Adriweb (MacOS X & Windows), Jonathan Cameron (Linux),
-    Cristian Arezzini (Linux);
+    Cristian Arezzini (Linux), LarsF (MacOS X);
   * with the 39gII: Marcus Von Cube;
 * greetings to the other TI-Planet ( http://tiplanet.org/ ) admins;
 * greetings to the HP Prime developer team at HP: some of its members spend

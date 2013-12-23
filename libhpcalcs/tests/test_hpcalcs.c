@@ -403,8 +403,6 @@ static int send_key(calc_handle * handle) {
 
 static int send_chat(calc_handle * handle) {
     int res = 0;
-    int err;
-    unsigned int type;
     static const uint16_t chat_data[] = { 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!', 0 };
 
     res = hpcalcs_calc_send_chat(handle, chat_data, sizeof(chat_data));
@@ -413,6 +411,23 @@ static int send_chat(calc_handle * handle) {
     }
     else {
         printf("hpcalcs_calc_send_chat failed\n");
+    }
+
+    return res;
+}
+
+static int recv_chat(calc_handle * handle) {
+    int res = 0;
+    uint32_t size;
+    uint16_t * data;
+
+    res = hpcalcs_calc_recv_chat(handle, &data, &size);
+    if (res == 0) {
+        printf("hpcalcs_calc_recv_chat succeeded\n");
+        // TODO: do something with chat data.
+    }
+    else {
+        printf("hpcalcs_calc_recv_chat failed\n");
     }
 
     return res;
@@ -456,7 +471,7 @@ static int vpkt_send_experiments(calc_handle * handle) {
     return res;
 }
 
-#define NITEMS	11
+#define NITEMS	12
 
 static const char *str_menu[NITEMS] = {
     "Exit",
@@ -469,6 +484,7 @@ static const char *str_menu[NITEMS] = {
     "Receive backup",
     "Send key",
     "Send chat",
+    "Receive chat",
     "Virtual packet send experiments"
 };
 
@@ -485,6 +501,7 @@ static const FNCT_MENU fnct_menu[NITEMS] = {
     recv_backup,
     send_key,
     send_chat,
+    recv_chat,
     vpkt_send_experiments
 };
 
@@ -494,6 +511,10 @@ int main(int argc, char **argv) {
     cable_handle * cable;
     calc_handle * calc;
     int res;
+
+    // Set stdout and stderr to unbuffered mode.
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
 
     // init libs
     res = hpfiles_init(output_log_callback);
@@ -512,6 +533,8 @@ int main(int argc, char **argv) {
     if (res) {
         return 1;
     }
+
+    // TODO: probe cables and calculators.
 
     cable = hpcables_handle_new(model1);
     if (cable == NULL) {

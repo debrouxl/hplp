@@ -52,6 +52,7 @@ typedef enum {
     CALC_FNCT_RECV_BACKUP = 6,
     CALC_FNCT_SEND_KEY = 7,
     CALC_FNCT_SEND_CHAT = 8,
+    CALC_FNCT_RECV_CHAT = 9,
     CALC_FNCT_LAST ///< Keep this one last
 } calc_fncts_idx;
 
@@ -66,7 +67,8 @@ typedef enum {
     CALC_OPS_RECV_FILE = (1 << CALC_FNCT_RECV_FILE),
     CALC_OPS_RECV_BACKUP = (1 << CALC_FNCT_RECV_BACKUP),
     CALC_OPS_SEND_KEY = (1 << CALC_FNCT_SEND_KEY),
-    CALC_OPS_SEND_CHAT = (1 << CALC_FNCT_SEND_CHAT)
+    CALC_OPS_SEND_CHAT = (1 << CALC_FNCT_SEND_CHAT),
+    CALC_OPS_RECV_CHAT = (1 << CALC_FNCT_RECV_CHAT)
 } calc_features_operations;
 
 //! Screenshot formats supported by the calculators, list is known to be incomplete.
@@ -100,7 +102,8 @@ struct _calc_fncts {
     int (*recv_file) (calc_handle * handle, files_var_entry * request, files_var_entry ** out_file);
     int (*recv_backup) (calc_handle * handle, files_var_entry *** out_vars);
     int (*send_key) (calc_handle * handle, uint32_t code);
-    int (*send_chat) (calc_handle * handle, uint16_t * data, uint32_t size);
+    int (*send_chat) (calc_handle * handle, const uint16_t * data, uint32_t size);
+    int (*recv_chat) (calc_handle * handle, uint16_t ** out_data, uint32_t * out_size);
 };
 
 //! Internal structure containing state about the calculator, returned and passed around by the user.
@@ -250,7 +253,7 @@ HPEXPORT int HPCALL hpcalcs_calc_set_date_time(calc_handle * handle, time_t time
  * \brief Retrieves a screenshot from the calculator
  * \param handle the calculator handle.
  * \param format the desired screenshot format.
- * \param out_data storage area for screenshot contained in the calculator's reply
+ * \param out_data storage area for screenshot contained in the calculator's reply.
  * \param out_size storage area for size of the screenshot contained in the calculator's reply.
  * \return 0 upon success, nonzero otherwise.
  */
@@ -291,7 +294,15 @@ HPEXPORT int HPCALL hpcalcs_calc_send_key(calc_handle * handle, uint32_t code);
  * \param size the size of the data to be sent.
  * \return 0 upon success, nonzero otherwise.
  */
-HPEXPORT int HPCALL hpcalcs_calc_send_chat(calc_handle * handle, uint16_t * data, uint32_t size);
+HPEXPORT int HPCALL hpcalcs_calc_send_chat(calc_handle * handle, const uint16_t * data, uint32_t size);
+/**
+ * \brief Receives chat data from the calculator.
+ * \param handle the calculator handle.
+ * \param out_data storage area for the chat data contained in the calculator's reply.
+ * \param out_size storage area for size of the chat data contained in the calculator's reply.
+ * \return 0 upon success, nonzero otherwise.
+ */
+HPEXPORT int HPCALL hpcalcs_calc_recv_chat(calc_handle * handle, uint16_t ** out_data, uint32_t * out_size);
 
 
 /**

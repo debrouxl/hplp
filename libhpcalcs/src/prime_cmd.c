@@ -696,7 +696,7 @@ HPEXPORT int HPCALL calc_prime_r_send_key(calc_handle * handle) {
     return res;
 }
 
-HPEXPORT int HPCALL calc_prime_s_send_chat(calc_handle * handle, uint16_t * data, uint32_t size) {
+HPEXPORT int HPCALL calc_prime_s_send_chat(calc_handle * handle, const uint16_t * data, uint32_t size) {
     int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt = prime_vtl_pkt_new(size + 7);
@@ -731,9 +731,40 @@ HPEXPORT int HPCALL calc_prime_r_send_chat(calc_handle * handle) {
     int res = 0;
     if (handle != NULL) {
         // There doesn't seem anything to do, beyond eliminating packets starting with 0xFF.
-        res = calc_prime_r_check_ready(handle, NULL, NULL);
+        //res = calc_prime_r_check_ready(handle, NULL, NULL);
     }
     else {
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_r_recv_chat(calc_handle * handle, uint16_t ** out_data, uint32_t * out_size) {
+    int res;
+    if (handle != NULL) {
+        prime_vtl_pkt * pkt;
+        res = read_vtl_pkt(handle, CMD_PRIME_RECV_CHAT, &pkt, 0);
+        if (res == ERR_SUCCESS && pkt != NULL) {
+            if (pkt->size >= 8) {
+                if (out_data != NULL && out_size != NULL) {
+                    *out_size = pkt->size - 6;
+                    memmove(pkt->data, pkt->data + 6, pkt->size - 6);
+                    *out_data = (uint16_t *)pkt->data; // Transfer ownership of the memory block to the caller.
+                    pkt->data = NULL; // Detach it from virtual packet.
+                }
+            }
+            else {
+                res = ERR_CALC_PACKET_FORMAT;
+                hpcalcs_info("%s: packet is too short: %" PRIu32 "bytes", __FUNCTION__, pkt->size);
+            }
+            prime_vtl_pkt_del(pkt);
+        }
+        else {
+            hpcalcs_error("%s: failed to read packet", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
         hpcalcs_error("%s: handle is NULL", __FUNCTION__);
     }
     return res;
