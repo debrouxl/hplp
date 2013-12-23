@@ -32,74 +32,19 @@
 #include <hpcalcs.h>
 #include "logging.h"
 #include "error.h"
+#include "utils.h"
 
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#define VPKT_DBG 2
-
-static void hexdump(const char * direction, uint8_t *data, uint32_t size)
-{
-    if (size > 0) {
-#if (VPKT_DBG == 1)
-        char str[64];
-        uint32_t i;
-
-        hpcalcs_debug("Dumping %s packet with size %" PRIu32, direction, size);
-        str[0] = 0;
-        if (size <= 12)
-        {
-            str[0] = ' '; str[1] = ' '; str[2] = ' '; str[3] = ' ';
-
-            for (i = 0; i < size; i++)
-            {
-                sprintf(&str[3*i+4], "%02X ", data[i]);
-            }
-        }
-        else
-        {
-            sprintf(str, "    %02X %02X %02X %02X %02X ..... %02X %02X %02X %02X %02X",
-                         data[0], data[1], data[2], data[3], data[4],
-                         data[size-5], data[size-4], data[size-3], data[size-2], data[size-1]);
-        }
-        hpcalcs_debug(str);
-#elif (VPKT_DBG == 2)
-        char *str;
-
-        hpcalcs_debug("Dumping %s packet with size %" PRIu32, direction, size);
-        str = (char *)malloc(3 * size + 8 + 10);
-        if (str != NULL) {
-            uint32_t i, j, k;
-            int step = 16;
-
-            for(k = 0; k < 4; k++) {
-                str[k] = ' ';
-            }
-
-            for (i = j = 0; i < size; i++, j++) {
-                if (i && !(i % step)) {
-                    hpcalcs_debug(str);
-                    j = 0;
-                }
-
-                sprintf(&str[3*j+4], "%02X ", data[i]);
-            }
-            hpcalcs_debug(str);
-
-            free(str);
-        }
-#endif
-    }
-}
-
+#include <string.h>
 
 HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_hid_pkt * pkt) {
     int res;
     if (handle != NULL && pkt != NULL) {
         cable_handle * cable = handle->cable;
         if (cable != NULL) {
-            hexdump("OUT", pkt->data, pkt->size);
+            hexdump("OUT", pkt->data, pkt->size, 2);
             res = hpcables_cable_send(cable, pkt->data, pkt->size);
             if (res == ERR_SUCCESS) {
                 hpcalcs_info("%s: send succeeded", __FUNCTION__);
@@ -126,7 +71,7 @@ HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt) {
         cable_handle * cable = handle->cable;
         if (cable != NULL) {
             res = hpcables_cable_recv(cable, pkt->data, &pkt->size);
-            hexdump("IN", pkt->data, pkt->size);
+            hexdump("IN", pkt->data, pkt->size, 2);
             if (res == ERR_SUCCESS) {
                 //hpcalcs_info("%s: recv succeeded", __FUNCTION__);
             }

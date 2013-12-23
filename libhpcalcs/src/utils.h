@@ -32,5 +32,7 @@
 uint32_t char16_strlen(char16_t * str);
 //! strncpy applied to char16_t.
 char16_t * char16_strncpy(char16_t * dst, const char16_t * src, uint32_t n);
+//! Hex dumping function.
+void hexdump(const char * direction, uint8_t *data, uint32_t size, uint32_t level);
 
 #endif
