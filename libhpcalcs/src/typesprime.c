@@ -29,11 +29,6 @@
 # include <config.h>
 #endif
 
-// For getting the version of basename which doesn't modify its argument.
-#ifndef _WIN32
-#define _GNU_SOURCE
-#endif
-
 #include <hpfiles.h>
 #include "typesprime.h"
 #include "logging.h"
@@ -43,6 +38,7 @@
 #include <strings.h>
 // For path splitting.
 #ifndef _WIN32
+#include <libgen.h>
 #include <string.h>
 #else
 #include <stdlib.h>
@@ -123,18 +119,10 @@ uint8_t prime_filename2byte(const char * filepath) {
     return res;
 }
 
-int prime_parsefilename(const char * filepath, uint8_t * out_type, char ** out_calcfilename) {
+int prime_parsesplitfilename(char * file, char * extension, uint8_t * out_type, char ** out_calcfilename) {
     int res = ERR_FILE_FILENAME;
     uint8_t type = PRIME_TYPE_UNKNOWN;
     // The way to get the basename and file extension is platform-dependent, obviously...
-#ifndef _WIN32
-    char * file = basename(filepath);
-    char * extension = strrchr(file, '.');
-#else
-    char file[_MAX_FNAME + 1];
-    char extension[_MAX_EXT + 1];
-    _splitpath(filepath, NULL /* drive */, NULL /* dir */, file, extension);
-#endif
     hpfiles_info("%s: file:\"%s\" extension:\"%s\"", __FUNCTION__, file, extension);
     if (   !strcmp(file, "calc.settings")
         || !strcmp(file, "settings")
@@ -158,17 +146,46 @@ int prime_parsefilename(const char * filepath, uint8_t * out_type, char ** out_c
         *out_type = type;
         if (out_calcfilename != NULL) {
             char * calcfilename = strdup(file);
-            if (calcfilename != NULL) {
 #ifndef _WIN32
+            if (calcfilename != NULL) {
                 extension = strrchr(calcfilename, '.');
                 if (extension != NULL) {
                     *extension = 0; // Strip extension.
                 }
-#endif
             }
+#endif
             *out_calcfilename = calcfilename;
         }
     }
+    return res;
+}
+
+int prime_parsefilename(const char * filepath, uint8_t * out_type, char ** out_calcfilename) {
+    int res = ERR_FILE_FILENAME;
+    // The way to get the basename and file extension is platform-dependent, obviously...
+#ifndef _WIN32
+    char * duplicated = strdup(filepath);
+    char * file;
+    char * extension;
+    if (duplicated != NULL) {
+        file = basename(duplicated);
+        if (file != NULL) {
+            extension = strrchr(file, '.');
+            res = prime_parsesplitfilename(file, extension, out_type, out_calcfilename);
+        }
+        free(duplicated);
+    }
+    else {
+        res = ERR_MALLOC;
+        hpfiles_debug("%s: failed to duplicate filepath", __FUNCTION__);
+    }
+#else
+    char file[_MAX_FNAME + 1];
+    char extension[_MAX_EXT + 1];
+    _splitpath(filepath, NULL /* drive */, NULL /* dir */, file, extension);
+    res = prime_parsesplitfilename(file, extension, out_type, out_calcfilename);
+#endif
+
     hpfiles_debug("%s: returning %d", __FUNCTION__, res);
     return res;
 }
