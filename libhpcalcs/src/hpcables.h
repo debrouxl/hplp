@@ -180,13 +180,13 @@ HPEXPORT int HPCALL hpcables_cable_recv(cable_handle * handle, uint8_t * data, u
  * \param model the calculator model.
  * \return the string corresponding to the calculator model.
  **/
-HPEXPORT const char * HPCALL hpcables_model_to_string(calc_model model);
+HPEXPORT const char * HPCALL hpcables_model_to_string(cable_model model);
 /**
  * \brief Converts a string to a supported calculator model, if possible.
  * \param str the string.
  * \return the calculator model corresponding to the string, CALC_NONE if failed.
  **/
-HPEXPORT calc_model HPCALL hpcables_string_to_model(const char *str);
+HPEXPORT cable_model HPCALL hpcables_string_to_model(const char *str);
 
 #ifdef __cplusplus
 }

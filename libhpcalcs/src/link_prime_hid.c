@@ -99,6 +99,7 @@ static int cable_prime_hid_close(cable_handle * handle) {
 static int cable_prime_hid_set_read_timeout(cable_handle * handle, int read_timeout) {
     int res;
     if (handle != NULL) {
+        res = ERR_SUCCESS;
         handle->read_timeout = read_timeout;
     }
     else {

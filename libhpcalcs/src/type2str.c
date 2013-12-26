@@ -46,12 +46,22 @@ HPEXPORT calc_model HPCALL hpcalcs_string_to_model(const char *str) {
     return hpfiles_string_to_model(str);
 }
 
-HPEXPORT const char * HPCALL hpcables_model_to_string(calc_model model) {
-    return hpfiles_model_to_string(model);
+HPEXPORT const char * HPCALL hpcables_model_to_string(cable_model model) {
+    switch (model) {
+        case CABLE_NUL: return "<none>";
+        case CABLE_PRIME_HID: return "Prime (HID)";
+        default: return "unknown";
+    }
 }
 
-HPEXPORT calc_model HPCALL hpcables_string_to_model(const char *str) {
-    return hpfiles_string_to_model(str);
+HPEXPORT cable_model HPCALL hpcables_string_to_model(const char *str) {
+    if (str != NULL) {
+        if (!strcasecmp("Prime HID", str) || !strcasecmp("Prime_HID", str) || !strcasecmp("HP Prime HID", str)) {
+            return CABLE_PRIME_HID;
+        }
+        // else fall through.
+    }
+    return CABLE_NUL;
 }
 
 HPEXPORT const char * HPCALL hpfiles_model_to_string(calc_model model) {
