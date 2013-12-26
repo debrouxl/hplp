@@ -357,7 +357,7 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt);
 HPEXPORT const char * HPCALL hpcalcs_model_to_string(calc_model model);
 /**
  * \brief Converts a string to a supported calculator model, if possible.
- * \param string the string.
+ * \param str the string.
  * \return the calculator model corresponding to the string, CALC_NONE if failed.
  **/
 HPEXPORT calc_model HPCALL hpcalcs_string_to_model(const char *str);

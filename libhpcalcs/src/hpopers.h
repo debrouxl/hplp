@@ -135,7 +135,7 @@ HPEXPORT int HPCALL hpopers_calc_send_file(calc_handle * handle, FILE * file, co
  * \brief Receives a file from the calculator.
  * \param handle the calculator handle.
  * \param calculator_filename name (on the calculator side) of the file to be received.
- * \param out_file name of the output file on the computer side.
+ * \param file struct FILE pointer used for writing data.
  * \return 0 upon success, nonzero otherwise.
  * \note This shall be a wrapper over \a hpcalcs_calc_recv_file .
  */

@@ -47,6 +47,30 @@ AC_PROG_LIBTOOL
 
 # Checks for programs.
 AC_PROG_CC
+
+# Add several compiler flags
+ORIGCC=$CC
+case $CC in
+  *clang*)
+    CFLAGS="$CFLAGS -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings -Wredundant-decls -Wformat -Wformat-nonliteral -Wformat-security -Wpointer-arith -Wunreachable-code -Wdocumentation";;
+  *gcc*)
+    CFLAGS="$CFLAGS -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings -Wredundant-decls -Wformat -Wformat-nonliteral -Wformat-security -Wpointer-arith -Wunreachable-code";;
+  *) ;;
+esac
+
+AC_PROG_CC_C99
+
+if test "x$ac_cv_prog_cc_c99" = "xno"; then
+  AC_MSG_ERROR([libhpcalcs requires a C99 compiler])
+fi
+
+# Add more compiler flags. We can't add the -Werror flags before AC_PROG_CC_C99, because they cause misbehaviour in the compiler tests triggered by AC_PROG_CC_C99.
+case $ORIGCC in
+  *clang*|*gcc*)
+    CFLAGS="$CFLAGS -Werror=format-security -Werror=declaration-after-statement -Werror=implicit-function-declaration -Werror=return-type -D_FORTIFY_SOURCE=2";;
+  *) ;;
+esac
+
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
@@ -75,7 +99,7 @@ AC_SUBST(HIDAPI_CFLAGS)
 AC_SUBST(HIDAPI_LIBS)
 AC_SUBST(HIDAPI_PKG)
 
-PKG_CHECK_MODULES(LIBPNG, libpng12 >= 1.2.0)
+PKG_CHECK_MODULES(LIBPNG, libpng >= 1.2.0)
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
@@ -153,26 +177,26 @@ case $host_os in
 *mingw*)
   ;;
 *)
-	if test x$GCC = xyes; then
-	   visibility_flag=''
-	   AC_MSG_CHECKING([whether gcc accepts -fvisibility])
-	   if test -z "$ac_cv_prog_CC"; then
-	      our_gcc="$CC"
-	   else
-	      our_gcc="$ac_cv_prog_CC"
-	   fi
-	   if $our_gcc -v --help 2>/dev/null | grep "fvisibility" >/dev/null; then
-	      visibility_flag='-fvisibility=hidden'
-	   fi
-	   if test x"$visibility_flag" = x ; then
-	      AC_MSG_RESULT([no])
-	   else
-	      CFLAGS="$CFLAGS $visibility_flag"
-	      AC_MSG_RESULT([${visibility_flag}])
-	      AC_DEFINE(HAVE_FVISIBILITY, 1, [Use -fvisibility=hidden flag])
-	    fi
-	fi
-	;;
+  if test x$GCC = xyes; then
+     visibility_flag=''
+     AC_MSG_CHECKING([whether gcc accepts -fvisibility])
+     if test -z "$ac_cv_prog_CC"; then
+        our_gcc="$CC"
+     else
+        our_gcc="$ac_cv_prog_CC"
+     fi
+     if $our_gcc -v --help 2>/dev/null | grep "fvisibility" >/dev/null; then
+        visibility_flag='-fvisibility=hidden'
+     fi
+     if test x"$visibility_flag" = x ; then
+        AC_MSG_RESULT([no])
+     else
+        CFLAGS="$CFLAGS $visibility_flag"
+        AC_MSG_RESULT([${visibility_flag}])
+        AC_DEFINE(HAVE_FVISIBILITY, 1, [Use -fvisibility=hidden flag])
+      fi
+  fi
+  ;;
 esac
 
 # Output.

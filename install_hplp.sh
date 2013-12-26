@@ -75,12 +75,12 @@ echo Will use "SRCDIR=$SRCDIR"
 if [ "x$CC" = "x" ]; then
     #CC=clang
     CC=gcc
-    CFLAGS="-std=c99 -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings"
+    #CFLAGS="-std=c99 -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings"
 fi
 if [ "x$CXX" = "x" ]; then
     #CXX=clang++
     CXX=g++
-    CFLAGS="-std=c99 -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings"
+    #CXXFLAGS="-std=c99 -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings"
 fi
 
 # No special linker flags, by default.

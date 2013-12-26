@@ -202,7 +202,7 @@ HPEXPORT void HPCALL hpfiles_ve_delete_array(files_var_entry ** entries);
 HPEXPORT const char * HPCALL hpfiles_model_to_string(calc_model model);
 /**
  * \brief Converts a string to a supported calculator model, if possible.
- * \param string the string.
+ * \param str the string.
  * \return the calculator model corresponding to the string, CALC_NONE if failed.
  **/
 HPEXPORT calc_model HPCALL hpfiles_string_to_model(const char *str);
@@ -248,7 +248,7 @@ HPEXPORT uint8_t HPCALL hpfiles_filename2vartype(calc_model model, const char * 
  * \param model the calculator model
  * \param filepath the file path as string.
  * \param out_type storage space for the file type ID corresponding to the given file, if any.
- * \param calcfilename a dynamically allocated string containing the calculator-side filename (usually stripped from the computer-side file extension).
+ * \param out_calcfilename a dynamically allocated string containing the calculator-side filename (usually stripped from the computer-side file extension).
  * \return 0 if parsing succeeded, nonzero otherwise.
  * \note may have to use char16_t instead of char...
  */
