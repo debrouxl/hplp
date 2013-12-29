@@ -591,9 +591,14 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_chat(calc_handle * handle, uint16_t ** dat
 HPEXPORT int HPCALL hpcalcs_probe_calc(cable_model cable, calc_model * out_calc) {
     int res;
     if (out_calc != NULL) {
-        if (cable == CABLE_PRIME_HID) {
+        if (cable == CABLE_PRIME_HID || cable == CABLE_PRIME_EMU) {
             res = ERR_SUCCESS;
             *out_calc = CALC_PRIME;
+            hpcalcs_info("%s: calc probe succeeded", __FUNCTION__);
+        }
+        else if (cable == CABLE_39gII_HID || cable == CABLE_39gII_EMU) {
+            res = ERR_SUCCESS;
+            *out_calc = CALC_39gII;
             hpcalcs_info("%s: calc probe succeeded", __FUNCTION__);
         }
         else {

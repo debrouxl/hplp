@@ -41,10 +41,28 @@
 
 extern const cable_fncts cable_nul_fncts;
 extern const cable_fncts cable_prime_hid_fncts;
+#ifdef _WIN32
+extern const cable_fncts cable_prime_emu_fncts;
+#endif
+extern const cable_fncts cable_39gII_hid_fncts;
+#ifdef _WIN32
+extern const cable_fncts cable_39gII_emu_fncts;
+#endif
 
 const cable_fncts * hpcables_all_cables[CABLE_MAX] = {
     &cable_nul_fncts,
-    &cable_prime_hid_fncts
+    &cable_prime_hid_fncts,
+#ifdef _WIN32
+    &cable_prime_emu_fncts,
+#else
+    &cable_nul_fncts,
+#endif
+    &cable_39gII_hid_fncts,
+#ifdef _WIN32
+    &cable_39gII_emu_fncts,
+#else
+    &cable_nul_fncts,
+#endif
 };
 
 
@@ -233,7 +251,10 @@ HPEXPORT int HPCALL hpcables_cable_probe(cable_handle * handle) {
                 handle->busy = 1;
                 res = (*probe)(handle);
                 if (res == ERR_SUCCESS) {
-                    handle->open = 0;
+                    // FIXME remove the condition, when the code for closing the virtual cables works.
+                    if (handle->model != CABLE_PRIME_EMU && handle->model != CABLE_39gII_EMU) {
+                        handle->open = 0;
+                    }
                     hpcables_info("%s: probe succeeded", __FUNCTION__);
                 }
                 else {
@@ -261,8 +282,11 @@ HPEXPORT int HPCALL hpcables_cable_open(cable_handle * handle) {
             int (*open) (cable_handle *);
 
             if (handle->open) {
-                res = ERR_CABLE_OPEN;
-                hpcables_error("%s: cable already open", __FUNCTION__);
+                // FIXME make this an error again, when the code for closing the virtual cables works.
+                //res = ERR_CABLE_OPEN;
+                //hpcables_error("%s: cable already open", __FUNCTION__);
+                res = ERR_SUCCESS;
+                hpcables_error("%s: cable already open (but it's temporarily not an error for now)", __FUNCTION__);
                 break;
             }
             DO_BASIC_HANDLE_CHECKS2()
@@ -415,11 +439,17 @@ HPEXPORT int HPCALL hpcables_probe_cables(uint8_t ** result) {
                         hpcables_error("%s: probing cable %s failed", __FUNCTION__, hpcables_model_to_string(model));
                     }
 
-                    if (hpcables_handle_del(handle) != ERR_SUCCESS) {
-                        hpcables_error("%s: failed to destroy handle for model %s", __FUNCTION__, hpcables_model_to_string(model));
+                    // FIXME remove the condition, when the code for closing the virtual cables works.
+                    if (model != CABLE_PRIME_EMU && model != CABLE_39gII_EMU) {
+                        if (hpcables_handle_del(handle) != ERR_SUCCESS) {
+                            hpcables_error("%s: failed to destroy handle for model %s", __FUNCTION__, hpcables_model_to_string(model));
+                        }
+                        else {
+                            hpcables_info("%s: destroy handle for model %s success", __FUNCTION__, hpcables_model_to_string(model));
+                        }
                     }
                     else {
-                        hpcables_info("%s: destroy handle for model %s success", __FUNCTION__, hpcables_model_to_string(model));
+                        hpcables_error("%s: temporarily not destroying handle for model %s (until bug is fixed)", __FUNCTION__, hpcables_model_to_string(model));
                     }
                 }
                 else {

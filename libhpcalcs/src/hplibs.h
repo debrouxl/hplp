@@ -34,6 +34,9 @@
 typedef enum {
     CABLE_NUL = 0,
     CABLE_PRIME_HID,
+    CABLE_PRIME_EMU,
+    CABLE_39gII_HID,
+    CABLE_39gII_EMU,
     CABLE_MAX
 } cable_model;
 
@@ -41,6 +44,7 @@ typedef enum {
 typedef enum {
     CALC_NONE = 0,
     CALC_PRIME,
+    CALC_39gII,
     CALC_MAX
 } calc_model;
 
@@ -57,6 +61,8 @@ typedef enum {
 #define USB_VID_HP (0x03F0)
 //! USB Product ID of the Prime calculator.
 #define USB_PID_PRIME (0x0441)
+//! USB Product ID of the 39gII calculator.
+#define USB_PID_39gII (0xD507)
 
 //! Size of a raw HID packet for the Prime.
 #define PRIME_RAW_HID_DATA_SIZE (64)

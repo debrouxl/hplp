@@ -85,39 +85,121 @@ static inline uint16_t crc16_block(const uint8_t * buffer, uint32_t len) {
 
 static int read_vtl_pkt(calc_handle * handle, uint8_t cmd, prime_vtl_pkt ** pkt, int packet_contains_header) {
     int res;
+    cable_handle * cable;
     (void)packet_contains_header;
-    *pkt = prime_vtl_pkt_new(0);
-    if (*pkt != NULL) {
-        (*pkt)->cmd = cmd;
-        res = prime_recv_data(handle, *pkt);
-        if (res == ERR_SUCCESS) {
-            if ((*pkt)->size > 0) {
-                if ((*pkt)->data[0] == (*pkt)->cmd) {
-                    hpcalcs_debug("%s: command matches returned data", __FUNCTION__);
+
+    // Use different code paths for retrieving data, depending on the model.
+    cable = hpcalcs_cable_get(handle);
+    if (cable != NULL) {
+        cable_model model = hpcables_get_model(cable);
+        if (model == CABLE_PRIME_HID) {
+            // Real Prime calculators need fragmentation.
+            *pkt = prime_vtl_pkt_new(0);
+            if (*pkt != NULL) {
+                (*pkt)->cmd = cmd;
+                res = prime_recv_data(handle, *pkt);
+                // prime_recv_data takes care of setting (*pkt)->size.
+                if (res == ERR_SUCCESS) {
+                    if ((*pkt)->size > 0) {
+                        if ((*pkt)->data[0] == (*pkt)->cmd) {
+                            hpcalcs_debug("%s: command matches returned data", __FUNCTION__);
+                        }
+                        else {
+                            hpcalcs_debug("%s: command does not match returned data", __FUNCTION__);
+                            // It's not necessarily an error.
+                        }
+                    }
+                    else {
+                        hpcalcs_info("%s: empty packet", __FUNCTION__);
+                    }
                 }
                 else {
-                    hpcalcs_debug("%s: command does not match returned data", __FUNCTION__);
-                    // It's not necessarily an error.
+                    prime_vtl_pkt_del(*pkt);
+                    *pkt = NULL;
                 }
             }
             else {
-                hpcalcs_info("%s: empty packet", __FUNCTION__);
+                res = ERR_MALLOC;
+                hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
+            }
+        }
+        else if (model == CABLE_PRIME_EMU) {
+            // Virtual Prime calculators don't need fragmentation.
+            uint32_t size = 10240;
+            uint8_t * data = (uint8_t *)calloc(1, size);
+            if (data != NULL) {
+                // data might be reallocated by hpcables_cable_recv.
+                res = hpcables_cable_recv(cable, &data, &size);
+                if (res == ERR_SUCCESS) {
+                    if (size > 0) {
+                        uint32_t expected_size = 0;
+                        hpcalcs_info("%s: non-empty packet", __FUNCTION__);
+                        res = prime_data_size(cmd, data, &expected_size);
+                        if (res != ERR_SUCCESS || size != expected_size) {
+                            hpcalcs_error("%s: failed to determine packet size, or it does not match expectations", __FUNCTION__);
+                        }
+                        else {
+                            size = expected_size;
+                        }
+
+                        *pkt = prime_vtl_pkt_new_with_data_ptr(size, data);
+                        if (*pkt != NULL) {
+                            hpcalcs_info("%s: created vpkt", __FUNCTION__);
+                        }
+                        else {
+                            res = ERR_MALLOC;
+                            hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
+                        }
+                    }
+                    else {
+                        hpcalcs_info("%s: empty packet", __FUNCTION__);
+                    }
+                }
+                else {
+                    hpcalcs_error("%s: failed to read from cable", __FUNCTION__);
+                }
+            }
+            else {
+                res = ERR_MALLOC;
+                hpcalcs_error("%s: couldn't create buffer", __FUNCTION__);
             }
         }
         else {
-            prime_vtl_pkt_del(*pkt);
-            *pkt = NULL;
+            res = ERR_INVALID_MODEL;
+            hpcalcs_error("%s: unhandled model", __FUNCTION__);
         }
     }
     else {
-        res = ERR_MALLOC;
-        hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
+        res = ERR_CALC_NO_CABLE;
+        hpcalcs_error("%s: couldn't obtain cable", __FUNCTION__);
     }
     return res;
 }
 
 static int write_vtl_pkt(calc_handle * handle, prime_vtl_pkt * pkt) {
-    return prime_send_data(handle, pkt);
+    int res;
+    // Use different code paths for submitting data, depending on the model.
+    cable_handle * cable = hpcalcs_cable_get(handle);
+    if (cable != NULL) {
+        cable_model model = hpcables_get_model(cable);
+        if (model == CABLE_PRIME_HID) {
+            // Real Prime calculators need fragmentation.
+            res = prime_send_data(handle, pkt);
+        }
+        else if (model == CABLE_PRIME_EMU) {
+            // Virtual Prime calculators don't need fragmentation.
+            res = hpcables_cable_send(cable, pkt->data, pkt->size);
+        }
+        else {
+            res = ERR_INVALID_MODEL;
+            hpcalcs_error("%s: unhandled model", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_CALC_NO_CABLE;
+        hpcalcs_error("%s: couldn't obtain cable", __FUNCTION__);
+    }
+    return res;
 }
 
 HPEXPORT int HPCALL calc_prime_s_check_ready(calc_handle * handle) {

@@ -50,6 +50,9 @@ HPEXPORT const char * HPCALL hpcables_model_to_string(cable_model model) {
     switch (model) {
         case CABLE_NUL: return "<none>";
         case CABLE_PRIME_HID: return "Prime (HID)";
+        case CABLE_PRIME_EMU: return "Prime (Emu)";
+        case CABLE_39gII_HID: return "39gII (HID)";
+        case CABLE_39gII_EMU: return "39gII (Emu)";
         default: return "unknown";
     }
 }
@@ -58,6 +61,15 @@ HPEXPORT cable_model HPCALL hpcables_string_to_model(const char *str) {
     if (str != NULL) {
         if (!strcasecmp("Prime HID", str) || !strcasecmp("Prime_HID", str) || !strcasecmp("HP Prime HID", str)) {
             return CABLE_PRIME_HID;
+        }
+        else if (!strcasecmp("Prime Emu", str) || !strcasecmp("Prime_Emu", str) || !strcasecmp("HP Prime Emu", str)) {
+            return CABLE_PRIME_EMU;
+        }
+        else if (!strcasecmp("39gII HID", str) || !strcasecmp("39gII_HID", str) || !strcasecmp("HP 39gII HID", str)) {
+            return CABLE_PRIME_HID;
+        }
+        else if (!strcasecmp("39gII Emu", str) || !strcasecmp("39gII_Emu", str) || !strcasecmp("HP 39gII Emu", str)) {
+            return CABLE_PRIME_EMU;
         }
         // else fall through.
     }
@@ -68,6 +80,7 @@ HPEXPORT const char * HPCALL hpfiles_model_to_string(calc_model model) {
     switch (model) {
         case CALC_NONE: return "<none>";
         case CALC_PRIME: return "Prime";
+        case CALC_39gII: return "39gII";
         default: return "unknown";
     }
 }

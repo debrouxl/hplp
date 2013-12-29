@@ -14,14 +14,22 @@ Status (2014/06/03)
 -------------------
 The code base does:
 * work on Windows, Linux and MacOS X;
-* support communication with a single Prime calculator connected to the
-  computer. The communication is known to work with the following firmware
+* provide a terminal-based UI: the test program "test_hpcalcs";
+* communicate with:
+  * a single Prime calculator connected to the computer (good support);
+  * the Prime emulator (mild support; due to a bug in libhpcalcs, which doesn't
+    close the communication properly, the emulator needs to be restarted after
+    test_hpcalcs exits);
+  The communication is known to work with the following firmware
   versions, but might not work with other older or newer versions, if HP
   performs backwards-incompatible changes in the protocol (like TI does):
   * "SDKV0.30" firmware version from mid-August 2013;
   * "SDKV0.32" build 5447 firmware version from late November 2013;
   * partial success with the V0.031.6030 / V0.032.6030 build 6030 firmware
     versions published late May 2013.
+  There's a bit of support for the 39gII emulator (which is, on a low level,
+  very close to the Prime emulator). However, some of the upper layers need a
+  rework (which I already knew) for gaining good 39gII emulator support.
 * implement 10 operations (without _known_ bugs):
   * ready check;
   * get calculator information;
@@ -34,7 +42,6 @@ The code base does:
   * send key(s) (remote control);
   * send chat;
   * receive chat;
-* provide a terminal-based UI: the test program "test_hpcalcs".
 
 The code base doesn't:
 * perform color conversion on PNG screenshots (libhpcalcs should use libpng to
@@ -48,8 +55,9 @@ The code base doesn't:
 Goals
 -----
 Laying the groundwork for GUIs dealing with two-way communication with HP
-Prime calculators, and possibly 39gII (Prime and 39gII are similar), using
-USB HID class, and possibly later fake MSD for firmware upgrades.
+Prime and 39gII calculators and emulators. The real calculators are using
+USB HID class for normal operation, support for firmware upgrades (which uses
+some sort of fake MSD) might be added later.
 
 
 Non-goals

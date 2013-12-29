@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-12-26 20:58+0100\n"
+"POT-Creation-Date: 2013-12-26 21:28+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -94,22 +94,22 @@ msgstr ""
 msgid "Problem initializing the library"
 msgstr ""
 
-#: src/hpcables.c:60
+#: src/hpcables.c:78
 #, c-format
 msgid "hpcables library version %s compiled on %s"
 msgstr ""
 
-#: src/hpcables.c:65 src/hpcalcs.c:59 src/hpfiles.c:84
+#: src/hpcables.c:83 src/hpcalcs.c:59 src/hpfiles.c:84
 #, c-format
 msgid "%s: init succeeded"
 msgstr ""
 
-#: src/hpcables.c:69
+#: src/hpcables.c:87
 #, c-format
 msgid "%s: init failed"
 msgstr ""
 
-#: src/hpcables.c:79 src/hpcalcs.c:65 src/hpfiles.c:90
+#: src/hpcables.c:97 src/hpcalcs.c:65 src/hpfiles.c:90
 #, c-format
 msgid "%s: exit succeeded"
 msgstr ""
