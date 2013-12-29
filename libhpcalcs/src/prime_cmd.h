@@ -62,6 +62,8 @@ HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_ent
 
 HPEXPORT int HPCALL calc_prime_s_send_key(calc_handle * handle, uint32_t code);
 HPEXPORT int HPCALL calc_prime_r_send_key(calc_handle * handle);
+HPEXPORT int HPCALL calc_prime_s_send_keys(calc_handle * handle, const uint8_t * data, uint32_t size);
+HPEXPORT int HPCALL calc_prime_r_send_keys(calc_handle * handle);
 
 HPEXPORT int HPCALL calc_prime_s_send_chat(calc_handle * handle, const uint16_t * data, uint32_t size);
 HPEXPORT int HPCALL calc_prime_r_send_chat(calc_handle * handle);

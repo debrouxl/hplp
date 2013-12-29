@@ -51,8 +51,9 @@ typedef enum {
     CALC_FNCT_RECV_FILE = 5,
     CALC_FNCT_RECV_BACKUP = 6,
     CALC_FNCT_SEND_KEY = 7,
-    CALC_FNCT_SEND_CHAT = 8,
-    CALC_FNCT_RECV_CHAT = 9,
+    CALC_FNCT_SEND_KEYS = 8,
+    CALC_FNCT_SEND_CHAT = 9,
+    CALC_FNCT_RECV_CHAT = 10,
     CALC_FNCT_LAST ///< Keep this one last
 } calc_fncts_idx;
 
@@ -67,6 +68,7 @@ typedef enum {
     CALC_OPS_RECV_FILE = (1 << CALC_FNCT_RECV_FILE),
     CALC_OPS_RECV_BACKUP = (1 << CALC_FNCT_RECV_BACKUP),
     CALC_OPS_SEND_KEY = (1 << CALC_FNCT_SEND_KEY),
+    CALC_OPS_SEND_KEYS = (1 << CALC_FNCT_SEND_KEYS),
     CALC_OPS_SEND_CHAT = (1 << CALC_FNCT_SEND_CHAT),
     CALC_OPS_RECV_CHAT = (1 << CALC_FNCT_RECV_CHAT)
 } calc_features_operations;
@@ -102,6 +104,7 @@ struct _calc_fncts {
     int (*recv_file) (calc_handle * handle, files_var_entry * request, files_var_entry ** out_file);
     int (*recv_backup) (calc_handle * handle, files_var_entry *** out_vars);
     int (*send_key) (calc_handle * handle, uint32_t code);
+    int (*send_keys) (calc_handle * handle, const uint8_t * data, uint32_t size);
     int (*send_chat) (calc_handle * handle, const uint16_t * data, uint32_t size);
     int (*recv_chat) (calc_handle * handle, uint16_t ** out_data, uint32_t * out_size);
 };
@@ -281,12 +284,20 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_file(calc_handle * handle, files_var_entry
  */
 HPEXPORT int HPCALL hpcalcs_calc_recv_backup(calc_handle * handle, files_var_entry *** out_vars);
 /**
- * \brief Sends a keypress to the calculator.
+ * \brief Sends a single keypress to the calculator.
  * \param handle the calculator handle.
  * \param code the key code.
  * \return 0 upon success, nonzero otherwise.
  */
 HPEXPORT int HPCALL hpcalcs_calc_send_key(calc_handle * handle, uint32_t code);
+/**
+ * \brief Sends potentially multiple keypresses to the calculator.
+ * \param handle the calculator handle.
+ * \param data the buffer containings key codes.
+ * \param size the size of the data in the buffer.
+ * \return 0 upon success, nonzero otherwise.
+ */
+HPEXPORT int HPCALL hpcalcs_calc_send_keys(calc_handle * handle, const uint8_t * data, uint32_t size);
 /**
  * \brief Sends chat data to the calculator.
  * \param handle the calculator handle.

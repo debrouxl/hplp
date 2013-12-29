@@ -488,6 +488,39 @@ HPEXPORT int HPCALL hpcalcs_calc_send_key(calc_handle * handle, uint32_t code) {
     return res;
 }
 
+HPEXPORT int HPCALL hpcalcs_calc_send_keys(calc_handle * handle, const uint8_t * data, uint32_t size) {
+    int res = -1;
+    if (handle != NULL) {
+        do {
+            int (*send_keys) (calc_handle *, const uint8_t *, uint32_t);
+
+            DO_BASIC_HANDLE_CHECKS()
+
+            send_keys = handle->fncts->send_keys;
+            if (send_keys != NULL) {
+                handle->busy = 1;
+                res = (*send_keys)(handle, data, size);
+                if (res == 0) {
+                    hpcalcs_info("%s: send_keys succeeded", __FUNCTION__);
+                }
+                else {
+                    hpcalcs_error("%s: send_keys failed", __FUNCTION__);
+                }
+                handle->busy = 0;
+            }
+            else {
+                res = ERR_CALC_INVALID_FNCTS;
+                hpcalcs_error("%s: fncts->send_keys is NULL", __FUNCTION__);
+            }
+        } while (0);
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
 HPEXPORT int HPCALL hpcalcs_calc_send_chat(calc_handle * handle, const uint16_t * data, uint32_t size) {
     int res = -1;
     if (handle != NULL) {

@@ -10,7 +10,7 @@ the install_hplp.sh script provided alongside this README
 automates part of the build process.
 
 
-Status (2013/12/23)
+Status (2013/12/29)
 -------------------
 The code base does:
 * work on Windows, Linux and MacOS X;
@@ -20,7 +20,7 @@ The code base does:
   version from late November 2013, but might not work with other older or
   newer versions, if HP performs backwards-incompatible changes in the
   protocol (like TI does);
-* implement ten operations (without _known_ bugs):
+* implement 10 operations (without _known_ bugs):
   * ready check;
   * get calculator information;
   * set date and time;
@@ -29,7 +29,7 @@ The code base does:
     stripped manually);
   * receive file;
   * receive backup;
-  * send key (remote control);
+  * send key(s) (remote control);
   * send chat;
   * receive chat;
 * provide a terminal-based UI: the test program "test_hpcalcs".

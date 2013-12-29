@@ -63,6 +63,10 @@ static int calc_none_send_key(calc_handle * handle, uint32_t code) {
     return 0;
 }
 
+static int calc_none_send_keys(calc_handle * handle, const uint8_t * data, uint32_t size) {
+    return 0;
+}
+
 static int calc_none_send_chat(calc_handle * handle, const uint16_t * data, uint32_t size) {
     return 0;
 }
@@ -85,6 +89,7 @@ const calc_fncts calc_none_fncts =
     &calc_none_recv_file,
     &calc_none_recv_backup,
     &calc_none_send_key,
+    &calc_none_send_keys,
     &calc_none_send_chat,
     &calc_none_recv_chat
 };

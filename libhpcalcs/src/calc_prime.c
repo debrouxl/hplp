@@ -162,6 +162,22 @@ static int calc_prime_send_key(calc_handle * handle, uint32_t code) {
     return res;
 }
 
+static int calc_prime_send_keys(calc_handle * handle, const uint8_t * data, uint32_t size) {
+    int res;
+
+    res = calc_prime_s_send_keys(handle, data, size);
+    if (res == 0) {
+        res = calc_prime_r_send_keys(handle);
+        if (res != 0) {
+            hpcalcs_error("%s: r_send_keys failed", __FUNCTION__);
+        }
+    }
+    else {
+        hpcalcs_error("%s: s_send_keys failed", __FUNCTION__);
+    }
+    return res;
+}
+
 static int calc_prime_send_chat(calc_handle * handle, const uint16_t * data, uint32_t size) {
     int res;
 
@@ -195,7 +211,7 @@ const calc_fncts calc_prime_fncts =
     "HP Prime Graphing Calculator",
       CALC_OPS_CHECK_READY | CALC_OPS_GET_INFOS | CALC_OPS_SET_DATE_TIME | CALC_OPS_RECV_SCREEN
     | CALC_OPS_SEND_FILE | CALC_OPS_RECV_FILE | CALC_OPS_RECV_BACKUP | CALC_OPS_SEND_KEY
-    | CALC_OPS_SEND_CHAT | CALC_OPS_RECV_CHAT,
+    | CALC_OPS_SEND_KEYS | CALC_OPS_SEND_CHAT | CALC_OPS_RECV_CHAT,
     &calc_prime_check_ready,
     &calc_prime_get_infos,
     &calc_prime_set_date_time,
@@ -204,6 +220,7 @@ const calc_fncts calc_prime_fncts =
     &calc_prime_recv_file,
     &calc_prime_recv_backup,
     &calc_prime_send_key,
+    &calc_prime_send_keys,
     &calc_prime_send_chat,
     &calc_prime_recv_chat
 };
