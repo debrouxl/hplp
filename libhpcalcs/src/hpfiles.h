@@ -114,13 +114,13 @@ HPEXPORT hplibs_logging_level HPCALL hpfiles_log_set_level(hplibs_logging_level 
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create(void);
 /**
  * \brief Creates and preallocates a files_var_entry structure.
- * \param size the size to be allocated
+ * \param size the size to be allocated.
  * \return Pointer to files_var_entry, NULL if failed.
  */
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_size(uint32_t size);
 /**
  * \brief Creates and fills a files_var_entry structure with the given data.
- * \param data the data to be copied
+ * \param data the data to be duplicated.
  * \param size the size of the data.
  * \return Pointer to files_var_entry, NULL if failed.
  */

@@ -294,7 +294,7 @@ HPEXPORT int HPCALL hpcables_cable_close(cable_handle * handle) {
     return res;
 }
 
-HPEXPORT int HPCALL hpcables_cable_send (cable_handle * handle, uint8_t * data, uint32_t len) {
+HPEXPORT int HPCALL hpcables_cable_send(cable_handle * handle, uint8_t * data, uint32_t len) {
     int res;
     if (handle != NULL) {
         do {
@@ -327,11 +327,11 @@ HPEXPORT int HPCALL hpcables_cable_send (cable_handle * handle, uint8_t * data, 
     return res;
 }
 
-HPEXPORT int HPCALL hpcables_cable_recv (cable_handle * handle, uint8_t * data, uint32_t * len) {
+HPEXPORT int HPCALL hpcables_cable_recv(cable_handle * handle, uint8_t ** data, uint32_t * len) {
     int res;
     if (handle != NULL) {
         do {
-            int (*recv) (cable_handle *, uint8_t *, uint32_t *);
+            int (*recv) (cable_handle *, uint8_t **, uint32_t *);
 
             DO_BASIC_HANDLE_CHECKS()
 

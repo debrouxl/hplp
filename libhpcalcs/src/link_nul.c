@@ -32,24 +32,30 @@
 #include <hplibs.h>
 #include <hpcalcs.h>
 
-static int cable_nul_open (cable_handle * handle) {
+static int cable_nul_open(cable_handle * handle) {
+    handle->model = CABLE_NUL;
+    handle->handle = NULL;
+    handle->fncts = NULL;
+    handle->read_timeout = 0;
+    handle->open = 0;
+    handle->busy = 0;
     return 0;
 }
 
-static int cable_nul_close (cable_handle * handle) {
+static int cable_nul_close(cable_handle * handle) {
     return 0;
 }
 
-static int cable_nul_set_read_timeout (cable_handle * handle, int read_timeout) {
+static int cable_nul_set_read_timeout(cable_handle * handle, int read_timeout) {
     return 0;
 }
 
 
-static int cable_nul_send (cable_handle * handle, uint8_t * data, uint32_t len) {
+static int cable_nul_send(cable_handle * handle, uint8_t * data, uint32_t len) {
     return 0;
 }
 
-static int cable_nul_recv (cable_handle * handle, uint8_t * data, uint32_t * len) {
+static int cable_nul_recv(cable_handle * handle, uint8_t ** data, uint32_t * len) {
     return 0;
 }
 

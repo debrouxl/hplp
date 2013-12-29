@@ -153,17 +153,10 @@ HPEXPORT int HPCALL calc_prime_r_check_ready(calc_handle * handle, uint8_t ** ou
         if (res == ERR_SUCCESS && pkt != NULL) {
             if (out_data != NULL && out_size != NULL) {
                 *out_size = pkt->size;
-                *out_data = malloc(pkt->size);
-                if (*out_data != NULL) {
-                    memcpy(*out_data, pkt->data, pkt->size);
-                    res = 0;
-                }
-                else {
-                    res = ERR_MALLOC;
-                    hpcalcs_error("%s: couldn't allocate memory", __FUNCTION__);
-                }
+                *out_data = pkt->data; // Transfer ownership of the memory block to the caller.
+                pkt->data = NULL; // Detach it from virtual packet.
             }
-            // else do nothing. res is already 0.
+            // else do nothing. res is already ERR_SUCCESS.
             prime_vtl_pkt_del(pkt);
         }
         else {
@@ -207,20 +200,13 @@ HPEXPORT int HPCALL calc_prime_r_get_infos (calc_handle * handle, calc_infos * i
     if (handle != NULL) {
         prime_vtl_pkt * pkt;
         res = read_vtl_pkt(handle, CMD_PRIME_GET_INFOS, &pkt, 1);
-        if (res == 0 && pkt != NULL) {
+        if (res == ERR_SUCCESS && pkt != NULL) {
             if (infos != NULL) {
                 infos->size = pkt->size;
-                infos->data = malloc(pkt->size);
-                if (infos->data != NULL) {
-                    memcpy(infos->data, pkt->data, pkt->size);
-                    res = ERR_SUCCESS;
-                }
-                else {
-                    res = ERR_MALLOC;
-                    hpcalcs_error("%s: couldn't allocate memory", __FUNCTION__);
-                }
+                infos->data = pkt->data; // Transfer ownership of the memory block to the caller.
+                pkt->data = NULL; // Detach it from virtual packet.
             }
-            // else do nothing. res is already 0.
+            // else do nothing. res is already ERR_SUCCESS.
             prime_vtl_pkt_del(pkt);
         }
         else {
@@ -344,19 +330,12 @@ HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screensh
                 // Skip marker.
                 if (pkt->data[8] == (uint8_t)format && pkt->data[9] == 0xFF && pkt->data[10] == 0xFF && pkt->data[11] == 0xFF && pkt->data[12] == 0xFF) {
                     if (out_data != NULL && out_size != NULL) {
-                        uint32_t size = pkt->size - 13;
-                        *out_size = size;
-                        *out_data = malloc(size);
-                        if (*out_data != NULL) {
-                            memcpy(*out_data, pkt->data + 13, size);
-                            res = ERR_SUCCESS;
-                        }
-                        else {
-                            res = ERR_MALLOC;
-                            hpcalcs_error("%s: couldn't allocate memory", __FUNCTION__);
-                        }
+                        *out_size = pkt->size - 13;
+                        memmove(pkt->data, pkt->data + 13, pkt->size - 13);
+                        *out_data = pkt->data; // Transfer ownership of the memory block to the caller.
+                        pkt->data = NULL; // Detach it from virtual packet.
                     }
-                    // else do nothing. res is already 0.
+                    // else do nothing. res is already ERR_SUCCESS.
                 }
                 else {
                     res = ERR_CALC_PACKET_FORMAT;

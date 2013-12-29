@@ -47,7 +47,7 @@ struct _cable_fncts {
     int (*close) (cable_handle * handle);
     int (*set_read_timeout) (cable_handle * handle, int read_timeout);
     int (*send) (cable_handle * handle, uint8_t * data, uint32_t len);
-    int (*recv) (cable_handle * handle, uint8_t * data, uint32_t * len);
+    int (*recv) (cable_handle * handle, uint8_t ** data, uint32_t * len);
 };
 
 //! Internal structure containing state about the cable, returned and passed around by the user.
@@ -133,13 +133,13 @@ HPEXPORT int HPCALL hpcables_handle_display(cable_handle * handle);
 HPEXPORT cable_model HPCALL hpcables_get_model(cable_handle * handle);
 
 /**
- * \brief Gets the read timeout for the given cable handle.
+ * \brief Gets the read timeout (in ms) for the given cable handle.
  * \param handle the cable handle
  * \return the current read timeout, 0 if error.
  */
 HPEXPORT int HPCALL hpcables_options_get_read_timeout(cable_handle * handle);
 /**
- * \brief Sets the timeout for the given cable handle.
+ * \brief Sets the timeout (in ms) for the given cable handle.
  * \param handle the cable handle
  * \param timeout the new timeout.
  * \return 0 if the operation succeeded, nonzero otherwise.
@@ -173,7 +173,7 @@ HPEXPORT int HPCALL hpcables_cable_send(cable_handle * handle, uint8_t * data, u
  * \param len storage area for the length of the received data.
  * \return 0 if the operation succeeded, nonzero otherwise.
  **/
-HPEXPORT int HPCALL hpcables_cable_recv(cable_handle * handle, uint8_t * data, uint32_t * len);
+HPEXPORT int HPCALL hpcables_cable_recv(cable_handle * handle, uint8_t ** data, uint32_t * len);
 
 /**
  * \brief Converts a calculator model to a printable string.

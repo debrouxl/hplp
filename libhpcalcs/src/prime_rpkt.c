@@ -70,13 +70,23 @@ HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt) {
     if (handle != NULL && pkt != NULL) {
         cable_handle * cable = handle->cable;
         if (cable != NULL) {
-            res = hpcables_cable_recv(cable, pkt->data, &pkt->size);
-            hexdump("IN", pkt->data, pkt->size, 2);
-            if (res == ERR_SUCCESS) {
-                //hpcalcs_info("%s: recv succeeded", __FUNCTION__);
+            uint8_t * data;
+            data = malloc(sizeof(pkt->data));
+            if (data != NULL) {
+                res = hpcables_cable_recv(cable, &data, &pkt->size);
+                hexdump("IN", pkt->data, pkt->size, 2);
+                if (res == ERR_SUCCESS) {
+                    //hpcalcs_info("%s: recv succeeded", __FUNCTION__);
+                    memcpy(pkt->data, data, sizeof(pkt->data));
+                }
+                else {
+                    hpcalcs_warning("%s: recv failed", __FUNCTION__);
+                }
+                free(data);
             }
             else {
-                hpcalcs_warning("%s: recv failed", __FUNCTION__);
+                res = ERR_MALLOC;
+                hpcalcs_error("%s: failed to allocate buffer", __FUNCTION__);
             }
         }
         else {

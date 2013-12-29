@@ -76,6 +76,7 @@ static int cable_prime_hid_close(cable_handle * handle) {
                 handle->model = CABLE_NUL;
                 handle->handle = NULL;
                 handle->fncts = NULL;
+                handle->open = 0;
                 res = ERR_SUCCESS;
                 hpcables_info("%s: cable close succeeded", __FUNCTION__);
             }
@@ -143,13 +144,14 @@ static int cable_prime_hid_send(cable_handle * handle, uint8_t * data, uint32_t 
     return res;
 }
 
-static int cable_prime_hid_recv(cable_handle * handle, uint8_t * data, uint32_t * len) {
+static int cable_prime_hid_recv(cable_handle * handle, uint8_t ** data, uint32_t * len) {
     int res;
-    if (handle != NULL && data != NULL && len != NULL) {
+    // Use pre-allocated area pointed to by data.
+    if (handle != NULL && data != NULL && *data != NULL && len != NULL) {
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
             if (handle->open) {
-                res = hid_read_timeout(device_handle, data, PRIME_RAW_HID_DATA_SIZE, handle->read_timeout);
+                res = hid_read_timeout(device_handle, *data, PRIME_RAW_HID_DATA_SIZE, handle->read_timeout);
                 if (res >= 0) {
                     *len = res;
                     res = ERR_SUCCESS;
