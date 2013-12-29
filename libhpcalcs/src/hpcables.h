@@ -43,6 +43,7 @@ struct _cable_fncts {
     cable_model model;
     const char * name;
     const char * description;
+    int (*probe) (cable_handle * handle);
     int (*open) (cable_handle * handle);
     int (*close) (cable_handle * handle);
     int (*set_read_timeout) (cable_handle * handle, int read_timeout);
@@ -106,7 +107,7 @@ HPEXPORT void HPCALL hpcables_log_set_callback(void (*log_callback)(const char *
 HPEXPORT hplibs_logging_level HPCALL hpcables_log_set_level(hplibs_logging_level log_level);
 
 /**
- * \brief Create a new handle (opaque structure) for the given cable model.
+ * \brief Creates a new handle (opaque structure) for the given cable model.
  * The handle must be freed with \a hpcables_handle_del when no longer needed.
  * \param model the cable model.
  * \return NULL if an error occurred, otherwise a valid handle.
@@ -147,6 +148,12 @@ HPEXPORT int HPCALL hpcables_options_get_read_timeout(cable_handle * handle);
 HPEXPORT int HPCALL hpcables_options_set_read_timeout(cable_handle * handle, int timeout);
 
 /**
+ * \brief Probes the given cable.
+ * \param handle the handle to be probed.
+ * \return 0 if the operation succeeded, nonzero otherwise.
+ **/
+HPEXPORT int HPCALL hpcables_cable_probe(cable_handle * handle);
+/**
  * \brief Opens the given cable.
  * \param handle the handle to be opened.
  * \return 0 if the operation succeeded, nonzero otherwise.
@@ -159,7 +166,7 @@ HPEXPORT int HPCALL hpcables_cable_open(cable_handle * handle);
  **/
 HPEXPORT int HPCALL hpcables_cable_close(cable_handle * handle);
 /**
- * \brief Send data through the given cable.
+ * \brief Sends data through the given cable.
  * \param handle the cable handle.
  * \param data the data to be sent.
  * \param len the size of the data to be sent.
@@ -167,13 +174,34 @@ HPEXPORT int HPCALL hpcables_cable_close(cable_handle * handle);
  **/
 HPEXPORT int HPCALL hpcables_cable_send(cable_handle * handle, uint8_t * data, uint32_t len);
 /**
- * \brief Receive data through the given cable.
+ * \brief Receives data through the given cable.
  * \param handle the cable handle.
  * \param data storage area for the data to be received.
  * \param len storage area for the length of the received data.
  * \return 0 if the operation succeeded, nonzero otherwise.
  **/
 HPEXPORT int HPCALL hpcables_cable_recv(cable_handle * handle, uint8_t ** data, uint32_t * len);
+
+/**
+ * \brief Detects usable cables and builds an array of uint8_t booleans corresponding to the items of enum cable_model.
+ * \param result storage area for the cable models which were found. Use \a hpcables_probe_free to free the allocated memory.
+ * \return the number of usable cables. 0 means severe problem (e.g. memory allocation failure), as the null cable is always usable.
+ */
+HPEXPORT int HPCALL hpcables_probe_cables(uint8_t ** result);
+/**
+ * \brief Frees the result of probing, created by \a hpcables_probe_cables.
+ * \param models the memory to be freed.
+ * \return 0 if the operation succeeded, nonzero otherwise.
+ */
+HPEXPORT int HPCALL hpcables_probe_free(uint8_t * models);
+/**
+ * \brief Shows basic information about a probing result.
+ * \param models the probing information to be dumped.
+ * \return 0 if the operation succeeded, nonzero otherwise.
+ **/
+HPEXPORT int HPCALL hpcables_probe_display(uint8_t * models);
+
+
 
 /**
  * \brief Converts a calculator model to a printable string.

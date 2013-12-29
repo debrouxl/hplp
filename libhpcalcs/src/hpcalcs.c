@@ -455,7 +455,7 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_backup(calc_handle * handle, files_var_ent
 }
 
 HPEXPORT int HPCALL hpcalcs_calc_send_key(calc_handle * handle, uint32_t code) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
             int (*send_key) (calc_handle *, uint32_t);
@@ -521,7 +521,7 @@ HPEXPORT int HPCALL hpcalcs_calc_send_keys(calc_handle * handle, const uint8_t *
 }
 
 HPEXPORT int HPCALL hpcalcs_calc_send_chat(calc_handle * handle, const uint16_t * data, uint32_t size) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
             int (*send_chat) (calc_handle *, const uint16_t *, uint32_t);
@@ -554,7 +554,7 @@ HPEXPORT int HPCALL hpcalcs_calc_send_chat(calc_handle * handle, const uint16_t 
 }
 
 HPEXPORT int HPCALL hpcalcs_calc_recv_chat(calc_handle * handle, uint16_t ** data, uint32_t *size) {
-    int res = -1;
+    int res;
     if (handle != NULL) {
         do {
             int (*recv_chat) (calc_handle *, uint16_t **, uint32_t *);
@@ -587,3 +587,23 @@ HPEXPORT int HPCALL hpcalcs_calc_recv_chat(calc_handle * handle, uint16_t ** dat
 }
 
 #undef DO_BASIC_HANDLE_CHECKS
+
+HPEXPORT int HPCALL hpcalcs_probe_calc(cable_model cable, calc_model * out_calc) {
+    int res;
+    if (out_calc != NULL) {
+        if (cable == CABLE_PRIME_HID) {
+            res = ERR_SUCCESS;
+            *out_calc = CALC_PRIME;
+            hpcalcs_info("%s: calc probe succeeded", __FUNCTION__);
+        }
+        else {
+            res = ERR_CALC_PROBE_FAILED;
+            hpcalcs_error("%s: calc probe failed", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_INVALID_PARAMETER;
+        hpcalcs_error("%s: out_calc is NULL", __FUNCTION__);
+    }
+    return res;
+}

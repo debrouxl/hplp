@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-12-15 13:31+0100\n"
+"POT-Creation-Date: 2013-12-26 20:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,12 +21,12 @@ msgstr ""
 msgid "Cannot understand filename"
 msgstr ""
 
-#: src/error.c:54 src/error.c:95 src/error.c:136 src/error.c:159
-#: src/error.c:199
+#: src/error.c:54 src/error.c:98 src/error.c:142 src/error.c:165
+#: src/error.c:205
 msgid "<Unknown error code>"
 msgstr ""
 
-#: src/error.c:77 src/error.c:121
+#: src/error.c:77 src/error.c:124
 msgid "Cable is not open"
 msgstr ""
 
@@ -46,43 +46,51 @@ msgstr ""
 msgid "Error reading from cable"
 msgstr ""
 
-#: src/error.c:92 src/error.c:127
+#: src/error.c:92 src/error.c:130
 msgid "Invalid cable functions"
 msgstr ""
 
-#: src/error.c:118
+#: src/error.c:95
+msgid "Cable probing failed"
+msgstr ""
+
+#: src/error.c:121
 msgid "No cable attached"
 msgstr ""
 
-#: src/error.c:124
+#: src/error.c:127
 msgid "Calc is busy"
 msgstr ""
 
-#: src/error.c:130
+#: src/error.c:133
 msgid "Unhandled packet format"
 msgstr ""
 
-#: src/error.c:133
+#: src/error.c:136
 msgid "Unable to get time constituents"
 msgstr ""
 
-#: src/error.c:184
-msgid "Failed to allocate memory"
-msgstr ""
-
-#: src/error.c:187
-msgid "Invalid handle pointer"
+#: src/error.c:139
+msgid "Calc probing failed"
 msgstr ""
 
 #: src/error.c:190
-msgid "Invalid function parameter"
+msgid "Failed to allocate memory"
 msgstr ""
 
 #: src/error.c:193
-msgid "Invalid model"
+msgid "Invalid handle pointer"
 msgstr ""
 
 #: src/error.c:196
+msgid "Invalid function parameter"
+msgstr ""
+
+#: src/error.c:199
+msgid "Invalid model"
+msgstr ""
+
+#: src/error.c:202
 msgid "Problem initializing the library"
 msgstr ""
 

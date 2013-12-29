@@ -331,6 +331,15 @@ HPEXPORT int HPCALL prime_send(calc_handle * handle, prime_raw_hid_pkt * pkt);
  */
 HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt);
 
+/**
+ * \brief Probes the given cable model to find out what calculator is connected to it.
+ * \param cable the cable model to be probed.
+ * \param out_calc storage area for the calculator model attached to the cable (if any).
+ * \return 0 upon success, nonzero otherwise.
+ * \note For now, the calculator type is fully determined by the calculator type. This might change in the future.
+ */
+HPEXPORT int HPCALL hpcalcs_probe_calc(cable_model cable, calc_model * out_calc);
+
 
 /**
  * \brief Creates a virtual packet for the Prime calculator, preallocating the given size.

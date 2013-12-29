@@ -32,6 +32,10 @@
 #include <hplibs.h>
 #include <hpcalcs.h>
 
+static int cable_nul_probe(cable_handle * handle) {
+    return 0;
+}
+
 static int cable_nul_open(cable_handle * handle) {
     handle->model = CABLE_NUL;
     handle->handle = NULL;
@@ -45,6 +49,7 @@ static int cable_nul_open(cable_handle * handle) {
 static int cable_nul_close(cable_handle * handle) {
     return 0;
 }
+
 
 static int cable_nul_set_read_timeout(cable_handle * handle, int read_timeout) {
     return 0;
@@ -64,6 +69,7 @@ const cable_fncts cable_nul_fncts =
     CABLE_NUL,
     "Dummy cable",
     "Dummy cable used when no cable is set",
+    &cable_nul_probe,
     &cable_nul_open,
     &cable_nul_close,
     &cable_nul_set_read_timeout,

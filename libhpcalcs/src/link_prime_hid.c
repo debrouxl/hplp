@@ -40,6 +40,29 @@
 
 extern const cable_fncts cable_prime_hid_fncts;
 
+static int cable_prime_hid_probe(cable_handle * handle) {
+    int res;
+    // In fact, we're not using handle here, but let's nevertheless flag misuse of the API.
+    if (handle != NULL) {
+        // Enumerating the device seems to do the job.
+        struct hid_device_info * info = hid_enumerate(USB_VID_HP, USB_PID_PRIME);
+        if (info != NULL) {
+            hid_free_enumeration(info);
+            res = ERR_SUCCESS;
+            hpcables_info("%s: cable probe succeeded", __FUNCTION__);
+        }
+        else {
+            res = ERR_CABLE_PROBE_FAILED;
+            hpcables_error("%s: cable probe failed", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcables_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
 static int cable_prime_hid_open(cable_handle * handle) {
     int res;
     if (handle != NULL) {
@@ -184,6 +207,7 @@ const cable_fncts cable_prime_hid_fncts =
     CABLE_PRIME_HID,
     "Prime HID cable",
     "Prime HID cable",
+    &cable_prime_hid_probe,
     &cable_prime_hid_open,
     &cable_prime_hid_close,
     &cable_prime_hid_set_read_timeout,

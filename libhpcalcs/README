@@ -39,8 +39,6 @@ The code base does:
 The code base doesn't:
 * perform color conversion on PNG screenshots (libhpcalcs should use libpng to
   uncompress the files, mangle pixels, and recompress to PNG);
-* provide a way to select one of multiple HP calculators (probing USB
-  devices);
 * provide a user-friendly GUI for the above, but a GUI can definitely build
   upon the library easily enough;
 * implement _proper_ conversion from UTF-16 LE to other charsets on its own:
@@ -201,24 +199,6 @@ TODO list
 * strip out leading program metadata, if any, from .hpprgm files, like the
   UTF-16LE BOM is already stripped;
 * add support for .hpappprgm and .hpappnote files;
-* add devices probing code (the hpcables part currently assumes that the
-  calculator is plugged in and that there's a single calculator), HIDAPI
-  provides some probing functions (e.g. based on vendor);
-  Implementation notes:
-  * in order to minimize API breakage if/when implementing OS upgrade is
-    implemented, a data structure should be added for indicating what type of
-    device we're dealing with. For instance:
-struct cable_probing_info {
-    cable_model cable; // HID and MSD will be different cables
-    calc_model calc; // HID and MSD will probably be different calcs
-    union info {
-        struct usb_info {
-            uint16_t usb_vid;
-            uint16_t usb_pid;
-            enum <...> device_mode; // indicating whether HID or MSD mode
-        };
-    };
-};
 * add 39gII support, probably, as the Prime is similar to the 39gII. That's
   where the usefulness of the cables / calcs separation and cables generic
   API will become most obvious.

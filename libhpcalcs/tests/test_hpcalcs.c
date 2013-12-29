@@ -107,6 +107,11 @@ static void output_log(FILE *f, const char * format, ...) {
 
 #endif
 
+// Unconditionally output to stdout, on all platforms.
+static void output_log_callback_stdout(const char * format, va_list args) {
+    vprintf(format, args);
+}
+
 
 // NOTE: this triplet of crude routines is just for demo and testing purposes !!
 // In the general case, a proper i18n library (not offered by the C standard library) should be used !
@@ -223,7 +228,7 @@ static int recv_screen(calc_handle * handle) {
     unsigned int format;
     int err;
 
-    output_log(stdout, "\nChoose a format (for Prime, usually 8 to 11):");
+    output_log(stdout, "\nChoose a format (for Prime, usually 8 to 11): ");
 
     err = scanf("%u", &format);
     if (err >= 1) {
@@ -349,7 +354,7 @@ static int recv_file(calc_handle * handle) {
     output_log(stdout, "\nEnter input filename (without computer-side extension): ");
     err = scanf("%" xstr(FILES_VARNAME_MAXLEN) "ls", filename);
     if (err >= 1) {
-        output_log(stdout, "Enter file type:");
+        output_log(stdout, "Enter file type: ");
 
         err = scanf("%10s", typestr);
         if (err >= 1) {
@@ -416,7 +421,7 @@ static int send_key(calc_handle * handle) {
     int err;
     unsigned int type;
 
-    output_log(stdout, "Enter key ID:");
+    output_log(stdout, "Enter key ID: ");
     err = scanf("%u", &type);
     if (err >= 1) {
         res = hpcalcs_calc_send_key(handle, type);
@@ -428,6 +433,7 @@ static int send_key(calc_handle * handle) {
         }
     }
     else {
+        fflush(stdin);
         output_log(stdout, "Canceled\n");
     }
 
@@ -488,10 +494,12 @@ static int send_keys(calc_handle * handle) {
             }
         }
         else {
+            fflush(stdin);
             output_log(stdout, "Failed to parse, canceled\n");
         }
     }
     else {
+        fflush(stdin);
         output_log(stdout, "Canceled\n");
     }
 
@@ -539,7 +547,7 @@ static int vpkt_send_experiments(calc_handle * handle) {
     int err;
     unsigned int id;
 
-    output_log(stdout, "Enter ID:");
+    output_log(stdout, "Enter command ID: ");
     err = scanf("%u", &id);
     if (err >= 1) {
         prime_vtl_pkt * pkt = prime_vtl_pkt_new(2);
@@ -609,11 +617,12 @@ static const FNCT_MENU fnct_menu[NITEMS] = {
 };
 
 int main(int argc, char **argv) {
-    cable_model model1 = CABLE_PRIME_HID;
-    calc_model model2 = CALC_PRIME;
+    cable_model model1 = CABLE_NUL;
+    calc_model model2 = CALC_NONE;
     cable_handle * cable;
     calc_handle * calc;
-    int res;
+    int res = 1;
+    uint8_t * probed_cables = NULL;
 
     // Set stdout and stderr to unbuffered mode.
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -621,44 +630,94 @@ int main(int argc, char **argv) {
 
     output_log(stdout, "Entering program\n");
 
-    // init libs
-    res = hpfiles_init(output_log_callback);
-    if (res) {
-        return 1;
+    // Init libraries
+    if (hpfiles_init(output_log_callback)) {
+        goto final_teardown;
     }
-    res = hpcables_init(output_log_callback);
-    if (res) {
-        return 1;
+    if (hpcables_init(output_log_callback)) {
+        goto final_teardown;
     }
-    res = hpcalcs_init(output_log_callback);
-    if (res) {
-        return 1;
+    if (hpcalcs_init(output_log_callback)) {
+        goto final_teardown;
     }
-    res = hpopers_init(output_log_callback);
-    if (res) {
-        return 1;
+    if (hpopers_init(output_log_callback)) {
+        goto final_teardown;
     }
 
-    // TODO: probe cables and calculators.
+    if (model1 == CABLE_NUL) {
+        // Probe cables and calculators.
+        res = hpcables_probe_cables(&probed_cables);
+        if (res == 0) {
+            output_log(stdout, "Found no usable cables (?!): exiting\n");
+            res = 1;
+            goto final_teardown;
+        }
+        else if (res == 1) {
+            // This means that the null cable is the only usable cable. Fall through.
+            model1 = CABLE_NUL;
+            hpcables_probe_free(probed_cables);
+        }
+        else {
+            int err;
+
+            output_log(stdout, "hpcables_probe_cables found %d cables\n", res);
+            hpcables_log_set_callback(output_log_callback_stdout);
+            hpcables_probe_display(probed_cables);
+            hpcables_log_set_callback(output_log_callback);
+            hpcables_probe_free(probed_cables);
+
+            output_log(stdout, "Enter the ID of the cable you want to use: ");
+
+            err = scanf("%u", &model1);
+            if (err < 1) {
+                fflush(stdin);
+                output_log(stdout, "Canceled, exiting program\n");
+                res = 1;
+                goto final_teardown;
+            }
+        }
+    }
+
+    if (model1 == CABLE_NUL) {
+        output_log(stdout, "NOTE: null cable selected, the program won't do much in the way of useful things !\n");
+    }
 
     output_log(stdout, "Initialized libraries\n");
 
     cable = hpcables_handle_new(model1);
     if (cable == NULL) {
         output_log(stdout, "hpcables_handle_new failed\n");
+        res = 1;
+        goto final_teardown;
+    }
+
+    res = hpcalcs_probe_calc(model1, &model2);
+    if (res != 0) {
+        output_log(stdout, "hpcalcs_probe_calc failed\n");
+        res = 1;
         goto final_teardown;
     }
 
     calc = hpcalcs_handle_new(model2);
     if (calc == NULL) {
         output_log(stdout, "hpcalcs_handle_new failed\n");
+        res = 1;
         goto del_cable;
     }
 
     // attach cable to calc (and open cable)
     res = hpcalcs_cable_attach(calc, cable);
     if (res) {
+        res = 1;
         goto del_calc;
+    }
+
+    if (model1 == CABLE_NUL) {
+        output_log(stdout, "NOTE: null cable selected, the program won't do much in the way of useful things !\n");
+    }
+
+    if (model2 == CALC_NONE) {
+        output_log(stdout, "NOTE: null calculator selected, the program won't do much in the way of useful things !\n");
     }
 
     do
@@ -721,5 +780,5 @@ final_teardown:
     hpfiles_exit();
 
     output_log(stdout, "Goodbye world!\n");
-    return 0;
+    return res;
 }

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-12-15 13:31+0100\n"
+"POT-Creation-Date: 2013-12-26 20:58+0100\n"
 "PO-Revision-Date: 2013-11-11 16:58+0100\n"
 "Last-Translator: Lionel Debroux <lionel_debroux@yahoo.fr>\n"
 "Language-Team: Français <lionel_debroux@yahoo.fr>\n"
@@ -20,12 +20,12 @@ msgstr ""
 msgid "Cannot understand filename"
 msgstr "Nom de fichier non géré"
 
-#: src/error.c:54 src/error.c:95 src/error.c:136 src/error.c:159
-#: src/error.c:199
+#: src/error.c:54 src/error.c:98 src/error.c:142 src/error.c:165
+#: src/error.c:205
 msgid "<Unknown error code>"
 msgstr "<Code d'erreur inconnu>"
 
-#: src/error.c:77 src/error.c:121
+#: src/error.c:77 src/error.c:124
 msgid "Cable is not open"
 msgstr "Le câble n'est pas ouvert"
 
@@ -45,43 +45,51 @@ msgstr "Erreur d'écriture vers le câble"
 msgid "Error reading from cable"
 msgstr "Erreur de lecture depuis le câble"
 
-#: src/error.c:92 src/error.c:127
+#: src/error.c:92 src/error.c:130
 msgid "Invalid cable functions"
 msgstr "Fonctions câble invalides"
 
-#: src/error.c:118
+#: src/error.c:95
+msgid "Cable probing failed"
+msgstr "Erreur de découverte (probe) du câble"
+
+#: src/error.c:121
 msgid "No cable attached"
 msgstr "Aucun câble associé"
 
-#: src/error.c:124
+#: src/error.c:127
 msgid "Calc is busy"
 msgstr "La calculatrice est occupée"
 
-#: src/error.c:130
+#: src/error.c:133
 msgid "Unhandled packet format"
 msgstr "Format de paquet non géré"
 
-#: src/error.c:133
+#: src/error.c:136
 msgid "Unable to get time constituents"
 msgstr "Impossible d'obtenir les éléments du temps"
 
-#: src/error.c:184
+#: src/error.c:139
+msgid "Calc probing failed"
+msgstr "Erreur de découverte (probe) de la calculatrice"
+
+#: src/error.c:190
 msgid "Failed to allocate memory"
 msgstr "Impossible d'allouer de la mémoire"
 
-#: src/error.c:187
+#: src/error.c:193
 msgid "Invalid handle pointer"
 msgstr "Pointeur handle invalide"
 
-#: src/error.c:190
+#: src/error.c:196
 msgid "Invalid function parameter"
 msgstr "Paramètre de fonction invalide"
 
-#: src/error.c:193
+#: src/error.c:199
 msgid "Invalid model"
 msgstr "Modèle invalide"
 
-#: src/error.c:196
+#: src/error.c:202
 msgid "Problem initializing the library"
 msgstr "Problème d'initialisation de la librairie"
 

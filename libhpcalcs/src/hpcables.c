@@ -95,14 +95,14 @@ HPEXPORT cable_handle * HPCALL hpcables_handle_new(cable_model model) {
             handle->model = model;
             handle->handle = NULL;
             handle->fncts = hpcables_all_cables[model];
-            hpcables_info("%s: handle allocation succeeded", __FUNCTION__);
+            hpcables_info("%s: handle allocation for model %d succeeded", __FUNCTION__, model);
         }
         else {
-            hpcables_error("%s: handle allocation failed", __FUNCTION__);
+            hpcables_error("%s: handle allocation for model %d failed", __FUNCTION__, model );
         }
     }
     else {
-        hpcables_error("%s: invalid model", __FUNCTION__);
+        hpcables_error("%s: invalid model %d", __FUNCTION__, model);
     }
 
     return handle;
@@ -210,6 +210,40 @@ HPEXPORT int HPCALL hpcables_options_set_read_timeout(cable_handle * handle, int
             else {
                 res = ERR_CABLE_INVALID_FNCTS;
                 hpcables_error("%s: fncts->set_read_timeout is NULL", __FUNCTION__);
+            }
+        } while (0);
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcables_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL hpcables_cable_probe(cable_handle * handle) {
+    int res;
+    if (handle != NULL) {
+        do {
+            int (*probe) (cable_handle *);
+
+            DO_BASIC_HANDLE_CHECKS2()
+
+            probe = handle->fncts->probe;
+            if (probe != NULL) {
+                handle->busy = 1;
+                res = (*probe)(handle);
+                if (res == ERR_SUCCESS) {
+                    handle->open = 0;
+                    hpcables_info("%s: probe succeeded", __FUNCTION__);
+                }
+                else {
+                    hpcables_error("%s: probe failed", __FUNCTION__);
+                }
+                handle->busy = 0;
+            }
+            else {
+                res = ERR_CABLE_INVALID_FNCTS;
+                hpcables_error("%s: fncts->probe is NULL", __FUNCTION__);
             }
         } while (0);
     }
@@ -361,3 +395,76 @@ HPEXPORT int HPCALL hpcables_cable_recv(cable_handle * handle, uint8_t ** data, 
 
 #undef DO_BASIC_HANDLE_CHECKS2
 #undef DO_BASIC_HANDLE_CHECKS
+
+HPEXPORT int HPCALL hpcables_probe_cables(uint8_t ** result) {
+    int res = 0;
+    if (result != NULL) {
+        uint8_t * models = (uint8_t *)calloc(CABLE_MAX, sizeof(uint8_t));
+        uint8_t * ptr = models;
+        if (models != NULL) {
+            for (cable_model model = CABLE_NUL; model < CABLE_MAX; model++) {
+                cable_handle * handle = hpcables_handle_new(model);
+                if (handle != NULL) {
+                    if (hpcables_cable_probe(handle) == ERR_SUCCESS) {
+                        res++;
+                        *ptr++ = 1;
+                        hpcables_info("%s: probing cable %s succeeded", __FUNCTION__, hpcables_model_to_string(model));
+                    }
+                    else {
+                        ptr++;
+                        hpcables_error("%s: probing cable %s failed", __FUNCTION__, hpcables_model_to_string(model));
+                    }
+
+                    if (hpcables_handle_del(handle) != ERR_SUCCESS) {
+                        hpcables_error("%s: failed to destroy handle for model %s", __FUNCTION__, hpcables_model_to_string(model));
+                    }
+                    else {
+                        hpcables_info("%s: destroy handle for model %s success", __FUNCTION__, hpcables_model_to_string(model));
+                    }
+                }
+                else {
+                    hpcables_error("%s: failed to create handle for model %s", __FUNCTION__, hpcables_model_to_string(model));
+                }
+            }
+        }
+        *result = models;
+    }
+    else {
+        hpcables_error("%s: result is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL hpcables_probe_free(uint8_t * models) {
+    int res;
+    if (models != NULL) {
+        res = ERR_SUCCESS;
+        free(models);
+    }
+    else {
+        res = ERR_INVALID_PARAMETER;
+        hpcables_error("%s: models is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL hpcables_probe_display(uint8_t * models) {
+    int res;
+    if (models != NULL) {
+        cable_model model;
+        res = 0;
+        hpcables_info("Probing data details:");
+        for (model = CABLE_NUL; model < CABLE_MAX; model++) {
+            if (models[model] != 0) {
+                hpcables_info("\tfound cable #%d: %s", model, hpcables_model_to_string(model));
+            }
+        }
+        res = ERR_SUCCESS;
+        hpcables_info("%s found %d cables", __FUNCTION__, res);
+    }
+    else {
+        res = ERR_INVALID_PARAMETER;
+        hpcables_error("%s: models is NULL", __FUNCTION__);
+    }
+    return res;
+}

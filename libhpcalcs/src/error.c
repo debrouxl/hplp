@@ -91,6 +91,9 @@ HPEXPORT int HPCALL hpcables_error_get(int number, char **message) {
                 case ERR_CABLE_INVALID_FNCTS:
                     *message = strdup(_("Invalid cable functions"));
                     break;
+                case ERR_CABLE_PROBE_FAILED:
+                    *message = strdup(_("Cable probing failed"));
+                    break;
                 default:
                     *message = strdup(_("<Unknown error code>"));
                     break;
@@ -131,6 +134,9 @@ HPEXPORT int HPCALL hpcalcs_error_get(int number, char **message) {
                     break;
                 case ERR_CALC_SPLIT_TIMESTAMP:
                     *message = strdup(_("Unable to get time constituents"));
+                    break;
+                case ERR_CALC_PROBE_FAILED:
+                    *message = strdup(_("Calc probing failed"));
                     break;
                 default:
                     *message = strdup(_("<Unknown error code>"));
