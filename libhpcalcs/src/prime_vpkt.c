@@ -173,39 +173,8 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
 
                 // Over-read prevention (hopefully ^^) code: pre-set the expected size of the reply to the given command.
                 if (read_pkts_count == 1) {
-                    hpcalcs_error("%s: %02X %02X %02X %02X", __FUNCTION__, raw.data[0], raw.data[1], raw.data[2], raw.data[3]);
-                    switch (pkt->cmd) {
-                        case CMD_PRIME_CHECK_READY:
-                            // Single-packet reply.
-                            expected_size = 1;
-                            break;
-                        case CMD_PRIME_GET_INFOS:
-                        case CMD_PRIME_RECV_SCREEN:
-                        case CMD_PRIME_RECV_FILE:
-                        case CMD_PRIME_RECV_BACKUP:
-                            // Expected size is embedded in reply.
-                            if (raw.data[2] == 0x01) {
-                                if (pkt->cmd != raw.data[1]) {
-                                    hpcalcs_warning("%s: command in packet %02X does not match the expected command %02X", __FUNCTION__, raw.data[1], pkt->cmd);
-                                }
-
-                                expected_size = (((uint32_t)(raw.data[3])) << 24) | (((uint32_t)(raw.data[4])) << 16) | (((uint32_t)(raw.data[5])) << 8) | ((uint32_t)(raw.data[6]));
-                                expected_size += 6; // cmd + 0x01 + size.
-                            }
-                            else {
-                                // Most of the packet returned 
-                                if (pkt->cmd != CMD_PRIME_CHECK_READY) {
-                                    res = ERR_CALC_PACKET_FORMAT;
-                                    hpcalcs_error("%s: expected 0x01 as third byte in the packet", __FUNCTION__);
-                                }
-                            }
-                            break; 
-                        default:
-                            // Not implemented.
-                            expected_size = 0;
-                            break;
-                    }
-                    if (res != 0) {
+                    res = prime_data_size(pkt->cmd, raw.data + 1, &expected_size); // +1: skip leading byte.
+                    if (res != ERR_SUCCESS) {
                         break;
                     }
                 }
@@ -243,6 +212,50 @@ shorten_packet:
                 pkt->size = expected_size;
                 break;
             }
+        }
+    }
+    else {
+        res = ERR_INVALID_PARAMETER;
+        hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL prime_data_size(uint8_t cmd, uint8_t * data, uint32_t * out_size) {
+    int res = ERR_SUCCESS;
+    if (data != NULL && out_size != NULL) {
+        switch (cmd) {
+            case CMD_PRIME_CHECK_READY:
+                // Single-packet reply.
+                *out_size = 1;
+                break;
+            case CMD_PRIME_GET_INFOS:
+            case CMD_PRIME_RECV_SCREEN:
+            case CMD_PRIME_RECV_BACKUP:
+            // Not supposed to receive REQ_FILE
+            case CMD_PRIME_RECV_FILE:
+            case CMD_PRIME_RECV_CHAT:
+            // Not supposed to receive SEND_KEY
+            // Not supposed to receive SET_DATE_TIME
+                // Expected size is embedded in reply.
+                if (data[1] == 0x01) {
+                    if (cmd != data[0]) {
+                        hpcalcs_warning("%s: command in packet %02X does not match the expected command %02X", __FUNCTION__, data[0], cmd);
+                    }
+
+                    *out_size = (((uint32_t)(data[2])) << 24) | (((uint32_t)(data[3])) << 16) | (((uint32_t)(data[4])) << 8) | ((uint32_t)(data[5]));
+                    *out_size += 6; // cmd + 0x01 + size.
+                }
+                else {
+                    res = ERR_CALC_PACKET_FORMAT;
+                    hpcalcs_error("%s: expected 0x01 as second data byte", __FUNCTION__);
+                }
+                break;
+            default:
+                // Not implemented.
+                *out_size = 0;
+                hpcalcs_error("%s: received unknown command %u, size undetermined, please report", __FUNCTION__, cmd);
+                break;
         }
     }
     else {

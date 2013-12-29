@@ -347,6 +347,14 @@ HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt);
  * \return 0 upon success, nonzero otherwise.
  */
 HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt);
+/**
+ * \brief Returns the packet size corresponding to command \a cmd, possibly corrected by the contents of \a data.
+ * \param cmd the command.
+ * \param data the data.
+ * \param size storage area for size of the data.
+ * \return 0 upon success, nonzero otherwise.
+ */
+HPEXPORT int HPCALL prime_data_size(uint8_t cmd, uint8_t * data, uint32_t * out_size);
 
 
 /**
