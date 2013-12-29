@@ -52,14 +52,10 @@
 static FILE * log_file = NULL;
 #endif
 
-static void output_log_callback(const char *format, va_list args) {
-    // Windows' terminal is extremely slow, cannot print the traces there.
-#ifndef _WIN32
-    // Using args twice, once for printing to stdout and once for printing to a file, triggers crashes.
-    // Therefore, let's have this function print only to stdout.
-    // Should there be a need to print to a file, on non-Windows, people can rely on "tee".
-    vprintf(format, args);
-#else
+// Windows' terminal is extremely slow, cannot print the logging traces there.
+#ifdef _WIN32
+
+static void open_log_file(void) {
     if (log_file == NULL) {
         log_file = fopen("trace.txt", "w+b");
         if (log_file != NULL) {
@@ -67,12 +63,50 @@ static void output_log_callback(const char *format, va_list args) {
             fprintf(log_file, "Opening log file at %s", ctime(&curtime));
         }
     }
+}
+
+// Output logging traces to a file.
+static void output_log_callback(const char * format, va_list args) {
+    open_log_file();
     if (log_file != NULL) {
         vfprintf(log_file, format, args);
         fflush(log_file);
     }
-#endif
 }
+
+static void output_log(FILE *f, const char * format, ...) {
+    char str[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(str, 256, format, args);
+    str[255] = 0;
+    fprintf(f, "%s", str);
+    open_log_file();
+    if (log_file != NULL) {
+        fprintf(log_file, "%s", str);
+    }
+}
+
+#else
+
+// Using args twice, once for printing to stdout and once for printing to a file, triggers crashes.
+// Therefore, let's have this function print only to stdout.
+// Should there be a need to print to a file, on non-Windows, people can rely on "tee".
+static void output_log_callback(const char * format, va_list args) {
+    vprintf(format, args);
+}
+
+static void output_log(FILE *f, const char * format, ...) {
+    char str[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(str, 256, format, args);
+    str[255] = 0;
+    fprintf(f, "%s", str);
+}
+
+#endif
+
 
 // NOTE: this triplet of crude routines is just for demo and testing purposes !!
 // In the general case, a proper i18n library (not offered by the C standard library) should be used !
@@ -114,11 +148,11 @@ static void produce_output_file(calc_handle * handle, files_var_entry * entry) {
     FILE * f;
     const char * extension;
 
-    printf("Receive file success\n");
+    output_log(stdout, "test_hpcalcs: Receive file success\n");
     hpfiles_ve_display(entry);
     crude_convert_UTF16LE_to_8bit(entry->name, filename);
     if (entry->invalid) {
-        printf("NOTE: the data for file %s is corrupted (packet loss in transfer) !\n", filename);
+        output_log(stdout, "test_hpcalcs: NOTE: the data for file %s is corrupted (packet loss in transfer) !\n", filename);
     }
     extension = hpfiles_vartype2fext(hpcalcs_get_model(handle), entry->type);
     if (extension[0] != 0) {
@@ -131,7 +165,7 @@ static void produce_output_file(calc_handle * handle, files_var_entry * entry) {
         fclose(f);
     }
     else {
-        printf("Cannot open file for writing !\n");
+        output_log(stdout, "test_hpcalcs: Cannot open file for writing !\n");
     }
 }
 
@@ -142,11 +176,11 @@ static int is_ready(calc_handle * handle) {
 
     res = hpcalcs_calc_check_ready(handle, &data, &size);
     if (res == 0) {
-        printf("Check ready success\n");
+        output_log(stdout, "Check ready success\n");
         // TODO: do something with data & size.
     }
     else {
-        printf("hpcalcs_calc_check_ready failed\n");
+        output_log(stdout, "hpcalcs_calc_check_ready failed\n");
     }
 
     return res;
@@ -158,11 +192,11 @@ static int get_infos(calc_handle * handle) {
 
     res = hpcalcs_calc_get_infos(handle, &infos);
     if (res == 0) {
-        printf("Get infos success\n");
+        output_log(stdout, "Get infos success\n");
         // TODO: do something with infos.
     }
     else {
-        printf("hpcalcs_calc_get_infos failed\n");
+        output_log(stdout, "hpcalcs_calc_get_infos failed\n");
     }
 
     return res;
@@ -173,10 +207,10 @@ static int set_date_time(calc_handle * handle) {
 
     res = hpcalcs_calc_set_date_time(handle, time(NULL));
     if (res == 0) {
-        printf("Set date time success\n");
+        output_log(stdout, "Set date time success\n");
     }
     else {
-        printf("hpcalcs_calc_set_date_time failed\n");
+        output_log(stdout, "hpcalcs_calc_set_date_time failed\n");
     }
 
     return res;
@@ -189,43 +223,41 @@ static int recv_screen(calc_handle * handle) {
     unsigned int format;
     int err;
 
-    printf("Choose a format (for Prime, usually 8 to 11):");
+    output_log(stdout, "\nChoose a format (for Prime, usually 8 to 11):");
 
     err = scanf("%u", &format);
     if (err >= 1) {
         char filename[1024];
-
         filename[0] = 0;
-
-        printf("\nEnter output filename: ");
+        output_log(stdout, "\n%u\nEnter output filename: ", format);
         err = scanf("%1023s", filename);
         if (err >= 1) {
-            puts("\n");
+            output_log(stdout, "\n%s\n", filename);
             res = hpcalcs_calc_recv_screen(handle, format, &data, &size);
             if (res == 0 && data != NULL) {
                 FILE * f;
-                printf("Receive screenshot success\n");
+                output_log(stdout, "Receive screenshot success\n");
                 f = fopen(filename, "w+b");
                 if (f != NULL) {
                     fwrite(data, 1, size, f);
                     fclose(f);
                 }
                 else {
-                    printf("Cannot open file for writing !\n");
+                    output_log(stdout, "Cannot open file for writing !\n");
                 }
             }
             else {
-                printf("hpcalcs_calc_recv_screen failed\n");
+                output_log(stdout, "hpcalcs_calc_recv_screen failed\n");
             }
         }
         else {
             fflush(stdin);
-            printf("Canceled\n");
+            output_log(stdout, "Canceled\n");
         }
     }
     else {
         fflush(stdin);
-        printf("Canceled\n");
+        output_log(stdout, "Canceled\n");
     }
 
     return res;
@@ -247,7 +279,7 @@ static int send_file(calc_handle * handle) {
     files_var_entry * entry = NULL;
     char filename[FILES_VARNAME_MAXLEN + 1];
 
-    printf("\nEnter input filename: ");
+    output_log(stdout, "\nEnter input filename: ");
     err = scanf("%" xstr(FILES_VARNAME_MAXLEN) "s", filename);
     if (err >= 1) {
         FILE * f = fopen(filename, "rb");
@@ -257,7 +289,7 @@ static int send_file(calc_handle * handle) {
             fseek(f, 0, SEEK_END);
             size = (uint32_t)ftell(f);
             fseek(f, 0, SEEK_SET);
-            printf("Input file has size %" PRIu32 " (%" PRIx32 ")\n", size, size);
+            output_log(stdout, "Input file has size %" PRIu32 " (%" PRIx32 ")\n", size, size);
             entry = hpfiles_ve_create_with_size(size);
             if (entry != NULL) {
                 char * calcfilename = NULL;
@@ -269,37 +301,37 @@ static int send_file(calc_handle * handle) {
                             // We can at last send the file !
                             res = hpcalcs_calc_send_file(handle, entry);
                             if (res == 0 && entry != NULL) {
-                                printf("hpcalcs_calc_send_file succeeded\n");
+                                output_log(stdout, "hpcalcs_calc_send_file succeeded\n");
                             }
                             else {
-                                printf("hpcalcs_calc_send_file failed\n");
+                                output_log(stdout, "hpcalcs_calc_send_file failed\n");
                             }
                         }
                         else {
-                            printf("Reading input file failed, aborted\n");
+                            output_log(stdout, "Reading input file failed, aborted\n");
                         }
                         free(calcfilename);
                     }
                     else {
-                        printf("Unable to determine file type or calc filename, aborted (please report the bug !)\n");
+                        output_log(stdout, "Unable to determine file type or calc filename, aborted (please report the bug !)\n");
                     }
                 }
                 else {
-                    printf("Unable to parse filename, aborted (please report the bug !)\n");
+                    output_log(stdout, "Unable to parse filename, aborted (please report the bug !)\n");
                 }
                 hpfiles_ve_delete(entry);
             }
             else {
-                printf("Cannot create entry, aborted\n");
+                output_log(stdout, "Cannot create entry, aborted\n");
             }
         }
         else {
-            printf("Cannot open input file, aborted\n");
+            output_log(stdout, "Cannot open input file, aborted\n");
         }
     }
     else {
         fflush(stdin);
-        printf("Canceled\n");
+        output_log(stdout, "Canceled\n");
     }
 
     return res;
@@ -314,10 +346,10 @@ static int recv_file(calc_handle * handle) {
     wchar_t filename[FILES_VARNAME_MAXLEN + 1];
 
     memset((void *)&request, 0, sizeof(request));
-    printf("\nEnter input filename (without computer-side extension): ");
+    output_log(stdout, "\nEnter input filename (without computer-side extension): ");
     err = scanf("%" xstr(FILES_VARNAME_MAXLEN) "ls", filename);
     if (err >= 1) {
-        printf("Enter file type:");
+        output_log(stdout, "Enter file type:");
 
         err = scanf("%10s", typestr);
         if (err >= 1) {
@@ -331,27 +363,27 @@ static int recv_file(calc_handle * handle) {
                 crude_convert_wchar_t_to_UTF16LE(filename, request.name);
                 request.type = type;
                 res = hpcalcs_calc_recv_file(handle, &request, &entry);
-                printf("hpcalcs_calc_recv_file finished\n");
+                output_log(stdout, "hpcalcs_calc_recv_file finished\n");
                 if (res == 0 && entry != NULL) {
                     produce_output_file(handle, entry);
                     hpfiles_ve_delete(entry);
                 }
                 else {
-                    printf("hpcalcs_calc_recv_file failed\n");
+                    output_log(stdout, "hpcalcs_calc_recv_file failed\n");
                 }
             }
             else {
-                printf("Unable to determine file type from stringe, aborted (please report the bug !)\n");
+                output_log(stdout, "Unable to determine file type from stringe, aborted (please report the bug !)\n");
             }
         }
         else {
             fflush(stdin);
-            printf("Canceled\n");
+            output_log(stdout, "Canceled\n");
         }
     }
     else {
         fflush(stdin);
-        printf("Canceled\n");
+        output_log(stdout, "Canceled\n");
     }
 
     return res;
@@ -363,7 +395,7 @@ static int recv_backup(calc_handle * handle) {
 
     res = hpcalcs_calc_recv_backup(handle, &entries);
     if (res != 0) {
-        printf("hpcalcs_calc_recv_backup failed\nWill nevertheless attempt to salvage data, if possible\n");
+        output_log(stdout, "hpcalcs_calc_recv_backup failed\nWill nevertheless attempt to salvage data, if possible\n");
     }
     if (entries != NULL) {
         files_var_entry ** ptr = entries;
@@ -373,7 +405,7 @@ static int recv_backup(calc_handle * handle) {
         hpfiles_ve_delete_array(entries);
     }
     else {
-        printf("hpcalcs_calc_recv_backup returned NULL entries, no data available\n");
+        output_log(stdout, "hpcalcs_calc_recv_backup returned NULL entries, no data available\n");
     }
 
     return res;
@@ -384,19 +416,19 @@ static int send_key(calc_handle * handle) {
     int err;
     unsigned int type;
 
-    printf("Enter key ID:");
+    output_log(stdout, "Enter key ID:");
     err = scanf("%u", &type);
     if (err >= 1) {
         res = hpcalcs_calc_send_key(handle, type);
         if (res == 0) {
-            printf("hpcalcs_calc_send_key succeeded\n");
+            output_log(stdout, "hpcalcs_calc_send_key succeeded\n");
         }
         else {
-            printf("hpcalcs_calc_send_key failed\n");
+            output_log(stdout, "hpcalcs_calc_send_key failed\n");
         }
     }
     else {
-        printf("Canceled\n");
+        output_log(stdout, "Canceled\n");
     }
 
     return res;
@@ -414,7 +446,7 @@ static int send_keys(calc_handle * handle) {
     uint32_t count = 0;
 
     fflush(stdin);
-    printf("Enter key IDs, separated by commas or spaces:");
+    output_log(stdout, "Enter key IDs, separated by commas or spaces:");
     err = scanf("%" xstr(STRBUF_SIZE) "[0-9xa-fA-F, ]", str);
     if (err >= 1) {
         char * token = strtok(str, SEPARATORS);
@@ -428,13 +460,13 @@ static int send_keys(calc_handle * handle) {
                 val = strtoul(token, &endptr, 0);
 
                 if ((errno == ERANGE && val == ULONG_MAX) || (errno != 0 && val == 0)) {
-                    printf("Item %" PRIu32 " is out of range, aborting\n", count);
+                    output_log(stdout, "Item %" PRIu32 " is out of range, aborting\n", count);
                     success = 0;
                     break;
                 }
 
                 if (endptr == str) {
-                    printf("Item %" PRIu32 " is no number, aborting\n", count);
+                    output_log(stdout, "Item %" PRIu32 " is no number, aborting\n", count);
                     success = 0;
                     break;
                 }
@@ -448,19 +480,19 @@ static int send_keys(calc_handle * handle) {
             if (success) {
                 res = hpcalcs_calc_send_keys(handle, data, count);
                 if (res == 0) {
-                    printf("hpcalcs_calc_send_keys succeeded\n");
+                    output_log(stdout, "hpcalcs_calc_send_keys succeeded\n");
                 }
                 else {
-                    printf("hpcalcs_calc_send_keys failed\n");
+                    output_log(stdout, "hpcalcs_calc_send_keys failed\n");
                 }
             }
         }
         else {
-            printf("Failed to parse, canceled\n");
+            output_log(stdout, "Failed to parse, canceled\n");
         }
     }
     else {
-        printf("Canceled\n");
+        output_log(stdout, "Canceled\n");
     }
 
     return res;
@@ -476,10 +508,10 @@ static int send_chat(calc_handle * handle) {
 
     res = hpcalcs_calc_send_chat(handle, chat_data, sizeof(chat_data));
     if (res == 0) {
-        printf("hpcalcs_calc_send_chat succeeded\n");
+        output_log(stdout, "hpcalcs_calc_send_chat succeeded\n");
     }
     else {
-        printf("hpcalcs_calc_send_chat failed\n");
+        output_log(stdout, "hpcalcs_calc_send_chat failed\n");
     }
 
     return res;
@@ -492,11 +524,11 @@ static int recv_chat(calc_handle * handle) {
 
     res = hpcalcs_calc_recv_chat(handle, &data, &size);
     if (res == 0) {
-        printf("hpcalcs_calc_recv_chat succeeded\n");
+        output_log(stdout, "hpcalcs_calc_recv_chat succeeded\n");
         // TODO: do something with chat data.
     }
     else {
-        printf("hpcalcs_calc_recv_chat failed\n");
+        output_log(stdout, "hpcalcs_calc_recv_chat failed\n");
     }
 
     return res;
@@ -507,7 +539,7 @@ static int vpkt_send_experiments(calc_handle * handle) {
     int err;
     unsigned int id;
 
-    printf("Enter ID:");
+    output_log(stdout, "Enter ID:");
     err = scanf("%u", &id);
     if (err >= 1) {
         prime_vtl_pkt * pkt = prime_vtl_pkt_new(2);
@@ -520,21 +552,21 @@ static int vpkt_send_experiments(calc_handle * handle) {
             res = prime_send_data(handle, pkt);
 
             if (res == 0) {
-                printf("prime_send_data succeeded\n");
+                output_log(stdout, "prime_send_data succeeded\n");
             }
             else {
-                printf("prime_send_data failed\n");
+                output_log(stdout, "prime_send_data failed\n");
             }
 
             prime_vtl_pkt_del(pkt);
         }
         else {
-            printf("%s: couldn't create packet", __FUNCTION__);
+            output_log(stdout, "%s: couldn't create packet", __FUNCTION__);
         }
     }
     else {
         fflush(stdin);
-        printf("Canceled\n");
+        output_log(stdout, "Canceled\n");
     }
 
     return res;
@@ -587,6 +619,8 @@ int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
+    output_log(stdout, "Entering program\n");
+
     // init libs
     res = hpfiles_init(output_log_callback);
     if (res) {
@@ -607,15 +641,17 @@ int main(int argc, char **argv) {
 
     // TODO: probe cables and calculators.
 
+    output_log(stdout, "Initialized libraries\n");
+
     cable = hpcables_handle_new(model1);
     if (cable == NULL) {
-        fprintf(stderr, "hpcables_handle_new failed\n");
+        output_log(stdout, "hpcables_handle_new failed\n");
         goto final_teardown;
     }
 
     calc = hpcalcs_handle_new(model2);
     if (calc == NULL) {
-        fprintf(stderr, "hpcalcs_handle_new failed\n");
+        output_log(stdout, "hpcalcs_handle_new failed\n");
         goto del_cable;
     }
 
@@ -632,18 +668,18 @@ int main(int argc, char **argv) {
         unsigned int choice;
 
         // Display menu
-        printf("Choose an action:\n");
+        output_log(stdout, "Choose an action:\n");
         for(i = 0; i < NITEMS; i++) {
-            printf("%2i. %s\n", i, str_menu[i]);
+            output_log(stdout, "%2i. %s\n", i, str_menu[i]);
         }
-        printf("Your choice: ");
+        output_log(stdout, "Your choice: ");
 
         err = scanf("%u", &choice);
         if (err < 1) {
             fflush(stdin);
             continue;
         }
-        printf("\n");
+        output_log(stdout, "\n");
 
         if (choice == 0) {
             break;
@@ -656,15 +692,15 @@ int main(int argc, char **argv) {
                 char * s;
                 err = hplibs_error_get(err, &s);
                 if (s != NULL) {
-                    printf("%d %s", err, s);
+                    output_log(stdout, "%d %s", err, s);
                     free(s);
                 }
                 else {
-                    printf("%d <unknown error>\n", err);
+                    output_log(stdout, "%d <unknown error>\n", err);
                 }
             }
         }
-        printf("\n");
+        output_log(stdout, "\n");
 
     } while(1);
 
@@ -678,12 +714,12 @@ del_cable:
     hpcables_handle_del(cable);
 
 final_teardown:
-    printf("Exiting program\n");
+    output_log(stdout, "Exiting program\n");
     hpopers_exit();
     hpcalcs_exit();
     hpcables_exit();
     hpfiles_exit();
 
-    printf("Goodbye world!\n");
+    output_log(stdout, "Goodbye world!\n");
     return 0;
 }
