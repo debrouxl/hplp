@@ -126,6 +126,13 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_size(uint32_t size);
  */
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, uint32_t size);
 /**
+ * \brief Creates and fills a files_var_entry structure with the given preallocated data.
+ * \param data the data to be attached to the files_var_entry (assumed to be allocated with malloc/calloc).
+ * \param size the size of the data.
+ * \return Pointer to files_var_entry, NULL if failed.
+ */
+HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data_ptr(uint8_t * data, uint32_t size);
+/**
  * \brief Creates and fills a files_var_entry structure with the given data.
  * \param data the data to be copied
  * \param size the size of the data.

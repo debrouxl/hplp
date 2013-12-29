@@ -46,14 +46,27 @@
 HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new(uint32_t size) {
     prime_vtl_pkt * pkt = (prime_vtl_pkt *)malloc(sizeof(*pkt));
 
-    pkt->size = size;
-    if (size != 0) {
-        pkt->data = (uint8_t *)calloc(size, sizeof(*pkt->data));
+    if (pkt != NULL) {
+        pkt->size = size;
+        if (size != 0) {
+            pkt->data = (uint8_t *)calloc(size, sizeof(*pkt->data));
 
-        if (pkt->data == NULL) {
-            free(pkt);
-            pkt = NULL;
+            if (pkt->data == NULL) {
+                free(pkt);
+                pkt = NULL;
+            }
         }
+    }
+
+    return pkt;
+}
+
+HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new_with_data_ptr(uint32_t size, uint8_t * data) {
+    prime_vtl_pkt * pkt = (prime_vtl_pkt *)malloc(sizeof(*pkt));
+
+    if (pkt != NULL) {
+        pkt->size = size;
+        pkt->data = data;
     }
 
     return pkt;

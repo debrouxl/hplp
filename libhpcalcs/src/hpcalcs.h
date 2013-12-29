@@ -328,6 +328,14 @@ HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt);
  */
 HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new(uint32_t size);
 /**
+ * \brief Creates a virtual packet for the Prime calculator, filling it with the given size and data.
+ * \param size the size of the data.
+ * \param data the pre-allocated data (assumed to have been allocated through malloc/calloc).
+ * \return NULL if an error occurred, a virtual packet otherwise.
+ * \warning This function takes ownership of \a data.
+ */
+HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new_with_data_ptr(uint32_t size, uint8_t * data);
+/**
  * \brief Deletes a virtual packet for the Prime calculator.
  * \param pkt the packet to be deleted.
  */

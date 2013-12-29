@@ -144,6 +144,19 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, ui
     return ve;
 }
 
+HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data_ptr(uint8_t * data, uint32_t size) {
+    files_var_entry * ve = hpfiles_ve_create();
+    if (ve != NULL) {
+        ve->data = data;
+        ve->size = size;
+    }
+    else {
+        hpfiles_error("%s: failed to create ve", __FUNCTION__);
+    }
+
+    return ve;
+}
+
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data_and_name(uint8_t * data, uint32_t size, const char16_t * name) {
     files_var_entry * ve = hpfiles_ve_create_with_data(data, size);
     if (ve != NULL) {
