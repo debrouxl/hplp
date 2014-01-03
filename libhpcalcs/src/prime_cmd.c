@@ -554,12 +554,118 @@ HPEXPORT int HPCALL calc_prime_s_recv_file(calc_handle * handle, files_var_entry
     return res;
 }
 
+static int parse_recv_file(const uint8_t * pkt_data, uint32_t pkt_size, files_var_entry ** out_file) {
+    int res;
+
+    // Proper file packets have CRC
+    uint16_t computed_crc; // 0x0000 ?
+    uint16_t embedded_crc = (((uint16_t)(pkt_data[9])) << 8) | ((uint16_t)(pkt_data[8]));
+    // Reset CRC before computing
+    pkt_data[8] = 0x00;
+    pkt_data[9] = 0x00;
+    computed_crc = crc16_block(pkt_data, pkt_size - 6); // The CRC contains the initial 0x00, but not the final 6 bytes (...).
+    hpcalcs_info("%s: embedded=%" PRIX16 " computed=%" PRIX16, __FUNCTION__, embedded_crc, computed_crc);
+    if (computed_crc != embedded_crc) {
+        hpcalcs_error("%s: CRC mismatch", __FUNCTION__);
+    }
+
+    if (out_file != NULL) {
+        uint8_t namelen;
+        uint32_t size;
+        uint8_t filetype;
+
+        *out_file = NULL;
+        filetype = pkt_data[6];
+        namelen = pkt_data[7];
+        size = pkt_size - 10 - namelen;
+
+        if (!(size & UINT32_C(0x80000000))) {
+            *out_file = hpfiles_ve_create_with_data(&pkt_data[10 + namelen], size);
+            if (*out_file != NULL) {
+                (*out_file)->type = filetype;
+                memcpy((*out_file)->name, &pkt_data[10], namelen);
+                (*out_file)->invalid = (computed_crc != embedded_crc);
+                hpcalcs_info("%s: created entry for %ls with size %" PRIu32 " and type %02X", __FUNCTION__, (*out_file)->name, (*out_file)->size, filetype);
+            }
+            else {
+                res = ERR_MALLOC;
+                hpcalcs_error("%s: couldn't create entry", __FUNCTION__);
+            }
+        }
+        else {
+            res = ERR_CALC_PACKET_FORMAT;
+            hpcalcs_error("%s: weird size (packet too short ?)", __FUNCTION__);
+            // TODO: change res.
+        }
+    }
+}
+
 HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry ** out_file) {
     int res;
     prime_vtl_pkt * pkt;
     // TODO: if no file was received, have *out_file = NULL, but res = 0.
     if (handle != NULL) {
         res = read_vtl_pkt(handle, CMD_PRIME_RECV_FILE, &pkt, 1);
+        if (res == ERR_SUCCESS && pkt != NULL) {
+            if (pkt->size >= 11) {
+                res = parse_recv_file(pkt->data, pkt->size, out_file);
+            }
+            else {
+                if (pkt->data[0] != 0xF9) {
+                    res = ERR_CALC_PACKET_FORMAT;
+                    hpcalcs_info("%s: packet is too short: %" PRIu32 "bytes", __FUNCTION__, pkt->size);
+                }
+                else {
+                    hpcalcs_info("%s: skipping F9 packet", __FUNCTION__);
+                }
+                if (out_file != NULL) {
+                    *out_file = NULL;
+                }
+            }
+            prime_vtl_pkt_del(pkt);
+        }
+        else {
+            hpcalcs_error("%s: failed to read packet", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_s_recv_backup(calc_handle * handle) {
+    int res;
+    if (handle != NULL) {
+        prime_vtl_pkt * pkt = prime_vtl_pkt_new(1);
+        if (pkt != NULL) {
+            uint8_t * ptr;
+
+            pkt->cmd = CMD_PRIME_RECV_FILE;
+            ptr = pkt->data;
+            *ptr++ = CMD_PRIME_RECV_BACKUP;
+            res = write_vtl_pkt(handle, pkt);
+            prime_vtl_pkt_del(pkt);
+        }
+        else {
+            res = ERR_MALLOC;
+            hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
+        }
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_entry *** out_vars) {
+    int res;
+    if (handle != NULL) {
+        // In order to be more robust against packet losses, try to read as much as possible...
+        res = read_vtl_pkt(handle, CMD_PRIME_RECV_FILE, &pkt, 1);
+        // ... then attempt to split data according to file headers.
         if (res == ERR_SUCCESS && pkt != NULL) {
             if (pkt->size >= 11) {
                 // Packet has CRC
@@ -622,44 +728,7 @@ HPEXPORT int HPCALL calc_prime_r_recv_file(calc_handle * handle, files_var_entry
         else {
             hpcalcs_error("%s: failed to read packet", __FUNCTION__);
         }
-    }
-    else {
-        res = ERR_INVALID_HANDLE;
-        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
-    }
-    return res;
-}
-
-HPEXPORT int HPCALL calc_prime_s_recv_backup(calc_handle * handle) {
-    int res;
-    if (handle != NULL) {
-        prime_vtl_pkt * pkt = prime_vtl_pkt_new(1);
-        if (pkt != NULL) {
-            uint8_t * ptr;
-
-            pkt->cmd = CMD_PRIME_RECV_FILE;
-            ptr = pkt->data;
-            *ptr++ = CMD_PRIME_RECV_BACKUP;
-            res = write_vtl_pkt(handle, pkt);
-            prime_vtl_pkt_del(pkt);
-        }
-        else {
-            res = ERR_MALLOC;
-            hpcalcs_error("%s: couldn't create packet", __FUNCTION__);
-        }
-    }
-    else {
-        res = ERR_INVALID_HANDLE;
-        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
-    }
-    return res;
-}
-
-HPEXPORT int HPCALL calc_prime_r_recv_backup(calc_handle * handle, files_var_entry *** out_vars) {
-    int res;
-    if (handle != NULL) {
-        // TODO: in order to be more robust against packet losses,
-        // rewrite this code to read as much as possible, then attempt to split data according to file headers.
+        
         uint32_t count = 0;
         files_var_entry ** entries = hpfiles_ve_create_array(count);
         if (entries != NULL) {
