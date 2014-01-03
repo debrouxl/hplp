@@ -19,17 +19,14 @@ libhpcalcs_la_CPPFLAGS = -I$(top_srcdir)/intl \
 	-DHPCALCS_EXPORTS
 #	@HPCABLES_CFLAGS@ @HPFILES_CFLAGS@
 
-if OS_WIN32
-libhpcalcs_la_DEPENDENCIES = ../build/mingw/hpcalcs-rc.o
-libhpcalcs_la_LDFLAGS = -no-undefined -version-info @LT_LIBVERSION@ -Wl,../build/mingw/hpcalcs-rc.o -lintl
-libhpcalcs_la_LIBADD = $(LIBINTL) \
-	@HIDAPI_LIBS@ -lintl
-#	@HPCABLES_LIBS@ @HPFILES_LIBS@
-else
 libhpcalcs_la_LDFLAGS = -no-undefined -version-info @LT_LIBVERSION@
-libhpcalcs_la_LIBADD = $(LIBINTL) \
+libhpcalcs_la_LIBADD = @LTLIBINTL@ \
 	@HIDAPI_LIBS@
 #	@HPCABLES_LIBS@ @HPFILES_LIBS@
+
+if OS_WIN32
+	libhpcalcs_la_DEPENDENCIES += ../build/mingw/hpcalcs-rc.o
+	libhpcalcs_la_LDFLAGS += -Wl,../build/mingw/hpcalcs-rc.o
 endif
 
 libhpcalcs_la_SOURCES = *.h \
