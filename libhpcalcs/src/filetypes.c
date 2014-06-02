@@ -110,3 +110,15 @@ HPEXPORT int HPCALL hpfiles_parsefilename(calc_model model, const char * filepat
             return HPLIBS_FILE_TYPE_UNKNOWN;
     }
 }
+
+HPEXPORT int HPCALL hpfiles_parse_for_data_body(files_var_entry * entry, uint32_t * out_offset, uint32_t * out_size) {
+    int res;
+    res = ERR_FILE_FORMAT;
+    return res;
+}
+
+HPEXPORT int HPCALL hpfiles_build_metadata(files_var_entry * entry) {
+    int res;
+    res = ERR_FILE_FORMAT;
+    return res;
+}

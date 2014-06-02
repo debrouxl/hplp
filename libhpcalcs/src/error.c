@@ -47,6 +47,9 @@ HPEXPORT int HPCALL hpfiles_error_get(int number, char **message) {
     if (message != NULL) {
         if (number >= ERR_FILE_FIRST && number <= ERR_FILE_LAST) {
             switch (number) {
+                case ERR_FILE_FORMAT:
+                    *message = strdup(_("Cannot understand file format"));
+                    break;
                 case ERR_FILE_FILENAME:
                     *message = strdup(_("Cannot understand filename"));
                     break;

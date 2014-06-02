@@ -40,6 +40,7 @@ typedef enum {
 
     ERR_FILE_FIRST = 128,
     ERR_FILE_FILENAME = 128,
+    ERR_FILE_FORMAT,
     ERR_FILE_LAST = 255,
 
     ERR_CABLE_FIRST = 256,

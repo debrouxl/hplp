@@ -261,6 +261,24 @@ HPEXPORT uint8_t HPCALL hpfiles_filename2vartype(calc_model model, const char * 
  */
 HPEXPORT int HPCALL hpfiles_parsefilename(calc_model model, const char * filepath, uint8_t * out_type, char ** out_calcfilename);
 
+/**
+ * \brief Determines the useful data from a given file entry - that is, attempt to parse it and eliminate headers and footers, if any.
+ * \param entry pointer to a pre-filled files_var_entry struct (e.g. passed to hpcalcs_calc_send_file) to be parsed.
+ * \param out_offset storage space for the offset of the relevant data body (between header and footer, if any) in entry->data.
+ * \param out_size storage space for the size of the relevant data body in entry->data.
+ * \return 0 if could make sense of the data, nonzero otherwise.
+ * \note this is essentially the opposite of \a hpfiles_build_metadata
+ */
+HPEXPORT int HPCALL hpfiles_parse_for_data_body(files_var_entry * entry, uint32_t * out_offset, uint32_t * out_size);
+
+/**
+ * \brief Builds data suitable for serializing to disk and interoperating with the HP CK, where that applies (e.g. Prime .hpprgm files).
+ * \param entry pointer to a pre-filled files_var_entry struct (e.g. returned by hpcalcs_calc_recv_file) to be parsed. entry->data may be reallocated and entry->size may be changed.
+ * \return 0 if could make sense of the data, nonzero otherwise.
+ * \note this is essentially the opposite of \a hpfiles_parse_for_data_body
+ */
+HPEXPORT int HPCALL hpfiles_build_metadata(files_var_entry * entry);
+
 #ifdef __cplusplus
 }
 #endif

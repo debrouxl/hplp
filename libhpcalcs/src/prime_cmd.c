@@ -455,14 +455,28 @@ HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry
             uint16_t crc16;
             uint32_t offset = 0;
 
-            // Some text editors add the UTF-16LE BOM at the beginning of the file, but the SDKV0.30 firmware version chokes on it.
-            // Therefore, skip the BOM.
+            // Mangle the file before sending, if necessary.
+            switch (file->type) {
+                case PRIME_TYPE_PRGM:
+                    break;
+                case PRIME_TYPE_NOTE:
+                    if (file->data[0] == 0xFF && file->data[1] == 0xFE && (file->data[2] != 0x00 || file->data[3] != 0x00)) {
+                        offset = 2;
+                        size -= 2;
+                    }
+                    break;
+                default:
+                    break;
+            }
+                    // Some text editors add the UTF-16LE BOM at the beginning of the file, but the SDKV0.30 firmware version chokes on it.
+                    // Therefore, skip the BOM, if it's followed by a nonzero character.
             if (   (file->type == PRIME_TYPE_PRGM || file->type == PRIME_TYPE_NOTE)
-                && (file->data[0] == 0xFF && file->data[1] == 0xFE)
+                && (file->data[0] == 0xFF && file->data[1] == 0xFE && (file->data[2] != 0x00 || file->data[3] != 0x00))
                ) {
                 offset = 2;
                 size -= 2;
             }
+            else if (file->type == PRIME_TYPE_PRGM
 
             pkt->cmd = CMD_PRIME_RECV_FILE;
             ptr = pkt->data;
