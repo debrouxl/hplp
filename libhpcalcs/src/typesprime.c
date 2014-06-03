@@ -161,9 +161,9 @@ int prime_parsesplitfilename(char * file, char * extension, uint8_t * out_type, 
 }
 
 int prime_parsefilename(const char * filepath, uint8_t * out_type, char ** out_calcfilename) {
-    int res = ERR_FILE_FILENAME;
     // The way to get the basename and file extension is platform-dependent, obviously...
 #ifndef _WIN32
+    int res = ERR_FILE_FILENAME;
     char * duplicated = strdup(filepath);
     char * file;
     char * extension;
@@ -180,6 +180,7 @@ int prime_parsefilename(const char * filepath, uint8_t * out_type, char ** out_c
         hpfiles_debug("%s: failed to duplicate filepath", __FUNCTION__);
     }
 #else
+    int res;
     char file[_MAX_FNAME + 1];
     char extension[_MAX_EXT + 1];
     _splitpath(filepath, NULL /* drive */, NULL /* dir */, file, extension);

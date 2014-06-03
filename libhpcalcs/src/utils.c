@@ -65,12 +65,12 @@ void hexdump(const char * direction, uint8_t *data, uint32_t size, uint32_t leve
     if (size > 0) {
         if (level == 1) {
             char str[64];
-            uint32_t i;
 
             hpcalcs_debug("Dumping %s packet with size %" PRIu32, direction, size);
             str[0] = 0;
             if (size <= 12)
             {
+                uint32_t i;
                 str[0] = ' '; str[1] = ' '; str[2] = ' '; str[3] = ' ';
 
                 for (i = 0; i < size; i++)

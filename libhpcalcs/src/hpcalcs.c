@@ -106,7 +106,6 @@ HPEXPORT int HPCALL hpcalcs_handle_del(calc_handle * handle) {
         handle->handle = NULL;
 
         free(handle);
-        handle = NULL;
         hpcalcs_info("%s: calc handle deletion succeeded", __FUNCTION__);
     }
     else {

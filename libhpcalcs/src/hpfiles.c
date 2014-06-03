@@ -308,10 +308,10 @@ HPEXPORT files_var_entry ** HPCALL hpfiles_ve_resize_array(files_var_entry ** ar
 }
 
 HPEXPORT void HPCALL hpfiles_ve_delete_array(files_var_entry ** array) {
-    files_var_entry ** ptr;
 
     if (array != NULL) {
-        for(ptr = array; *ptr; ptr++) {
+        files_var_entry ** ptr;
+        for (ptr = array; *ptr; ptr++) {
             hpfiles_ve_delete(*ptr);
         }
         free(array);

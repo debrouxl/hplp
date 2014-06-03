@@ -10,16 +10,18 @@ the install_hplp.sh script provided alongside this README
 automates part of the build process.
 
 
-Status (2013/12/29)
+Status (2014/06/03)
 -------------------
 The code base does:
 * work on Windows, Linux and MacOS X;
 * support communication with a single Prime calculator connected to the
-  computer. The communication is known to work with the "SDKV0.30" firmware
-  version from mid-August 2013, and seems to work with the "SDKV0.32" firmware
-  version from late November 2013, but might not work with other older or
-  newer versions, if HP performs backwards-incompatible changes in the
-  protocol (like TI does);
+  computer. The communication is known to work with the following firmware
+  versions, but might not work with other older or newer versions, if HP
+  performs backwards-incompatible changes in the protocol (like TI does):
+  * "SDKV0.30" firmware version from mid-August 2013;
+  * "SDKV0.32" build 5447 firmware version from late November 2013;
+  * partial success with the V0.031.6030 / V0.032.6030 build 6030 firmware
+    versions published late May 2013.
 * implement 10 operations (without _known_ bugs):
   * ready check;
   * get calculator information;
@@ -194,7 +196,7 @@ TODO list
   calculator (I don't) and have more free time than I do;
 * a GUI, but I won't be the one doing it. Nowadays, Qt is the main choice for
   a portable, good-looking, fast UI toolkit. GTK+ used to be a better choice
-  wrt. portability, but that was years ago, and in 2013, a number of
+  wrt. portability, but that was years ago, and in 2013-2014, a number of
   applications and desktop environments are switching from GTK+ to Qt;
 * strip out leading program metadata, if any, from .hpprgm files, like the
   UTF-16LE BOM is already stripped;
@@ -242,10 +244,15 @@ hpfiles INFO: Displaying var entry 83EC8B55
 hpfiles INFO: Name: 
 "
 * implement screenshot color conversion, with libpng;
+* add progress feedback functionality, inspired by libti*;
 * fill in torture test;
+* add two APIs for dynamically building NULL-terminated const char * arrays
+  from the two first columns of typesprime.c::PRIME_CONST.
 * somehow gain better knowledge of the protocol, so as to be able to...
 * ... add more operations and data structures. 
 * add dissectors and session logs, like in libticalcs;
+* add passthrough mode for communication between real and/or emulated
+  calculators (ports concept in libticables) ?
 * add support for Prime in fake MSD mode, for firmware upgrades ? I've
   already partially analyzed the protocol and published my notes at
   http://tiplanet.org/hpwiki/index.php?title=HP_Prime/Linking_Protocol
@@ -258,7 +265,7 @@ hpfiles INFO: Name:
 
 License
 -------
-Copyright (C) 2013 Lionel Debroux
+Copyright (C) 2013-2014 Lionel Debroux
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -277,7 +284,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
 
 Changelog
 ---------
-2013/11/03 - 2013/12/xx: improve logging, create install_hplp.sh, improve
+2013/11/03 - 2013/12/30: improve logging, create install_hplp.sh, improve
 error passing, fix bugs reported by more beta-testers, add more operations.
 2013/10/22 - 2013/11/03: Created autotools-based project and test client;
 vastly expand the code, to the point it becomes releasable (if not really
@@ -296,7 +303,7 @@ Credits (demoscene style)
   which show that it's quite similar to the Prime;
 * thanks to Jonathan Cameron for writing a more detailed build procedure for
   Debian and derivatives;
-* thanks to other beta-testers who reported bugs:
+* thanks to other beta-testers who reported bugs on TI-Planet and MoHPC:
   * with the Prime: persalteas (Linux), wawachief (Linux & MacOS X), DJ
     Omnimaga (Windows), Adriweb (MacOS X & Windows), Jonathan Cameron (Linux),
     Cristian Arezzini (Linux), LarsF (MacOS X), Egan Ford (MacOS X);

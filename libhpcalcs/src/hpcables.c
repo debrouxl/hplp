@@ -115,7 +115,6 @@ HPEXPORT int HPCALL hpcables_handle_del(cable_handle * handle) {
         handle->handle = NULL;
 
         free(handle);
-        handle = NULL;
         res = ERR_SUCCESS;
         hpcables_info("%s: handle deletion succeeded", __FUNCTION__);
     }
