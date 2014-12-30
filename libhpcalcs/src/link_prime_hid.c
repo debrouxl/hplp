@@ -71,7 +71,8 @@ static int cable_prime_hid_open(cable_handle * handle) {
             handle->model = CABLE_PRIME_HID;
             handle->handle = (void *)device_handle;
             handle->fncts = &cable_prime_hid_fncts;
-            handle->read_timeout = 2000;
+            // Especially screenshots can take a while before beginning to send data.
+            handle->read_timeout = 4000;
             handle->open = 1;
             handle->busy = 0;
             res = ERR_SUCCESS;
@@ -139,21 +140,27 @@ static int cable_prime_hid_send(cable_handle * handle, uint8_t * data, uint32_t 
     if (handle != NULL && data != NULL) {
         hid_device * device_handle = (hid_device *)handle->handle;
         if (device_handle != NULL) {
-            if (handle->open) {
-                res = hid_write(device_handle, data, len);
-                if (res >= 0) {
-                    res = ERR_SUCCESS;
-                    hpcables_info("%s: wrote %d bytes", __FUNCTION__, res);
+            uint32_t bytes_written = 0;
+            while (bytes_written < len) {
+                if (handle->open) {
+                    res = hid_write(device_handle, data + bytes_written, len - bytes_written);
+                    if (res >= 0) {
+                        bytes_written += res;
+                    }
+                    else {
+                        res = ERR_CABLE_WRITE_ERROR;
+                        hpcables_error("%s: write failed %ls", __FUNCTION__, hid_error(device_handle));
+                        return res;
+                    }
                 }
                 else {
-                    res = ERR_CABLE_WRITE_ERROR;
-                    hpcables_error("%s: write failed %ls", __FUNCTION__, hid_error(device_handle));
+                    res = ERR_CABLE_NOT_OPEN;
+                    hpcables_error("%s: cable was not open", __FUNCTION__);
+                    return res;
                 }
             }
-            else {
-                res = ERR_CABLE_NOT_OPEN;
-                hpcables_error("%s: cable was not open", __FUNCTION__);
-            }
+            res = ERR_SUCCESS;
+            hpcables_info("%s: wrote %d bytes", __FUNCTION__, bytes_written);
         }
         else {
             res = ERR_INVALID_HANDLE;
