@@ -113,7 +113,6 @@ HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
             }
 
             // Increment packet ID, which seems to be necessary for computer -> calc packets
-            // (but the calculator doesn't do the same).
             pkt_id++;
             if (pkt_id == 0xFF) {
                 pkt_id = 0; // Skip 0xFF, which is used for other purposes.
@@ -174,8 +173,8 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                     hpcalcs_error("%s: skipping packet starting with 0xFF", __FUNCTION__);
                     continue;
                 }
-                // Sanity check. The first byte is the sequence number
-                else if (raw.data[0] != (uint8_t)(read_pkts_count)) {
+                // Sanity check. The first byte is the sequence number. After reaching 0xFE. it wraps back to 0 (skipping 0xFF).
+                else if (raw.data[0] != (uint8_t)(read_pkts_count + (read_pkts_count / 0xFF))) {
                     res = ERR_CALC_PACKET_FORMAT;
                     hpcalcs_error("%s: packet out of sequence, got %d, expected %d", __FUNCTION__, (int)raw.data[0], read_pkts_count);
                     break;

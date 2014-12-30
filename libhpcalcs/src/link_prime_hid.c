@@ -72,7 +72,7 @@ static int cable_prime_hid_open(cable_handle * handle) {
             handle->handle = (void *)device_handle;
             handle->fncts = &cable_prime_hid_fncts;
             // Especially screenshots can take a while before beginning to send data.
-            handle->read_timeout = 4000;
+            handle->read_timeout = 8000;
             handle->open = 1;
             handle->busy = 0;
             res = ERR_SUCCESS;
