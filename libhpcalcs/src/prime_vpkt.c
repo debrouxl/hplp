@@ -121,7 +121,7 @@ HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
         }
 
         if (r || !pkt->size) {
-            raw.size = r + 1;
+            raw.size = r + 2;
             raw.data[1] = pkt_id;
             memcpy(raw.data + 2, pkt->data + offset, r);
 
@@ -150,13 +150,12 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
         uint32_t read_pkts_count = 0;
         // WIP: reassembly.
 
-        memset(&raw, 0, sizeof(raw));
-
         //size = pkt->size;
         pkt->size = 0;
         pkt->data = NULL;
 
         for(;;) {
+            memset(&raw, 0, sizeof(raw));
             res = prime_recv(handle, &raw);
             if (res) {
                 hpcalcs_warning("%s: recv failed", __FUNCTION__);
@@ -175,10 +174,10 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                     hpcalcs_error("%s: skipping packet starting with 0xFF", __FUNCTION__);
                     continue;
                 }
-                // Sanity check. 0x00 is used for most packets, but dumps show 0x01 in some packets during the sequence for sending a file to the calculator.
-                else if (raw.data[0] != 0x00 && raw.data[0] != 0x01) {
+                // Sanity check. The first byte is the sequence number
+                else if (raw.data[0] != (uint8_t)(read_pkts_count)) {
                     res = ERR_CALC_PACKET_FORMAT;
-                    hpcalcs_error("%s: unknown packet starts neither with 0xFF, neither with 0x00, nor with 0x01", __FUNCTION__);
+                    hpcalcs_error("%s: packet out of sequence, got %d, expected %d", __FUNCTION__, (int)raw.data[0], read_pkts_count);
                     break;
                 }
 
