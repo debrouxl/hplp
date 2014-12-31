@@ -174,7 +174,7 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                     continue;
                 }
                 // Sanity check. The first byte is the sequence number. After reaching 0xFE. it wraps back to 0 (skipping 0xFF).
-                else if (raw.data[0] != (uint8_t)(read_pkts_count + (read_pkts_count / 0xFF))) {
+                else if (raw.data[0] != ((read_pkts_count + (read_pkts_count / 0xFF)) & 0xFF)) {
                     res = ERR_CALC_PACKET_FORMAT;
                     hpcalcs_error("%s: packet out of sequence, got %d, expected %d", __FUNCTION__, (int)raw.data[0], read_pkts_count);
                     break;
