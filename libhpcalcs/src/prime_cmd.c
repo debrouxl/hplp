@@ -316,15 +316,16 @@ HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screensh
                 // Packet has CRC
                 uint16_t computed_crc; // 0x0000 ?
                 uint8_t * ptr = pkt->data;
-                uint16_t embedded_crc = (((uint16_t)(ptr[7])) << 8) | ((uint16_t)(ptr[6]));
+                // For whatever reason the CRC seems to be encoded the other way around compared to receiving files
+                uint16_t embedded_crc = (((uint16_t)(ptr[6])) << 8) | ((uint16_t)(ptr[7]));
                 // Reset CRC before computing
                 ptr[6] = 0x00;
                 ptr[7] = 0x00;
-                computed_crc = crc16_block(ptr, pkt->size - 6); // The CRC contains the initial 0x00, but not the final 6 bytes (...).
+                computed_crc = crc16_block(ptr + 6, pkt->size - 6); // The CRC for *screenshots* skips the header, and includes all data.
                 hpcalcs_info("%s: embedded=%" PRIX16 " computed=%" PRIX16, __FUNCTION__, embedded_crc, computed_crc);
                 if (computed_crc != embedded_crc) {
+                    res = ERR_CALC_PACKET_FORMAT;
                     hpcalcs_error("%s: CRC mismatch", __FUNCTION__);
-                    // TODO: change res.
                 }
 
                 // Skip marker.

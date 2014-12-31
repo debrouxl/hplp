@@ -74,7 +74,7 @@ HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt) {
             data = malloc(sizeof(pkt->data));
             if (data != NULL) {
                 res = hpcables_cable_recv(cable, &data, &pkt->size);
-                hexdump("IN", pkt->data, pkt->size, 2);
+                hexdump("IN", data, pkt->size, 2);
                 if (res == ERR_SUCCESS) {
                     //hpcalcs_info("%s: recv succeeded", __FUNCTION__);
                     memcpy(pkt->data, data, sizeof(pkt->data));
