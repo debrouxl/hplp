@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2015-03-21 16:35+0100\n"
+"POT-Creation-Date: 2015-03-21 16:48+0100\n"
 "PO-Revision-Date: 2013-11-11 16:58+0100\n"
 "Last-Translator: Lionel Debroux <lionel_debroux@yahoo.fr>\n"
 "Language-Team: Français <lionel_debroux@yahoo.fr>\n"
@@ -97,36 +97,37 @@ msgstr "Problème d'initialisation de la librairie"
 msgid "Problem deinitializing the library"
 msgstr "Problème de désinitialisation de la librairie"
 
-#: src/hpcables.c:61
+#: src/hpcables.c:66
 #, c-format
 msgid "hpcables library version %s compiled on %s"
 msgstr "librairie hpcables version %s compilée le %s"
 
-#: src/hpcables.c:66 src/hpcalcs.c:62 src/hpfiles.c:87
+#: src/hpcables.c:71 src/hpcalcs.c:67 src/hpfiles.c:87
 #, c-format
 msgid "%s: init succeeded"
 msgstr "%s: init réussie"
 
-#: src/hpcables.c:71
+#: src/hpcables.c:76
 #, c-format
 msgid "%s: init failed"
 msgstr "%s: init ratée"
 
-#: src/hpcables.c:76 src/hpcalcs.c:66 src/hpfiles.c:91
+#: src/hpcables.c:81 src/hpcalcs.c:71 src/hpfiles.c:91
+#, c-format
 msgid "%s: re-init skipped"
 msgstr "%s: ré-init ratée"
 
-#: src/hpcables.c:87 src/hpcalcs.c:76 src/hpfiles.c:101
+#: src/hpcables.c:92 src/hpcalcs.c:81 src/hpfiles.c:101
 #, c-format
 msgid "%s: more exits than inits"
 msgstr "%s: plus de désinitialisations que d'initialisations"
 
-#: src/hpcables.c:97 src/hpcalcs.c:82 src/hpfiles.c:107
+#: src/hpcables.c:102 src/hpcalcs.c:87 src/hpfiles.c:107
 #, c-format
 msgid "%s: exit succeeded"
 msgstr "%s: désinitialisation réussie"
 
-#: src/hpcalcs.c:60
+#: src/hpcalcs.c:65
 #, c-format
 msgid "hpcalcs library version %s compiled on %s"
 msgstr "librairie hpcalcs version %s compilée le %s"

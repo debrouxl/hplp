@@ -47,6 +47,11 @@ const cable_fncts * hpcables_all_cables[CABLE_MAX] = {
     &cable_prime_hid_fncts
 };
 
+static const uint32_t supported_cables =
+	  (1U << CABLE_NUL)
+	| (1U << CABLE_PRIME_HID)
+;
+
 
 // not static, must be shared between instances
 int hpcables_instance_count = 0;
@@ -104,6 +109,11 @@ HPEXPORT int HPCALL hpcables_exit(void) {
 
 HPEXPORT const char* HPCALL hpcables_version_get (void) {
     return VERSION;
+}
+
+
+HPEXPORT uint32_t HPCALL hpcables_supported_cables (void) {
+    return supported_cables;
 }
 
 

@@ -644,6 +644,9 @@ int main(int argc, char **argv) {
         goto final_teardown;
     }
 
+    output_log(stdout, "Supported cables: 0x%" PRIX32 "\n", hpcables_supported_cables());
+    output_log(stdout, "Supported calcs: 0x%" PRIX32 "\n", hpcalcs_supported_calcs());
+
     if (model1 == CABLE_NUL) {
         // Probe cables and calculators.
         res = hpcables_probe_cables(&probed_cables);

@@ -163,6 +163,12 @@ HPEXPORT int HPCALL hpcalcs_exit(void);
 HPEXPORT const char* HPCALL hpcalcs_version_get(void);
 
 /**
+ * \brief Returns the calcs supported by the current build of the library.
+ * \return An integer containing a binary OR of (1 << CALC_*) values, where CALC_* values are defined in enum \a calc_model.
+ **/
+HPEXPORT uint32_t HPCALL hpcalcs_supported_calcs(void);
+
+/**
  * \brief Gets the error message if the error was produced by this library
  * \param number the error number (from internal error.h)
  * \param message out pointer for a newly allocated text error message, which must be freed by the caller

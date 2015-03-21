@@ -87,8 +87,14 @@ HPEXPORT int HPCALL hpcables_exit(void);
 HPEXPORT const char* HPCALL hpcables_version_get(void);
 
 /**
+ * \brief Returns the cables supported by the current build of the library.
+ * \return An integer containing a binary OR of (1 << CABLE_*) values, where CABLE_* values are defined in enum \a cable_model.
+ **/
+HPEXPORT uint32_t HPCALL hpcables_supported_cables(void);
+
+/**
  * \brief Gets the error message if the error was produced by this library
- * \param number the error number
+ * \param number the error number (from internal error.h)
  * \param message out pointer for a newly allocated text error message, which must be freed by the caller
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
  **/

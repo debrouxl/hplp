@@ -46,6 +46,11 @@ const calc_fncts * hpcalcs_all_calcs[CALC_MAX] = {
     &calc_prime_fncts
 };
 
+static const uint32_t supported_calcs =
+	  (1U << CALC_NONE)
+	| (1U << CALC_PRIME)
+;
+
 
 // not static, must be shared between instances
 int hpcalcs_instance_count = 0;
@@ -88,6 +93,11 @@ HPEXPORT int HPCALL hpcalcs_exit(void) {
 
 HPEXPORT const char* HPCALL hpcalcs_version_get (void) {
     return VERSION;
+}
+
+
+HPEXPORT uint32_t HPCALL hpcalcs_supported_calcs (void) {
+    return supported_calcs;
 }
 
 
