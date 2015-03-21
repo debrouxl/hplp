@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2013-12-26 20:58+0100\n"
+"POT-Creation-Date: 2015-03-21 16:35+0100\n"
 "PO-Revision-Date: 2013-11-11 16:58+0100\n"
 "Last-Translator: Lionel Debroux <lionel_debroux@yahoo.fr>\n"
 "Language-Team: Français <lionel_debroux@yahoo.fr>\n"
@@ -21,7 +21,7 @@ msgid "Cannot understand filename"
 msgstr "Nom de fichier non géré"
 
 #: src/error.c:54 src/error.c:98 src/error.c:142 src/error.c:165
-#: src/error.c:205
+#: src/error.c:208
 msgid "<Unknown error code>"
 msgstr "<Code d'erreur inconnu>"
 
@@ -93,32 +93,45 @@ msgstr "Modèle invalide"
 msgid "Problem initializing the library"
 msgstr "Problème d'initialisation de la librairie"
 
-#: src/hpcables.c:60
+#: src/error.c:205
+msgid "Problem deinitializing the library"
+msgstr "Problème de désinitialisation de la librairie"
+
+#: src/hpcables.c:61
 #, c-format
 msgid "hpcables library version %s compiled on %s"
 msgstr "librairie hpcables version %s compilée le %s"
 
-#: src/hpcables.c:65 src/hpcalcs.c:59 src/hpfiles.c:84
+#: src/hpcables.c:66 src/hpcalcs.c:62 src/hpfiles.c:87
 #, c-format
 msgid "%s: init succeeded"
 msgstr "%s: init réussie"
 
-#: src/hpcables.c:69
+#: src/hpcables.c:71
 #, c-format
 msgid "%s: init failed"
 msgstr "%s: init ratée"
 
-#: src/hpcables.c:79 src/hpcalcs.c:65 src/hpfiles.c:90
+#: src/hpcables.c:76 src/hpcalcs.c:66 src/hpfiles.c:91
+msgid "%s: re-init skipped"
+msgstr "%s: ré-init ratée"
+
+#: src/hpcables.c:87 src/hpcalcs.c:76 src/hpfiles.c:101
+#, c-format
+msgid "%s: more exits than inits"
+msgstr "%s: plus de désinitialisations que d'initialisations"
+
+#: src/hpcables.c:97 src/hpcalcs.c:82 src/hpfiles.c:107
 #, c-format
 msgid "%s: exit succeeded"
 msgstr "%s: désinitialisation réussie"
 
-#: src/hpcalcs.c:58
+#: src/hpcalcs.c:60
 #, c-format
 msgid "hpcalcs library version %s compiled on %s"
 msgstr "librairie hpcalcs version %s compilée le %s"
 
-#: src/hpfiles.c:83
+#: src/hpfiles.c:85
 #, c-format
 msgid "hpfiles library version %s compiled on %s"
 msgstr "librairie hpfiles version %s compilée le %s"

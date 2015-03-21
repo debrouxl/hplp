@@ -47,6 +47,7 @@
 int hpfiles_instance_count = 0;
 
 HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_list args)) {
+    int res = ERR_SUCCESS;
 
     // Set up locale info, if NLS support is enabled.
 #ifdef ENABLE_NLS
@@ -79,16 +80,34 @@ HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_lis
     }
 #endif
 
-    hpfiles_log_set_callback(log_callback);
-    hpfiles_info(_("hpfiles library version %s compiled on %s"), hpfiles_version_get(), __DATE__ " " __TIME__);
-    hpfiles_info(_("%s: init succeeded"), __FUNCTION__);
+    if (!hpfiles_instance_count) {
+        hpfiles_log_set_callback(log_callback);
+        hpfiles_info(_("hpfiles library version %s compiled on %s"), hpfiles_version_get(), __DATE__ " " __TIME__);
 
-    return ERR_SUCCESS;
+        hpfiles_info(_("%s: init succeeded"), __FUNCTION__);
+        hpfiles_instance_count++;
+    }
+    else {
+        hpfiles_info(_("%s: re-init skipped"), __FUNCTION__);
+        hpfiles_instance_count++;
+    }
+
+    return res;
 }
 
 HPEXPORT int HPCALL hpfiles_exit(void) {
-    hpfiles_info(_("%s: exit succeeded"), __FUNCTION__);
-    return ERR_SUCCESS;
+    int res;
+    if (hpfiles_instance_count <= 0) {
+        hpfiles_error(_("%s: more exits than inits"), __FUNCTION__);
+        res = ERR_LIBRARY_EXIT;
+    }
+    else {
+        hpfiles_instance_count--;
+
+        hpfiles_info(_("%s: exit succeeded"), __FUNCTION__);
+        res = ERR_SUCCESS;
+    }
+    return res;
 }
 
 

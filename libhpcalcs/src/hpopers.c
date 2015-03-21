@@ -43,22 +43,45 @@
 #include "gettext.h"
 
 // not static, must be shared between instances
-int hpoers_instance_count = 0;
+int hpopers_instance_count = 0;
 
 HPEXPORT int HPCALL hpopers_init(void (*log_callback)(const char *format, va_list args)) {
-    hpopers_log_set_callback(log_callback);
+    int res = ERR_SUCCESS;
 
     // TODO: when (if) libhpopers is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
 
-    hpopers_info(_("hpopers library version %s compiled on %s"), hpopers_version_get(), __DATE__ " " __TIME__);
+    if (!hpopers_instance_count) {
+        hpopers_log_set_callback(log_callback);
+        hpopers_info(_("hpopers library version %s compiled on %s"), hpopers_version_get(), __DATE__ " " __TIME__);
+
+        hpopers_info(_("%s: init succeeded"), __FUNCTION__);
+        hpopers_instance_count++;
+    }
+    else {
+        hpopers_info(_("%s: re-init skipped"), __FUNCTION__);
+        hpopers_instance_count++;
+    }
+
     hpopers_info(_("%s: init succeeded"), __FUNCTION__);
 
-    return ERR_SUCCESS;
+    return res;
 }
 
 HPEXPORT int HPCALL hpopers_exit(void) {
-    hpopers_info(_("%s: exit succeeded"), __FUNCTION__);
-    return ERR_SUCCESS;
+    int res;
+
+    if (hpopers_instance_count <= 0) {
+        hpopers_error(_("%s: more exits than inits"), __FUNCTION__);
+        res = ERR_LIBRARY_EXIT;
+    }
+    else {
+        hpopers_instance_count--;
+
+        hpopers_info(_("%s: exit succeeded"), __FUNCTION__);
+        res = ERR_SUCCESS;
+    }
+
+    return res;
 }
 
 

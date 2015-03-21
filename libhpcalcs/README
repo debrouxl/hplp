@@ -190,12 +190,14 @@ parameters of check ready and get infos operations).
 
 TODO list
 ---------
-* ... hopefully attract _code_ contributors who have an actual HP Prime
-  calculator (I don't) and have more free time than I do;
-* a GUI, but I won't be the one doing it. Nowadays, Qt is the main choice for
-  a portable, good-looking, fast UI toolkit. GTK+ used to be a better choice
-  wrt. portability, but that was years ago, and in 2013-2014, a number of
-  applications and desktop environments are switching from GTK+ to Qt;
+* ... hopefully attract _code_ contributors who have more free time than I do;
+* a GUI, but I won't be the one doing it.
+  Nowadays, Qt is the main choice for a portable, good-looking, fast UI
+  toolkit (for native code programs). GTK+ used to be a better choice wrt.
+  portability, but that was years ago, and in 2013-2015, a number of
+  applications and desktop environments are switching from GTK+ to Qt.
+  UIs based on Web technologies are another option, Qt provides support for
+  those (QtWebkit / QtWebEngine) as well.
 * strip out leading program metadata, if any, from .hpprgm files, like the
   UTF-16LE BOM is already stripped;
 * add support for .hpappprgm and .hpappnote files;
@@ -224,15 +226,18 @@ hpfiles INFO: Displaying var entry 83EC8B55
 hpfiles INFO: Name: 
 "
 * implement screenshot color conversion, with libpng;
-* add progress feedback functionality, inspired by libti*;
+* add progress feedback functionality, inspired by and improved from libti*;
+* add port number functionality, from libticables. That will enable passthrough
+  mode for communication between real and/or emulated calculators.
+* make libhpcalcs allocator-aware: that is, let users inject a struct
+  containing function pointers for functions compatible with malloc(),
+  calloc(), free() and others if need be, and have libhpcalcs use that;
 * fill in torture test;
 * add two APIs for dynamically building NULL-terminated const char * arrays
   from the two first columns of typesprime.c::PRIME_CONST.
 * somehow gain better knowledge of the protocol, so as to be able to...
 * ... add more operations and data structures. 
 * add dissectors and session logs, like in libticalcs;
-* add passthrough mode for communication between real and/or emulated
-  calculators (ports concept in libticables) ?
 * add support for Prime in fake MSD mode, for firmware upgrades ? I've
   already partially analyzed the protocol and published my notes at
   http://tiplanet.org/hpwiki/index.php?title=HP_Prime/Linking_Protocol
@@ -245,7 +250,7 @@ hpfiles INFO: Name:
 
 License
 -------
-Copyright (C) 2013-2014 Lionel Debroux
+Copyright (C) 2013-2015 Lionel Debroux
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -201,6 +201,9 @@ HPEXPORT int HPCALL hplibs_error_get(int number, char **message) {
                 case ERR_LIBRARY_INIT:
                     *message = strdup(_("Problem initializing the library"));
                     break;
+                case ERR_LIBRARY_EXIT:
+                    *message = strdup(_("Problem deinitializing the library"));
+                    break;
                 default:
                     *message = strdup(_("<Unknown error code>"));
                     break;

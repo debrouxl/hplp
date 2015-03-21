@@ -54,19 +54,27 @@ int hpcables_instance_count = 0;
 HPEXPORT int HPCALL hpcables_init(void (*log_callback)(const char *format, va_list args)) {
     int res;
 
-    // TODO: when (if) libhpcables is split from libhpfiles, copy and adjust locale setting code from hpcalcs.c.
+    // TODO: when (if) libhpcables is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
 
-    hpcables_log_set_callback(log_callback);
-    hpcables_info(_("hpcables library version %s compiled on %s"), hpcables_version_get(), __DATE__ " " __TIME__);
+    if (!hpcables_instance_count) {
+        hpcables_log_set_callback(log_callback);
+        hpcables_info(_("hpcables library version %s compiled on %s"), hpcables_version_get(), __DATE__ " " __TIME__);
 
-    res = hid_init();
-    if (res == 0) {
-        res = ERR_SUCCESS;
-        hpcables_info(_("%s: init succeeded"), __FUNCTION__);
+        res = hid_init();
+        if (res == 0) {
+            res = ERR_SUCCESS;
+            hpcables_info(_("%s: init succeeded"), __FUNCTION__);
+            hpcables_instance_count++;
+        }
+        else {
+            res = ERR_LIBRARY_INIT;
+            hpcables_error(_("%s: init failed"), __FUNCTION__);
+        }
     }
     else {
-        res = ERR_LIBRARY_INIT;
-        hpcables_error(_("%s: init failed"), __FUNCTION__);
+        res = ERR_SUCCESS;
+        hpcables_info(_("%s: re-init skipped"), __FUNCTION__);
+        hpcables_instance_count++;
     }
 
     return res;
@@ -74,9 +82,22 @@ HPEXPORT int HPCALL hpcables_init(void (*log_callback)(const char *format, va_li
 
 HPEXPORT int HPCALL hpcables_exit(void) {
     int res;
-    hid_exit();
-    res = ERR_SUCCESS;
-    hpcables_info(_("%s: exit succeeded"), __FUNCTION__);
+
+    if (hpcables_instance_count <= 0) {
+        hpcables_error(_("%s: more exits than inits"), __FUNCTION__);
+        res = ERR_LIBRARY_EXIT;
+    }
+    else {
+        if (hpcables_instance_count == 1) {
+            hid_exit();
+        }
+
+        hpcables_instance_count--;
+
+        hpcables_info(_("%s: exit succeeded"), __FUNCTION__);
+        res = ERR_SUCCESS;
+    }
+
     return res;
 }
 
