@@ -34,9 +34,10 @@
 #endif
 #include <string.h>
 
-#include <hpcalcs.h>
+#include <hpfiles.h>
 #include <hpcables.h>
 #include <hpcalcs.h>
+#include <hpopers.h>
 #include "logging.h"
 #include "error.h"
 #include "gettext.h"

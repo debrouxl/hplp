@@ -30,6 +30,7 @@
 #endif
 
 #include <hpcalcs.h>
+#include "internal.h"
 #include "logging.h"
 #include "error.h"
 #include "utils.h"
@@ -71,7 +72,7 @@ HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt) {
         cable_handle * cable = handle->cable;
         if (cable != NULL) {
             uint8_t * data;
-            data = malloc(sizeof(pkt->data));
+            data = (hpcalcs_alloc_funcs.malloc)(sizeof(pkt->data));
             if (data != NULL) {
                 res = hpcables_cable_recv(cable, &data, &pkt->size);
                 hexdump("IN", data, pkt->size, 2);
@@ -82,7 +83,7 @@ HPEXPORT int HPCALL prime_recv(calc_handle * handle, prime_raw_hid_pkt * pkt) {
                 else {
                     hpcalcs_warning("%s: recv failed", __FUNCTION__);
                 }
-                free(data);
+                (hpcalcs_alloc_funcs.free)(data);
             }
             else {
                 res = ERR_MALLOC;

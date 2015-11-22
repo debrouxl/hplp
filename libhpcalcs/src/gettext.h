@@ -22,11 +22,11 @@
  */
 
 /**
- * \file intl.h Files / cables / calcs: internationalization (i18n) stuff.
+ * \file gettext.h Files / cables / calcs: internationalization (i18n) stuff.
  */
 
-#ifndef TILIBS_INTL_H
-#define TILIBS_INTL_H
+#ifndef HPLIBS_GETTEXT_H
+#define HPLIBS_GETTEXT_H
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>

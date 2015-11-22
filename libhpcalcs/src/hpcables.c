@@ -34,6 +34,7 @@
 #include <hidapi.h>
 
 #include <hpcables.h>
+#include "internal.h"
 #include "logging.h"
 #include "error.h"
 #include "gettext.h"
@@ -52,34 +53,69 @@ static const uint32_t supported_cables =
 	| (1U << CABLE_PRIME_HID)
 ;
 
+hplibs_malloc_funcs hpcables_alloc_funcs = {
+    .malloc = malloc,
+    .calloc = calloc,
+    .realloc = realloc,
+    .free = free
+};
+
 
 // not static, must be shared between instances
 int hpcables_instance_count = 0;
 
-HPEXPORT int HPCALL hpcables_init(void (*log_callback)(const char *format, va_list args)) {
-    int res;
+HPEXPORT int HPCALL hpcables_init(hpcables_config * config) {
+    int res = ERR_SUCCESS;
+    void (*log_callback)(const char *format, va_list args);
+    hplibs_malloc_funcs * alloc_funcs;
 
-    // TODO: when (if) libhpcables is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
-
-    if (!hpcables_instance_count) {
-        hpcables_log_set_callback(log_callback);
-        hpcables_info(_("hpcables library version %s compiled on %s"), hpcables_version_get(), __DATE__ " " __TIME__);
-
-        res = hid_init();
-        if (res == 0) {
-            res = ERR_SUCCESS;
-            hpcables_info(_("%s: init succeeded"), __FUNCTION__);
-            hpcables_instance_count++;
-        }
-        else {
-            res = ERR_LIBRARY_INIT;
-            hpcables_error(_("%s: init failed"), __FUNCTION__);
-        }
+    if (config == NULL) {
+        log_callback = NULL;
+        alloc_funcs = NULL;
     }
     else {
-        res = ERR_SUCCESS;
-        hpcables_info(_("%s: re-init skipped"), __FUNCTION__);
-        hpcables_instance_count++;
+        if (config->version <= HPCABLES_CONFIG_VERSION) {
+            if (config->version == 1) {
+                log_callback = config->log_callback;
+                alloc_funcs = config->alloc_funcs;
+            }
+            else {
+                hpcables_error(_("%s: unsupported config version %u"), __FUNCTION__, config->version);
+                res = ERR_LIBRARY_CONFIG_VERSION;
+            }
+        }
+        else {
+            hpcables_error(_("%s: unsupported config version %u"), __FUNCTION__, config->version);
+            res = ERR_LIBRARY_CONFIG_VERSION;
+        }
+    }
+
+    if (!res) {
+        // TODO: when (if) libhpcables is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
+
+        if (!hpcables_instance_count) {
+            hpcables_log_set_callback(log_callback);
+            if (alloc_funcs != NULL) {
+                hpcables_alloc_funcs = *alloc_funcs;
+            }
+            hpcables_info(_("hpcables library version %s"), hpcables_version_get());
+
+            res = hid_init();
+            if (res == 0) {
+                res = ERR_SUCCESS;
+                hpcables_info(_("%s: init succeeded"), __FUNCTION__);
+                hpcables_instance_count++;
+            }
+            else {
+                res = ERR_LIBRARY_INIT;
+                hpcables_error(_("%s: init failed"), __FUNCTION__);
+            }
+        }
+        else {
+            res = ERR_SUCCESS;
+            hpcables_info(_("%s: re-init skipped"), __FUNCTION__);
+            hpcables_instance_count++;
+        }
     }
 
     return res;
@@ -120,7 +156,7 @@ HPEXPORT uint32_t HPCALL hpcables_supported_cables (void) {
 HPEXPORT cable_handle * HPCALL hpcables_handle_new(cable_model model) {
     cable_handle * handle = NULL;
     if (model < CABLE_MAX) {
-        handle = (cable_handle *)calloc(1, sizeof(*handle));
+        handle = (cable_handle *)(hpcables_alloc_funcs.calloc)(1, sizeof(*handle));
 
         if (handle != NULL) {
             handle->model = model;
@@ -142,10 +178,10 @@ HPEXPORT cable_handle * HPCALL hpcables_handle_new(cable_model model) {
 HPEXPORT int HPCALL hpcables_handle_del(cable_handle * handle) {
     int res;
     if (handle != NULL) {
-        free(handle->handle);
+        (hpcables_alloc_funcs.free)(handle->handle);
         handle->handle = NULL;
 
-        free(handle);
+        (hpcables_alloc_funcs.free)(handle);
         res = ERR_SUCCESS;
         hpcables_info("%s: handle deletion succeeded", __FUNCTION__);
     }
@@ -430,7 +466,7 @@ HPEXPORT int HPCALL hpcables_cable_recv(cable_handle * handle, uint8_t ** data, 
 HPEXPORT int HPCALL hpcables_probe_cables(uint8_t ** result) {
     int res = 0;
     if (result != NULL) {
-        uint8_t * models = (uint8_t *)calloc(CABLE_MAX, sizeof(uint8_t));
+        uint8_t * models = (uint8_t *)(hpcables_alloc_funcs.calloc)(CABLE_MAX, sizeof(uint8_t));
         uint8_t * ptr = models;
         if (models != NULL) {
             for (cable_model model = CABLE_NUL; model < CABLE_MAX; model++) {
@@ -470,7 +506,7 @@ HPEXPORT int HPCALL hpcables_probe_free(uint8_t * models) {
     int res;
     if (models != NULL) {
         res = ERR_SUCCESS;
-        free(models);
+        (hpcables_alloc_funcs.free)(models);
     }
     else {
         res = ERR_INVALID_PARAMETER;

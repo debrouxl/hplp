@@ -29,6 +29,7 @@
 #endif
 
 #include <hpcalcs.h>
+#include "internal.h"
 #include "logging.h"
 #include "error.h"
 
@@ -44,15 +45,15 @@
 
 
 HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new(uint32_t size) {
-    prime_vtl_pkt * pkt = (prime_vtl_pkt *)malloc(sizeof(*pkt));
+    prime_vtl_pkt * pkt = (prime_vtl_pkt *)(hpcalcs_alloc_funcs.malloc)(sizeof(*pkt));
 
     if (pkt != NULL) {
         pkt->size = size;
         if (size != 0) {
-            pkt->data = (uint8_t *)calloc(size, sizeof(*pkt->data));
+            pkt->data = (uint8_t *)(hpcalcs_alloc_funcs.calloc)(size, sizeof(*pkt->data));
 
             if (pkt->data == NULL) {
-                free(pkt);
+                (hpcalcs_alloc_funcs.free)(pkt);
                 pkt = NULL;
             }
         }
@@ -62,7 +63,7 @@ HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new(uint32_t size) {
 }
 
 HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new_with_data_ptr(uint32_t size, uint8_t * data) {
-    prime_vtl_pkt * pkt = (prime_vtl_pkt *)malloc(sizeof(*pkt));
+    prime_vtl_pkt * pkt = (prime_vtl_pkt *)(hpcalcs_alloc_funcs.malloc)(sizeof(*pkt));
 
     if (pkt != NULL) {
         pkt->size = size;
@@ -74,8 +75,8 @@ HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new_with_data_ptr(uint32_t size, u
 
 HPEXPORT void HPCALL prime_vtl_pkt_del(prime_vtl_pkt * pkt) {
     if (pkt != NULL) {
-        free(pkt->data);
-        free(pkt);
+        (hpcalcs_alloc_funcs.free)(pkt->data);
+        (hpcalcs_alloc_funcs.free)(pkt);
     }
     else {
         hpcalcs_error("%s: pkt is NULL", __FUNCTION__);
@@ -191,7 +192,7 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
                 }
 
                 pkt->size += raw.size - 1;
-                new_data = realloc(pkt->data, pkt->size);
+                new_data = (hpcalcs_alloc_funcs.realloc)(pkt->data, pkt->size);
                 if (new_data != NULL) {
                     pkt->data = new_data;
                     // Skip first byte, which is usually 0x00.
@@ -219,7 +220,7 @@ shorten_packet:
                 else {
                     hpcalcs_warning("%s: expected %" PRIu32 " bytes but only got %" PRIu32 " bytes, output corrupted", __FUNCTION__, expected_size, pkt->size);
                 }
-                pkt->data = realloc(pkt->data, expected_size);
+                pkt->data = (hpcalcs_alloc_funcs.realloc)(pkt->data, expected_size);
                 pkt->size = expected_size;
                 break;
             }

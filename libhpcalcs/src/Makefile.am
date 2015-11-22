@@ -1,7 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-AM_CFLAGS = -Wall -W
-
 SUBDIRS = 
 
 # libraries and files to compile and install
@@ -9,8 +7,8 @@ lib_LTLIBRARIES = libhpcalcs.la
 libhpcalcs_includedir = $(includedir)/hplp
 libhpcalcs_include_HEADERS = \
 	hplibs.h export.h hpfiles.h hpcables.h hpcalcs.h hpopers.h \
-	filetypes.h typesprime.h \
-	prime_cmd.h
+	filetypes.h \
+	prime_cmd.h typesprime.h
 
 # build instructions
 libhpcalcs_la_CPPFLAGS = -I$(top_srcdir)/intl \
@@ -29,7 +27,11 @@ if OS_WIN32
 	libhpcalcs_la_LDFLAGS += -Wl,../build/mingw/hpcalcs-rc.o
 endif
 
-libhpcalcs_la_SOURCES = *.h \
+libhpcalcs_la_SOURCES = \
+	hplibs.h export.h hpfiles.h hpcables.h hpcalcs.h hpopers.h \
+	error.h gettext.h internal.h logging.h utils.h \
+	filetypes.h \
+	prime_cmd.h typesprime.h \
 	hpfiles.c hpcables.c hpcalcs.c hpopers.c \
 	error.c logging.c utils.c type2str.c \
 	filetypes.c typesprime.c \

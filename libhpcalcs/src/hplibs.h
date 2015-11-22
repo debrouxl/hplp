@@ -28,6 +28,8 @@
 #ifndef __HPLIBS_H__
 #define __HPLIBS_H__
 
+#include <stddef.h>
+
 #include "export.h"
 
 //! Enumeration of cable types.
@@ -52,6 +54,14 @@ typedef enum {
     LOG_LEVEL_WARN,
     LOG_LEVEL_ERROR
 } hplibs_logging_level;
+
+//! Struct containing function pointers used by the libraries for dynamic memory allocation.
+typedef struct {
+   void * (*malloc)(size_t size); ///< A malloc()-compatible function
+   void * (*calloc) (size_t nmemb, size_t size); ///< A calloc()-compatible function
+   void * (*realloc)(void *ptr, size_t size); ///< A realloc()-compatible function
+   void (*free) (void *ptr); ///< A free()-compatible function
+} hplibs_malloc_funcs;
 
 //! USB Vendor ID of Hewlett-Packard.
 #define USB_VID_HP (0x03F0)

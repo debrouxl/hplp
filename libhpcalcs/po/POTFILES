@@ -1,13 +1,17 @@
+     ../src/calc_none.c \
      ../src/calc_prime.c \
      ../src/error.c \
      ../src/filetypes.c \
      ../src/hpcables.c \
      ../src/hpcalcs.c \
      ../src/hpfiles.c \
+     ../src/hpopers.c \
+     ../src/link_nul.c \
      ../src/link_prime_hid.c \
      ../src/logging.c \
      ../src/prime_cmd.c \
      ../src/prime_rpkt.c \
      ../src/prime_vpkt.c \
      ../src/type2str.c \
-     ../src/typesprime.c
+     ../src/typesprime.c \
+     ../src/utils.c

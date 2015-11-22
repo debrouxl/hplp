@@ -54,8 +54,14 @@ const char * prime_byte2fext(uint8_t type);
 //! Return the type value corresponding to the file extension
 uint8_t prime_fext2byte(const char * type);
 
+//! Return the description corresponding to the value
+const char * prime_byte2desc(uint8_t type);
+
 //! Return the type value corresponding to the file path
 uint8_t prime_filename2byte(const char * filepath);
+
+//! Parse the file name + extension and determines the type value and calculator-side filename
+int prime_parsesplitfilename(char * file, char * extension, uint8_t * out_type, char ** out_calcfilename);
 
 //! Parse the file path and determines the type value and calculator-side filename
 int prime_parsefilename(const char * filepath, uint8_t * out_type, char ** out_calcfilename);

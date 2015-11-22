@@ -30,6 +30,7 @@
 #endif
 
 #include <hpfiles.h>
+#include "internal.h"
 #include "utils.h"
 #include "logging.h"
 
@@ -87,30 +88,27 @@ void hexdump(const char * direction, uint8_t *data, uint32_t size, uint32_t leve
             hpcalcs_debug(str);
         }
         else if (level == 2) {
-            char *str;
+            const int step = 16;
+            char str[4 + 3 * step + 1];
+            uint32_t i, j;
 
             hpcalcs_debug("Dumping %s packet with size %" PRIu32, direction, size);
-            str = (char *)malloc(3 * size + 8 + 10);
-            if (str != NULL) {
-                uint32_t i, j, k;
-                int step = 16;
 
-                for(k = 0; k < 4; k++) {
-                    str[k] = ' ';
+            str[0] = ' ';
+            str[1] = ' ';
+            str[2] = ' ';
+            str[3] = ' ';
+            str[sizeof(str) - 1] = 0;
+
+            for (i = j = 0; i < size; i++, j++) {
+                if (i && !(i % step)) {
+                    hpcalcs_debug(str);
+                    j = 0;
                 }
 
-                for (i = j = 0; i < size; i++, j++) {
-                    if (i && !(i % step)) {
-                        hpcalcs_debug(str);
-                        j = 0;
-                    }
-
-                    sprintf(&str[3*j+4], "%02X ", data[i]);
-                }
-                hpcalcs_debug(str);
-
-                free(str);
+                sprintf(&str[3*j+4], "%02X ", data[i]);
             }
+            hpcalcs_debug(str);
         }
     }
 }

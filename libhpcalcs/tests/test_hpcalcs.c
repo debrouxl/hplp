@@ -52,6 +52,14 @@
 static FILE * log_file = NULL;
 #endif
 
+// Injecting memory allocation functions into the library is optional, the library will default to those if you don't.
+static const hplibs_malloc_funcs alloc_funcs = {
+    .malloc = malloc,
+    .calloc = calloc,
+    .realloc = realloc,
+    .free = free
+};
+
 // Windows' terminal is extremely slow, cannot print the logging traces there.
 #ifdef _WIN32
 
@@ -616,6 +624,27 @@ static const FNCT_MENU fnct_menu[NITEMS] = {
     vpkt_send_experiments
 };
 
+static const hpfiles_config hpfiles_cfg = {
+    .version = HPFILES_CONFIG_VERSION,
+    .log_callback = output_log_callback,
+    .alloc_funcs = &alloc_funcs
+};
+static const hpcables_config hpcables_cfg = {
+    .version = HPCABLES_CONFIG_VERSION,
+    .log_callback = output_log_callback,
+    .alloc_funcs = NULL
+};
+static const hpcalcs_config hpcalcs_cfg = {
+    .version = HPCALCS_CONFIG_VERSION,
+    .log_callback = output_log_callback,
+    .alloc_funcs = &alloc_funcs
+};
+static const hpopers_config hpopers_cfg = {
+    .version = HPOPERS_CONFIG_VERSION,
+    .log_callback = output_log_callback,
+    .alloc_funcs = NULL
+};
+
 int main(int argc, char **argv) {
     cable_model model1 = CABLE_NUL;
     calc_model model2 = CALC_NONE;
@@ -631,16 +660,16 @@ int main(int argc, char **argv) {
     output_log(stdout, "Entering program\n");
 
     // Init libraries
-    if (hpfiles_init(output_log_callback)) {
+    if (hpfiles_init(&hpfiles_cfg)) {
         goto final_teardown;
     }
-    if (hpcables_init(output_log_callback)) {
+    if (hpcables_init(&hpcables_cfg)) {
         goto final_teardown;
     }
-    if (hpcalcs_init(output_log_callback)) {
+    if (hpcalcs_init(&hpcalcs_cfg)) {
         goto final_teardown;
     }
-    if (hpopers_init(output_log_callback)) {
+    if (hpopers_init(&hpopers_cfg)) {
         goto final_teardown;
     }
 
@@ -698,7 +727,7 @@ int main(int argc, char **argv) {
     if (res != 0) {
         output_log(stdout, "hpcalcs_probe_calc failed\n");
         res = 1;
-        goto final_teardown;
+        goto del_cable;
     }
 
     calc = hpcalcs_handle_new(model2);

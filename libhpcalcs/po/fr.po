@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libhpcalcs 0.0.1\n"
 "Report-Msgid-Bugs-To: lionel_debroux@yahoo.fr\n"
-"POT-Creation-Date: 2015-03-21 16:48+0100\n"
+"POT-Creation-Date: 2015-11-22 11:17+0100\n"
 "PO-Revision-Date: 2013-11-11 16:58+0100\n"
 "Last-Translator: Lionel Debroux <lionel_debroux@yahoo.fr>\n"
 "Language-Team: Français <lionel_debroux@yahoo.fr>\n"
@@ -16,123 +16,134 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/error.c:51
+#: src/error.c:52
 msgid "Cannot understand filename"
 msgstr "Nom de fichier non géré"
 
-#: src/error.c:54 src/error.c:98 src/error.c:142 src/error.c:165
-#: src/error.c:208
+#: src/error.c:55 src/error.c:99 src/error.c:143 src/error.c:166
+#: src/error.c:209
 msgid "<Unknown error code>"
 msgstr "<Code d'erreur inconnu>"
 
-#: src/error.c:77 src/error.c:124
+#: src/error.c:78 src/error.c:125
 msgid "Cable is not open"
 msgstr "Le câble n'est pas ouvert"
 
-#: src/error.c:80
+#: src/error.c:81
 msgid "Cable is already open"
 msgstr "Le câble est déjà ouvert"
 
-#: src/error.c:83
+#: src/error.c:84
 msgid "Cable is busy"
 msgstr "Le câble est occupé"
 
-#: src/error.c:86
+#: src/error.c:87
 msgid "Error writing to cable"
 msgstr "Erreur d'écriture vers le câble"
 
-#: src/error.c:89
+#: src/error.c:90
 msgid "Error reading from cable"
 msgstr "Erreur de lecture depuis le câble"
 
-#: src/error.c:92 src/error.c:130
+#: src/error.c:93 src/error.c:131
 msgid "Invalid cable functions"
 msgstr "Fonctions câble invalides"
 
-#: src/error.c:95
+#: src/error.c:96
 msgid "Cable probing failed"
 msgstr "Erreur de découverte (probe) du câble"
 
-#: src/error.c:121
+#: src/error.c:122
 msgid "No cable attached"
 msgstr "Aucun câble associé"
 
-#: src/error.c:127
+#: src/error.c:128
 msgid "Calc is busy"
 msgstr "La calculatrice est occupée"
 
-#: src/error.c:133
+#: src/error.c:134
 msgid "Unhandled packet format"
 msgstr "Format de paquet non géré"
 
-#: src/error.c:136
+#: src/error.c:137
 msgid "Unable to get time constituents"
 msgstr "Impossible d'obtenir les éléments du temps"
 
-#: src/error.c:139
+#: src/error.c:140
 msgid "Calc probing failed"
 msgstr "Erreur de découverte (probe) de la calculatrice"
 
-#: src/error.c:190
+#: src/error.c:191
 msgid "Failed to allocate memory"
 msgstr "Impossible d'allouer de la mémoire"
 
-#: src/error.c:193
+#: src/error.c:194
 msgid "Invalid handle pointer"
 msgstr "Pointeur handle invalide"
 
-#: src/error.c:196
+#: src/error.c:197
 msgid "Invalid function parameter"
 msgstr "Paramètre de fonction invalide"
 
-#: src/error.c:199
+#: src/error.c:200
 msgid "Invalid model"
 msgstr "Modèle invalide"
 
-#: src/error.c:202
+#: src/error.c:203
 msgid "Problem initializing the library"
 msgstr "Problème d'initialisation de la librairie"
 
-#: src/error.c:205
+#: src/error.c:206
 msgid "Problem deinitializing the library"
 msgstr "Problème de désinitialisation de la librairie"
 
-#: src/hpcables.c:66
+#: src/hpcables.c:83 src/hpcables.c:88 src/hpcalcs.c:82 src/hpcalcs.c:87
+#: src/hpfiles.c:74 src/hpfiles.c:79 src/hpopers.c:73 src/hpopers.c:78
 #, c-format
-msgid "hpcables library version %s compiled on %s"
+msgid "%s: unsupported config version %u"
+msgstr ""
+
+#: src/hpcables.c:101
+#, fuzzy, c-format
+msgid "hpcables library version %s"
 msgstr "librairie hpcables version %s compilée le %s"
 
-#: src/hpcables.c:71 src/hpcalcs.c:67 src/hpfiles.c:87
+#: src/hpcables.c:106 src/hpcalcs.c:102 src/hpfiles.c:123 src/hpopers.c:93
 #, c-format
 msgid "%s: init succeeded"
 msgstr "%s: init réussie"
 
-#: src/hpcables.c:76
+#: src/hpcables.c:111
 #, c-format
 msgid "%s: init failed"
 msgstr "%s: init ratée"
 
-#: src/hpcables.c:81 src/hpcalcs.c:71 src/hpfiles.c:91
+#: src/hpcables.c:116 src/hpcalcs.c:106 src/hpfiles.c:127 src/hpopers.c:97
 #, c-format
 msgid "%s: re-init skipped"
 msgstr "%s: ré-init ratée"
 
-#: src/hpcables.c:92 src/hpcalcs.c:81 src/hpfiles.c:101
+#: src/hpcables.c:128 src/hpcalcs.c:117 src/hpfiles.c:138 src/hpopers.c:109
 #, c-format
 msgid "%s: more exits than inits"
 msgstr "%s: plus de désinitialisations que d'initialisations"
 
-#: src/hpcables.c:102 src/hpcalcs.c:87 src/hpfiles.c:107
+#: src/hpcables.c:138 src/hpcalcs.c:123 src/hpfiles.c:144 src/hpopers.c:115
 #, c-format
 msgid "%s: exit succeeded"
 msgstr "%s: désinitialisation réussie"
 
-#: src/hpcalcs.c:65
-#, c-format
-msgid "hpcalcs library version %s compiled on %s"
+#: src/hpcalcs.c:100
+#, fuzzy, c-format
+msgid "hpcalcs library version %s"
 msgstr "librairie hpcalcs version %s compilée le %s"
 
-#: src/hpfiles.c:85
-#, c-format
-msgid "hpfiles library version %s compiled on %s"
+#: src/hpfiles.c:121
+#, fuzzy, c-format
+msgid "hpfiles library version %s"
 msgstr "librairie hpfiles version %s compilée le %s"
+
+#: src/hpopers.c:91
+#, fuzzy, c-format
+msgid "hpopers library version %s"
+msgstr "librairie hpopers version %s compilée le %s"

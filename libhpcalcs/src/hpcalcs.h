@@ -121,6 +121,17 @@ struct _calc_handle {
 };
 
 
+//! Structure passed to \a hpcalcs_init, contains e.g. callbacks for logging and memory allocation.
+typedef struct {
+    unsigned int version; ///< Config version number.
+    void (*log_callback)(const char *format, va_list args); ///< Callback function for receiving logging output.
+    hplibs_malloc_funcs * alloc_funcs; ///< Function pointers used for dynamic memory allocation. If NULL, the library defaults to malloc(), calloc(), realloc(), free().
+} hpcalcs_config;
+
+//! Latest revision of the \a hpcalcs_config struct layout supported by this version of the library.
+#define HPCALCS_CONFIG_VERSION (1)
+
+
 //! Structure defining a raw packet for the Prime, used at the lowest layer of the protocol implementation.
 typedef struct
 {
@@ -144,11 +155,12 @@ extern "C" {
 
 /**
  * \brief Initializes library internals. Must be called before any other libhpcalcs function.
- * \param log_callback callback function for receiving logging output.
+ * \param config pointer to struct containing e.g. callbacks passed to the library.
  * \return Whether the initialization succeeded.
+ * \note the contents of alloc_funcs are copied.
  * \todo return instance count instead.
  **/
-HPEXPORT int HPCALL hpcalcs_init(void (*log_callback)(const char *format, va_list args));
+HPEXPORT int HPCALL hpcalcs_init(hpcalcs_config * config);
 /**
  * \brief Tears down library internals. No other libhpcalcs function can be called after this one.
  * \return Whether the teardown succeeded.
@@ -172,6 +184,7 @@ HPEXPORT uint32_t HPCALL hpcalcs_supported_calcs(void);
  * \brief Gets the error message if the error was produced by this library
  * \param number the error number (from internal error.h)
  * \param message out pointer for a newly allocated text error message, which must be freed by the caller
+ * \note the string is allocated with malloc(), therefore it must be freed with free().
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
  **/
 HPEXPORT int HPCALL hpcalcs_error_get(int number, char **message);
@@ -356,7 +369,7 @@ HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new(uint32_t size);
 /**
  * \brief Creates a virtual packet for the Prime calculator, filling it with the given size and data.
  * \param size the size of the data.
- * \param data the pre-allocated data (assumed to have been allocated through malloc/calloc).
+ * \param data the pre-allocated data (assumed to be allocated with the same memory allocator as the one given to libhpcalcs, if not using the default one).
  * \return NULL if an error occurred, a virtual packet otherwise.
  * \warning This function takes ownership of \a data.
  */

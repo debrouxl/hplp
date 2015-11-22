@@ -38,58 +38,95 @@
 #include <string.h>
 
 #include <hpfiles.h>
+#include "internal.h"
 #include "logging.h"
 #include "error.h"
 #include "utils.h"
 #include "gettext.h"
 
+hplibs_malloc_funcs hpfiles_alloc_funcs = {
+    .malloc = malloc,
+    .calloc = calloc,
+    .realloc = realloc,
+    .free = free
+};
+
+
 // not static, must be shared between instances
 int hpfiles_instance_count = 0;
 
-HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_list args)) {
+HPEXPORT int HPCALL hpfiles_init(hpfiles_config * config) {
     int res = ERR_SUCCESS;
+    void (*log_callback)(const char *format, va_list args);
+    hplibs_malloc_funcs * alloc_funcs;
 
-    // Set up locale info, if NLS support is enabled.
-#ifdef ENABLE_NLS
-    {
-        char locale_dir[65536];
-
-#ifdef __WIN32__
-        HANDLE hDll;
-        int i;
-
-        hDll = GetModuleHandle("libhpcalcs-0.dll");
-        GetModuleFileName(hDll, locale_dir, 65525);
-
-        for (i = (int)strlen(locale_dir); i >= 0; i--) {
-            if (locale_dir[i] == '\\') {
-                break;
-            }
-        }
-        locale_dir[i] = '\0';
-
-        strcat(locale_dir, "\\locale");
-#else
-        strcpy(locale_dir, LOCALEDIR);
-#endif
-
-        hpfiles_info("setlocale: %s", setlocale(LC_ALL, ""));
-        hpfiles_info("bindtextdomain: %s", bindtextdomain(PACKAGE, locale_dir));
-        bind_textdomain_codeset(PACKAGE, "UTF-8"/*"ISO-8859-15"*/);
-        hpfiles_info("textdomain: %s", textdomain(NULL));
-    }
-#endif
-
-    if (!hpfiles_instance_count) {
-        hpfiles_log_set_callback(log_callback);
-        hpfiles_info(_("hpfiles library version %s compiled on %s"), hpfiles_version_get(), __DATE__ " " __TIME__);
-
-        hpfiles_info(_("%s: init succeeded"), __FUNCTION__);
-        hpfiles_instance_count++;
+    if (config == NULL) {
+        log_callback = NULL;
+        alloc_funcs = NULL;
     }
     else {
-        hpfiles_info(_("%s: re-init skipped"), __FUNCTION__);
-        hpfiles_instance_count++;
+        if (config->version <= HPFILES_CONFIG_VERSION) {
+            if (config->version == 1) {
+                log_callback = config->log_callback;
+                alloc_funcs = config->alloc_funcs;
+            }
+            else {
+                hpcables_error(_("%s: unsupported config version %u"), __FUNCTION__, config->version);
+                res = ERR_LIBRARY_CONFIG_VERSION;
+            }
+        }
+        else {
+            hpcables_error(_("%s: unsupported config version %u"), __FUNCTION__, config->version);
+            res = ERR_LIBRARY_CONFIG_VERSION;
+        }
+    }
+
+    if (!res) {
+        // Set up locale info, if NLS support is enabled.
+#ifdef ENABLE_NLS
+        {
+            char locale_dir[65536];
+
+#ifdef __WIN32__
+            HANDLE hDll;
+            int i;
+
+            hDll = GetModuleHandle("libhpcalcs-0.dll");
+            GetModuleFileName(hDll, locale_dir, 65515);
+
+            for (i = (int)strlen(locale_dir); i >= 0; i--) {
+                if (locale_dir[i] == '\\') {
+                    break;
+                }
+            }
+            locale_dir[i] = '\0';
+
+            strcat(locale_dir, "\\locale");
+#else
+            strncpy(locale_dir, LOCALEDIR, sizeof(locale_dir) - 21);
+#endif
+
+            hpfiles_info("setlocale: %s", setlocale(LC_ALL, ""));
+            hpfiles_info("bindtextdomain: %s", bindtextdomain(PACKAGE, locale_dir));
+            bind_textdomain_codeset(PACKAGE, "UTF-8"/*"ISO-8859-15"*/);
+            hpfiles_info("textdomain: %s", textdomain(NULL));
+        }
+#endif
+
+        if (!hpfiles_instance_count) {
+            hpfiles_log_set_callback(log_callback);
+            if (alloc_funcs != NULL) {
+                hpfiles_alloc_funcs = *alloc_funcs;
+            }
+            hpfiles_info(_("hpfiles library version %s"), hpfiles_version_get());
+
+            hpfiles_info(_("%s: init succeeded"), __FUNCTION__);
+            hpfiles_instance_count++;
+        }
+        else {
+            hpfiles_info(_("%s: re-init skipped"), __FUNCTION__);
+            hpfiles_instance_count++;
+        }
     }
 
     return res;
@@ -117,18 +154,18 @@ HPEXPORT const char* HPCALL hpfiles_version_get (void) {
 
 
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create(void) {
-    return calloc(1, sizeof(files_var_entry));
+    return (hpfiles_alloc_funcs.calloc)(1, sizeof(files_var_entry));
 }
 
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_size(uint32_t size) {
     files_var_entry * ve = hpfiles_ve_create();
     if (ve != NULL) {
-        ve->data = (uint8_t *)calloc(sizeof(uint8_t), size);
+        ve->data = (uint8_t *)(hpfiles_alloc_funcs.calloc)(sizeof(uint8_t), size);
         if (ve->data != NULL) {
             ve->size = size;
         }
         else {
-            free(ve);
+            (hpfiles_alloc_funcs.free)(ve);
             ve = NULL;
         }
     }
@@ -143,7 +180,7 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_size(uint32_t size) {
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, uint32_t size) {
     files_var_entry * ve = hpfiles_ve_create();
     if (ve != NULL) {
-        ve->data = (uint8_t *)malloc(size);
+        ve->data = (uint8_t *)(hpfiles_alloc_funcs.malloc)(size);
         if (ve->data != NULL) {
             if (data != NULL) {
                 memcpy(ve->data, data, size);
@@ -151,7 +188,7 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, ui
             ve->size = size;
         }
         else {
-            free(ve);
+            (hpfiles_alloc_funcs.free)(ve);
             ve = NULL;
         }
     }
@@ -233,8 +270,8 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_from_file(FILE * file, const
 
 HPEXPORT void HPCALL hpfiles_ve_delete(files_var_entry * ve) {
     if (ve != NULL) {
-        free(ve->data);
-        free(ve);
+        (hpfiles_alloc_funcs.free)(ve->data);
+        (hpfiles_alloc_funcs.free)(ve);
     }
     else {
         hpfiles_error("%s: ve is NULL", __FUNCTION__);
@@ -243,14 +280,14 @@ HPEXPORT void HPCALL hpfiles_ve_delete(files_var_entry * ve) {
 
 
 HPEXPORT void *hpfiles_ve_alloc_data(uint32_t size) {
-    return calloc(sizeof(uint8_t), size + 1);
+    return (hpfiles_alloc_funcs.calloc)(sizeof(uint8_t), size + 1);
 }
 
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_copy(files_var_entry * dst, files_var_entry * src) {
     if (src != NULL && dst != NULL) {
         memcpy(dst, src, sizeof(files_var_entry));
         if (src->data != NULL) {
-            dst->data = (uint8_t *)malloc(src->size);
+            dst->data = (uint8_t *)(hpfiles_alloc_funcs.malloc)(src->size);
             if (dst->data != NULL) {
                 memcpy(dst->data, src->data, src->size);
             }
@@ -271,16 +308,16 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_dup(files_var_entry * src) {
     files_var_entry * dst = NULL;
 
     if (src != NULL) {
-        dst = malloc(sizeof(files_var_entry));
+        dst = (hpfiles_alloc_funcs.malloc)(sizeof(files_var_entry));
         if (dst != NULL) {
             memcpy(dst, src, sizeof(files_var_entry));
             if (src->data != NULL) {
-                dst->data = (uint8_t *)malloc(src->size);
+                dst->data = (uint8_t *)(hpfiles_alloc_funcs.malloc)(src->size);
                 if (dst->data != NULL) {
                     memcpy(dst->data, src->data, src->size);
                 }
                 else {
-                    free(dst);
+                    (hpfiles_alloc_funcs.free)(dst);
                     dst = NULL;
                 }
             }
@@ -319,11 +356,11 @@ HPEXPORT int hpfiles_ve_display(files_var_entry * ve) {
 
 
 HPEXPORT files_var_entry ** HPCALL hpfiles_ve_create_array(uint32_t element_count) {
-    return (files_var_entry **)calloc(element_count + 1, sizeof(files_var_entry *));
+    return (files_var_entry **)(hpfiles_alloc_funcs.calloc)(element_count + 1, sizeof(files_var_entry *));
 }
 
 HPEXPORT files_var_entry ** HPCALL hpfiles_ve_resize_array(files_var_entry ** array, uint32_t element_count) {
-    return (files_var_entry **)realloc(array, (element_count + 1) * sizeof(files_var_entry *));
+    return (files_var_entry **)(hpfiles_alloc_funcs.realloc)(array, (element_count + 1) * sizeof(files_var_entry *));
 }
 
 HPEXPORT void HPCALL hpfiles_ve_delete_array(files_var_entry ** array) {
@@ -333,7 +370,7 @@ HPEXPORT void HPCALL hpfiles_ve_delete_array(files_var_entry ** array) {
         for (ptr = array; *ptr; ptr++) {
             hpfiles_ve_delete(*ptr);
         }
-        free(array);
+        (hpfiles_alloc_funcs.free)(array);
     }
     else {
         hpfiles_error("%s: array is NULL", __FUNCTION__);

@@ -52,9 +52,9 @@ AC_PROG_CC
 ORIGCC=$CC
 case $CC in
   *clang*)
-    CFLAGS="$CFLAGS -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings -Wredundant-decls -Wformat -Wformat-nonliteral -Wformat-security -Wpointer-arith -Wunreachable-code -Wdocumentation";;
+    CFLAGS="$CFLAGS -Os -g3 -Wall -W -Wno-unused-parameter -Werror=shadow -Werror=write-strings -Werror=redundant-decls -Werror=format -Werror=format-nonliteral -Werror=date-time -Werror=missing-prototypes -Werror=pointer-arith -Wunreachable-code -Wdocumentation";;
   *gcc*)
-    CFLAGS="$CFLAGS -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings -Wredundant-decls -Wformat -Wformat-nonliteral -Wformat-security -Wpointer-arith -Wunreachable-code";;
+    CFLAGS="$CFLAGS -Os -g3 -Wall -W -Wno-unused-parameter -Werror=shadow -Werror=write-strings -Werror=redundant-decls -Werror=format -Werror=format-nonliteral -Werror=date-time -Werror=missing-prototypes -Werror=pointer-arith -Wunreachable-code";;
   *) ;;
 esac
 

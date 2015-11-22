@@ -4,13 +4,13 @@
 # from a checkout of the complete hplp repository over at Github.
 # Simplified from the tilp / gfm script (recompile_tilp.sh).
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Lionel Debroux
+# Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015 Lionel Debroux
 
 # The prefix where the binaries will be installed, e.g. $HOME, /usr, /usr/local.
 PREFIX="$HOME"
 
 # Common flags and definitions.
-CCFLAGS="-fstack-protector-all --param=ssp-buffer-size=1 -fsanitize=address"
+CCFLAGS="-fstack-protector-all --param=ssp-buffer-size=1 -fsanitize=undefined,bounds" # This set of flags is intentionally small, the bulk is set by configure.ac.
 CCPPFLAGS="-D_FORTIFY_SOURCE=2"
 
 # Configure and build the given module
@@ -31,8 +31,10 @@ handle_one_module() {
   cd -
 }
 
+if [ "x$NOAUTORECONF" = "x" -a "x$NO_AUTORECONF" = "x" ]; then
 echo "=== AUTORECONF ==="
 sh run_autoreconf.sh
+fi
 
 echo "=== UPDATEPOT ==="
 sh run_updatepot.sh

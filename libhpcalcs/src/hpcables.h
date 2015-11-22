@@ -62,17 +62,36 @@ struct _cable_handle {
 };
 
 
+//! Structure passed to \a hpcables_init, contains e.g. callbacks for logging and memory allocation.
+typedef struct {
+    unsigned int version; ///< Config version number.
+    void (*log_callback)(const char *format, va_list args); ///< Callback function for receiving logging output.
+    hplibs_malloc_funcs * alloc_funcs; ///< Function pointers used for dynamic memory allocation. If NULL, the library defaults to malloc(), calloc(), realloc(), free().
+} hpcables_config;
+
+//! Latest revision of the \a hpcables_config struct layout supported by this version of the library.
+#define HPCABLES_CONFIG_VERSION (1)
+
+
+typedef enum {
+    PACKET_DIRECTION_NONE = 0,
+    PACKET_DIRECTION_SEND,
+    PACKET_DIRECTION_RECV
+} CablePacketDirection;
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
  * \brief Initializes library internals. Must be called before any other libhpcables function.
- * \param log_callback callback function for receiving logging output.
+ * \param config pointer to struct containing e.g. callbacks passed to the library.
  * \return Whether the initialization succeeded.
+ * \note the contents of alloc_funcs are copied.
  * \todo return instance count instead.
  **/
-HPEXPORT int HPCALL hpcables_init(void (*log_callback)(const char *format, va_list args));
+HPEXPORT int HPCALL hpcables_init(hpcables_config * config);
 /**
  * \brief Tears down library internals. No other libhpcables function can be called after this one.
  * \return Whether the teardown succeeded.
@@ -96,6 +115,7 @@ HPEXPORT uint32_t HPCALL hpcables_supported_cables(void);
  * \brief Gets the error message if the error was produced by this library
  * \param number the error number (from internal error.h)
  * \param message out pointer for a newly allocated text error message, which must be freed by the caller
+ * \note the string is allocated with malloc(), therefore it must be freed with free().
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
  **/
 HPEXPORT int HPCALL hpcables_error_get(int number, char **message);

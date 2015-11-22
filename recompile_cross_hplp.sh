@@ -4,7 +4,7 @@
 # from a checkout of the complete hplp repository over at Github.
 # Simplified from the tilp / gfm script (recompile_cross_tilp.sh).
 #
-# Copyright (C) 2010, 2011, 2012, 2013 Lionel Debroux, Benjamin Moody
+# Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015 Lionel Debroux, Benjamin Moody
 
 
 # REMINDERS: don't forget to:
@@ -21,8 +21,8 @@
 PREFIX="$HOME/lpg/packages"
 
 # Common flags and definitions.
-CCFLAGS=""
-CCPPFLAGS="-D_FORTIFY_SOURCE=2 -I/$HOME/lpg/deps/gtk-win32/include -I$HOME/lpg/depsprefix/include" # The gtk dev files contains a libintl for Windows
+CCFLAGS="" # This set of flags is intentionally small, the bulk is set by configure.ac.
+CCPPFLAGS="-I/$HOME/lpg/deps/gtk-win32/include -I$HOME/lpg/depsprefix/include -D_FORTIFY_SOURCE=2" # The gtk dev files contains a libintl for Windows
 CLDFLAGS="-L$HOME/lpg/deps/gtk-win32/lib -L$HOME/lpg/depsprefix/lib -static-libgcc" # The gtk dev files contains a libintl for Windows
 CHOST="i686-w64-mingw32"
 
@@ -48,8 +48,10 @@ handle_one_module() {
 }
 
 
+if [ "x$NOAUTORECONF" = "x" -a "x$NO_AUTORECONF" = "x" ]; then
 echo "=== AUTORECONF ==="
 sh run_autoreconf.sh
+fi
 
 echo "=== UPDATEPOT ==="
 sh run_updatepot.sh

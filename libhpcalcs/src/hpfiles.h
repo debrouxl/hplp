@@ -62,17 +62,30 @@ typedef struct
     uint8_t* data;
 } files_var_entry;
 
+
+//! Structure passed to \a hpfiles_init, contains e.g. callbacks for logging and memory allocation.
+typedef struct {
+    unsigned int version; ///< Config version number.
+    void (*log_callback)(const char *format, va_list args); ///< Callback function for receiving logging output.
+    hplibs_malloc_funcs * alloc_funcs; ///< Function pointers used for dynamic memory allocation. If NULL, the library defaults to malloc(), calloc(), realloc(), free().
+} hpfiles_config;
+
+//! Latest revision of the \a hpfiles_config struct layout supported by this version of the library.
+#define HPFILES_CONFIG_VERSION (1)
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
  * \brief Initializes library internals. Must be called before any other libhpfiles function.
- * \param log_callback callback function for receiving logging output.
+ * \param config pointer to struct containing e.g. callbacks passed to the library.
  * \return Whether the initialization succeeded.
+ * \note the contents of alloc_funcs are copied.
  * \todo return instance count instead.
  **/
-HPEXPORT int HPCALL hpfiles_init(void (*log_callback)(const char *format, va_list args));
+HPEXPORT int HPCALL hpfiles_init(hpfiles_config * config);
 /**
  * \brief Tears down library internals. No other libhpfiles function can be called after this one.
  * \return Whether the teardown succeeded.
@@ -90,6 +103,7 @@ HPEXPORT const char* HPCALL hpfiles_version_get(void);
  * \brief Gets the error message if the error was produced by this library
  * \param number the error number (from internal error.h)
  * \param message out pointer for a newly allocated text error message, which must be freed by the caller
+ * \note the string is allocated with malloc(), therefore it must be freed with free().
  * \return 0 if the error was produced by this library, otherwise the error number (for propagation).
  **/
 HPEXPORT int HPCALL hpfiles_error_get(int number, char **message);
@@ -127,7 +141,7 @@ HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_size(uint32_t size);
 HPEXPORT files_var_entry * HPCALL hpfiles_ve_create_with_data(uint8_t * data, uint32_t size);
 /**
  * \brief Creates and fills a files_var_entry structure with the given preallocated data.
- * \param data the data to be attached to the files_var_entry (assumed to be allocated with malloc/calloc).
+ * \param data the data to be attached to the files_var_entry (assumed to be allocated with the same memory allocator as the one given to libhpfiles, if not using the default one).
  * \param size the size of the data.
  * \return Pointer to files_var_entry, NULL if failed.
  */
@@ -258,6 +272,7 @@ HPEXPORT uint8_t HPCALL hpfiles_filename2vartype(calc_model model, const char * 
  * \param out_calcfilename a dynamically allocated string containing the calculator-side filename (usually stripped from the computer-side file extension).
  * \return 0 if parsing succeeded, nonzero otherwise.
  * \note may have to use char16_t instead of char...
+ * \note the string is allocated with malloc(), therefore it must be freed with free().
  */
 HPEXPORT int HPCALL hpfiles_parsefilename(calc_model model, const char * filepath, uint8_t * out_type, char ** out_calcfilename);
 

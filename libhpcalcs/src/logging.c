@@ -32,6 +32,7 @@
 #include <hpfiles.h>
 #include <hpcables.h>
 #include <hpcalcs.h>
+#include <hpopers.h>
 #include "logging.h"
 
 #include <stdio.h>

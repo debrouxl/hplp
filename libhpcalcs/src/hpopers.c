@@ -38,31 +38,66 @@
 #include <string.h>
 
 #include <hpopers.h>
+#include "internal.h"
 #include "logging.h"
 #include "error.h"
 #include "gettext.h"
 
+hplibs_malloc_funcs hpopers_alloc_funcs = {
+    .malloc = malloc,
+    .calloc = calloc,
+    .realloc = realloc,
+    .free = free
+};
+
+
 // not static, must be shared between instances
 int hpopers_instance_count = 0;
 
-HPEXPORT int HPCALL hpopers_init(void (*log_callback)(const char *format, va_list args)) {
+HPEXPORT int HPCALL hpopers_init(hpopers_config * config) {
     int res = ERR_SUCCESS;
+    void (*log_callback)(const char *format, va_list args);
+    hplibs_malloc_funcs * alloc_funcs;
 
-    // TODO: when (if) libhpopers is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
-
-    if (!hpopers_instance_count) {
-        hpopers_log_set_callback(log_callback);
-        hpopers_info(_("hpopers library version %s compiled on %s"), hpopers_version_get(), __DATE__ " " __TIME__);
-
-        hpopers_info(_("%s: init succeeded"), __FUNCTION__);
-        hpopers_instance_count++;
+    if (config == NULL) {
+        log_callback = NULL;
+        alloc_funcs = NULL;
     }
     else {
-        hpopers_info(_("%s: re-init skipped"), __FUNCTION__);
-        hpopers_instance_count++;
+        if (config->version <= HPOPERS_CONFIG_VERSION) {
+            if (config->version == 1) {
+                log_callback = config->log_callback;
+                alloc_funcs = config->alloc_funcs;
+            }
+            else {
+                hpcables_error(_("%s: unsupported config version %u"), __FUNCTION__, config->version);
+                res = ERR_LIBRARY_CONFIG_VERSION;
+            }
+        }
+        else {
+            hpcables_error(_("%s: unsupported config version %u"), __FUNCTION__, config->version);
+            res = ERR_LIBRARY_CONFIG_VERSION;
+        }
     }
 
-    hpopers_info(_("%s: init succeeded"), __FUNCTION__);
+    if (!res) {
+        // TODO: when (if) libhpopers is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
+
+        if (!hpopers_instance_count) {
+            hpopers_log_set_callback(log_callback);
+            if (alloc_funcs != NULL) {
+                hpopers_alloc_funcs = *alloc_funcs;
+            }
+            hpopers_info(_("hpopers library version %s"), hpopers_version_get());
+
+            hpopers_info(_("%s: init succeeded"), __FUNCTION__);
+            hpopers_instance_count++;
+        }
+        else {
+            hpopers_info(_("%s: re-init skipped"), __FUNCTION__);
+            hpopers_instance_count++;
+        }
+    }
 
     return res;
 }

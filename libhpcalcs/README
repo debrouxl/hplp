@@ -199,8 +199,12 @@ TODO list
   UIs based on Web technologies are another option, Qt provides support for
   those (QtWebkit / QtWebEngine) as well.
 * strip out leading program metadata, if any, from .hpprgm files, like the
-  UTF-16LE BOM is already stripped;
-* add support for .hpappprgm and .hpappnote files;
+  UTF-16LE BOM is already stripped.
+  Implementation notes:
+  * in a loop, attempt to read 4 bytes containing size, and seek forward of
+    that many bytes. If this leads the offset beyond EOF, break out.
+* add some form of packet parsing + validation API, which can be used for
+  both internal sanity checking and packet dissection;
 * add 39gII support, probably, as the Prime is similar to the 39gII. That's
   where the usefulness of the cables / calcs separation and cables generic
   API will become most obvious.
@@ -226,23 +230,32 @@ hpfiles INFO: Displaying var entry 83EC8B55
 hpfiles INFO: Name: 
 "
 * implement screenshot color conversion, with libpng;
-* add progress feedback functionality, inspired by and improved from libti*;
-* add port number functionality, from libticables. That will enable passthrough
-  mode for communication between real and/or emulated calculators.
-* make libhpcalcs allocator-aware: that is, let users inject a struct
-  containing function pointers for functions compatible with malloc(),
-  calloc(), free() and others if need be, and have libhpcalcs use that;
+* add progress feedback functionality, improved from libti*: the libti*
+  implementation is too complex.
+  Implementation notes:
+  * can information for current chunk of the transfer + information for the
+    transfer as a whole be passed through arguments of a single callback.
+* add port number functionality, known from libticables, in the API. That
+  will enable passthrough mode for communication between real and/or
+  emulated calculators;
 * fill in torture test;
 * add two APIs for dynamically building NULL-terminated const char * arrays
   from the two first columns of typesprime.c::PRIME_CONST.
 * somehow gain better knowledge of the protocol, so as to be able to...
 * ... add more operations and data structures. 
-* add dissectors and session logs, like in libticalcs;
+* add dissectors and session logs, improved from libticables.
+  Design goals:
+  * make it possible to trace packet flow direction;
+  * make it possible to validate (sanity check) packets , to begin with...
+  Implementation notes:
+  * new APIs for registering and unregistering (multiple) callbacks;
+  * call the registered callbacks upon packet send and packet receive;
+  * leverage the packet parsing / validation code.
 * add support for Prime in fake MSD mode, for firmware upgrades ? I've
   already partially analyzed the protocol and published my notes at
   http://tiplanet.org/hpwiki/index.php?title=HP_Prime/Linking_Protocol
   but I'm not really confident about it ;)
-  Need to find a library for MSD. libusbx does not recommend using it
+  Need to find a library for MSD. libusb does not recommend using it
   in MSD mode.
 * certainly more... at least, if users and programmers think the software
   fits a purpose :-)

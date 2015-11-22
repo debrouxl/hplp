@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <hpfiles.h>
+#include <hpcables.h>
 #include <hpcalcs.h>
-//#include <hpcables.h>
-//#include <hpfiles.h>
+#include <hpopers.h>
+#include <filetypes.h>
 #include <prime_cmd.h>
 
 #define PRINTF(FUNCTION, TYPE, args...) \
@@ -23,8 +25,17 @@ static void output_log_callback(const char *format, va_list args) {
 int main(int argc, char **argv) {
     int i = 1;
 
-    hpcalcs_init(output_log_callback);
+    hpfiles_init(NULL);
+    hpfiles_exit();
+
+    hpcables_init(NULL);
+    hpcables_exit();
+
+    hpcalcs_init(NULL);
     hpcalcs_exit();
+
+    hpopers_init(NULL);
+    hpopers_exit();
 
     return 0;
 }

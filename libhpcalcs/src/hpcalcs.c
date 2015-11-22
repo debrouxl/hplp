@@ -34,6 +34,7 @@
 
 #include <hpcables.h>
 #include <hpcalcs.h>
+#include "internal.h"
 #include "logging.h"
 #include "error.h"
 #include "gettext.h"
@@ -51,25 +52,60 @@ static const uint32_t supported_calcs =
 	| (1U << CALC_PRIME)
 ;
 
+hplibs_malloc_funcs hpcalcs_alloc_funcs = {
+    .malloc = malloc,
+    .calloc = calloc,
+    .realloc = realloc,
+    .free = free
+};
+
 
 // not static, must be shared between instances
 int hpcalcs_instance_count = 0;
 
-HPEXPORT int HPCALL hpcalcs_init(void (*log_callback)(const char *format, va_list args)) {
+HPEXPORT int HPCALL hpcalcs_init(hpcalcs_config * config) {
     int res = ERR_SUCCESS;
+    void (*log_callback)(const char *format, va_list args);
+    hplibs_malloc_funcs * alloc_funcs;
 
-    // TODO: when (if) libhpfiles is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
-
-    if (!hpcalcs_instance_count) {
-        hpcalcs_log_set_callback(log_callback);
-        hpcalcs_info(_("hpcalcs library version %s compiled on %s"), hpcalcs_version_get(), __DATE__ " " __TIME__);
-
-        hpcalcs_info(_("%s: init succeeded"), __FUNCTION__);
-        hpcalcs_instance_count++;
+    if (config == NULL) {
+        log_callback = NULL;
+        alloc_funcs = NULL;
     }
     else {
-        hpcalcs_info(_("%s: re-init skipped"), __FUNCTION__);
-        hpcalcs_instance_count++;
+        if (config->version <= HPCALCS_CONFIG_VERSION) {
+            if (config->version == 1) {
+                log_callback = config->log_callback;
+                alloc_funcs = config->alloc_funcs;
+            }
+            else {
+                hpcables_error(_("%s: unsupported config version %u"), __FUNCTION__, config->version);
+                res = ERR_LIBRARY_CONFIG_VERSION;
+            }
+        }
+        else {
+            hpcables_error(_("%s: unsupported config version %u"), __FUNCTION__, config->version);
+            res = ERR_LIBRARY_CONFIG_VERSION;
+        }
+    }
+
+    if (!res) {
+        // TODO: when (if) libhpfiles is split from libhpcalcs, copy and adjust locale setting code from hpfiles.c.
+
+        if (!hpcalcs_instance_count) {
+            hpcalcs_log_set_callback(log_callback);
+            if (alloc_funcs != NULL) {
+                hpcalcs_alloc_funcs = *alloc_funcs;
+            }
+            hpcalcs_info(_("hpcalcs library version %s"), hpcalcs_version_get());
+
+            hpcalcs_info(_("%s: init succeeded"), __FUNCTION__);
+            hpcalcs_instance_count++;
+        }
+        else {
+            hpcalcs_info(_("%s: re-init skipped"), __FUNCTION__);
+            hpcalcs_instance_count++;
+        }
     }
 
     return res;
@@ -104,7 +140,7 @@ HPEXPORT uint32_t HPCALL hpcalcs_supported_calcs (void) {
 HPEXPORT calc_handle * HPCALL hpcalcs_handle_new(calc_model model) {
     calc_handle * handle = NULL;
     if (model < CALC_MAX) {
-        handle = (calc_handle *)calloc(1, sizeof(*handle));
+        handle = (calc_handle *)(hpcalcs_alloc_funcs.calloc)(1, sizeof(*handle));
 
         if (handle != NULL) {
             handle->model = model;
@@ -131,10 +167,10 @@ HPEXPORT int HPCALL hpcalcs_handle_del(calc_handle * handle) {
             res = ERR_SUCCESS;
         }
 
-        free(handle->handle);
+        (hpcalcs_alloc_funcs.free)(handle->handle);
         handle->handle = NULL;
 
-        free(handle);
+        (hpcalcs_alloc_funcs.free)(handle);
         hpcalcs_info("%s: calc handle deletion succeeded", __FUNCTION__);
     }
     else {
