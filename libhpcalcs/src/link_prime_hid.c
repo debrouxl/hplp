@@ -45,15 +45,23 @@ static int cable_prime_hid_probe(cable_handle * handle) {
     // In fact, we're not using handle here, but let's nevertheless flag misuse of the API.
     if (handle != NULL) {
         // Enumerating the device seems to do the job.
-        struct hid_device_info * info = hid_enumerate(USB_VID_HP, USB_PID_PRIME);
+        struct hid_device_info * info = hid_enumerate(USB_VID_HP, USB_PID_PRIME1);
         if (info != NULL) {
             hid_free_enumeration(info);
             res = ERR_SUCCESS;
-            hpcables_info("%s: cable probe succeeded", __FUNCTION__);
+            hpcables_info("%s: cable probe succeeded, PID=%04X", __FUNCTION__, USB_PID_PRIME1);
         }
         else {
-            res = ERR_CABLE_PROBE_FAILED;
-            hpcables_error("%s: cable probe failed", __FUNCTION__);
+            info = hid_enumerate(USB_VID_HP, USB_PID_PRIME2);
+            if (info != NULL) {
+                hid_free_enumeration(info);
+                res = ERR_SUCCESS;
+                hpcables_info("%s: cable probe succeeded, PID=%04X", __FUNCTION__, USB_PID_PRIME2);
+            }
+            else {
+                res = ERR_CABLE_PROBE_FAILED;
+                hpcables_error("%s: cable probe failed", __FUNCTION__);
+            }
         }
     }
     else {
@@ -66,8 +74,10 @@ static int cable_prime_hid_probe(cable_handle * handle) {
 static int cable_prime_hid_open(cable_handle * handle) {
     int res;
     if (handle != NULL) {
-        hid_device * device_handle = hid_open(USB_VID_HP, USB_PID_PRIME, NULL);
+        hid_device * device_handle = hid_open(USB_VID_HP, USB_PID_PRIME1, NULL);
+        unsigned int pid = USB_PID_PRIME1;
         if (device_handle) {
+device_handle_ok:
             handle->model = CABLE_PRIME_HID;
             handle->handle = (void *)device_handle;
             handle->fncts = &cable_prime_hid_fncts;
@@ -76,11 +86,18 @@ static int cable_prime_hid_open(cable_handle * handle) {
             handle->open = 1;
             handle->busy = 0;
             res = ERR_SUCCESS;
-            hpcables_info("%s: cable open succeeded", __FUNCTION__);
+            hpcables_info("%s: cable open succeeded, PID=%04X", __FUNCTION__, pid);
         }
         else {
-            res = ERR_CABLE_NOT_OPEN;
-            hpcables_error("%s: cable open failed", __FUNCTION__);
+            device_handle = hid_open(USB_VID_HP, USB_PID_PRIME2, NULL);
+            pid = USB_PID_PRIME2;
+            if (device_handle) {
+                goto device_handle_ok;
+            }
+            else {
+                res = ERR_CABLE_NOT_OPEN;
+                hpcables_error("%s: cable open failed", __FUNCTION__);
+            }
         }
     }
     else {

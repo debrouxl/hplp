@@ -65,8 +65,10 @@ typedef struct {
 
 //! USB Vendor ID of Hewlett-Packard.
 #define USB_VID_HP (0x03F0)
-//! USB Product ID of the Prime calculator.
-#define USB_PID_PRIME (0x0441)
+//! USB Product ID of the Prime calculator in firmware revisions < 8151.
+#define USB_PID_PRIME1 (0x0441)
+//! USB Product ID of the Prime calculator in firmware revisions >= 8151.
+#define USB_PID_PRIME2 (0x1541)
 
 //! Size of a raw HID packet for the Prime.
 #define PRIME_RAW_HID_DATA_SIZE (64)
