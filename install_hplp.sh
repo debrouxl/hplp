@@ -52,7 +52,7 @@
 # * after successful installation, you may have to add $PREFIX/bin to $PATH,
 # and $PREFIX/lib to $LD_LIBRARY_PATH, for the SVN versions of libhp*
 # to get picked up.
-if [ "x$PREFIX" = "x" ]; then
+if [ -z "$PREFIX" ]; then
     PREFIX="/usr"
 fi
 echo Will use "PREFIX=$PREFIX"
@@ -62,7 +62,7 @@ echo Will use "PREFIX=$PREFIX"
 # Note that you can set the value of SRCDIR thusly:
 # $ SRCDIR="/opt/src" <path>/install_hplp.sh
 # ******************************************************************************
-if [ "x$SRCDIR" = "x" ]; then
+if [ -z "$SRCDIR" ]; then
     SRCDIR="$HOME/lpg"
 fi
 echo Will use "SRCDIR=$SRCDIR"
@@ -77,7 +77,7 @@ if [ "x$CC" = "x" ]; then
     CC=gcc
     #CFLAGS="-std=c99 -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings"
 fi
-if [ "x$CXX" = "x" ]; then
+if [ -z "$CXX" ]; then
     #CXX=clang++
     CXX=g++
     #CXXFLAGS="-std=c99 -Os -g3 -Wall -W -Wno-unused-parameter -Wshadow -Wwrite-strings"
