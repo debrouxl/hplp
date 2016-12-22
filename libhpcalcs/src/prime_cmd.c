@@ -382,6 +382,7 @@ HPEXPORT int HPCALL calc_prime_s_disable_new_protocol(calc_handle * handle) {
     int res;
     // It looks like sending a status check using the old protocol drops the Prime
     // out of the new protocol mode.
+    handle->protocol_version = 0;
     res = calc_prime_s_check_ready(handle);
     if (res) {
         return res;
@@ -395,6 +396,9 @@ HPEXPORT int HPCALL calc_prime_r_disable_new_protocol(calc_handle * handle) {
         // While the prime is in thew new protocol mode, it sends us packages
         // starting with 0xFE. We need to eliminate those now (and also wait for
         // the status response).
+        // We need to temporarily re-enable the new protocol, so that 0xFEs get
+        // eliminated and don't cause errors.
+        handle->protocol_version = 1;
         res = calc_prime_r_check_ready(handle, NULL, NULL);
         handle->protocol_version = 0;
     }
