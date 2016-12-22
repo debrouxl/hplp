@@ -116,6 +116,10 @@ static int read_vtl_pkt(calc_handle * handle, uint8_t cmd, prime_vtl_pkt ** pkt,
     return res;
 }
 
+static int write_vtl_pkt_new(calc_handle * handle, prime_vtl_pkt * pkt) {
+    return prime_send_data_new(handle, pkt);
+}
+
 static int write_vtl_pkt(calc_handle * handle, prime_vtl_pkt * pkt) {
     return prime_send_data(handle, pkt);
 }
@@ -170,7 +174,7 @@ HPEXPORT int HPCALL calc_prime_r_check_ready(calc_handle * handle, uint8_t ** ou
     return res;
 }
 
-HPEXPORT int HPCALL calc_prime_s_get_infos (calc_handle * handle) {
+HPEXPORT int HPCALL calc_prime_s_get_infos(calc_handle * handle) {
     int res;
     if (handle != NULL) {
         prime_vtl_pkt * pkt = prime_vtl_pkt_new(1);
@@ -360,47 +364,124 @@ HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screensh
     return res;
 }
 
-// Seems to be made of a series of CMD_PRIME_RECV_FILE.
+HPEXPORT int HPCALL calc_prime_s_enable_new_protocol(calc_handle * handle) {
+    int res;
+    res = prime_send_new_protocol_init(handle);
+    if (!res) {
+        handle->protocol_version = 1;
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_r_enable_new_protocol(calc_handle * handle) {
+    int res = 0;
+    if (handle == NULL) {
+        res = ERR_INVALID_HANDLE;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_s_disable_new_protocol(calc_handle * handle) {
+    int res;
+    // It looks like sending a status check using the old protocol drops the Prime
+    // out of the new protocol mode.
+    res = calc_prime_s_check_ready(handle);
+    if (res) {
+        return res;
+    }
+    return res;
+}
+
+HPEXPORT int HPCALL calc_prime_r_disable_new_protocol(calc_handle * handle) {
+    int res;
+    if (handle != NULL) {
+        // While the prime is in thew new protocol mode, it sends us packages
+        // starting with 0xFE. We need to eliminate those now (and also wait for
+        // the status response).
+        res = calc_prime_r_check_ready(handle, NULL, NULL);
+        handle->protocol_version = 0;
+    }
+    else {
+        res = ERR_INVALID_HANDLE;
+        hpcalcs_error("%s: handle is NULL", __FUNCTION__);
+    }
+    return res;
+}
+
 HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry * file) {
     int res;
     if (handle != NULL && file != NULL) {
+        uint32_t offset = 0;
+        uint32_t header_size = 8;
         uint8_t namelen = (uint8_t)char16_strlen(file->name) * 2;
-        uint32_t size = 10 - 6 + namelen + file->size; // Size of the data after the header.
-        prime_vtl_pkt * pkt = prime_vtl_pkt_new(size + 6); // Add size of the header.
-        hpcalcs_debug("Virtual packet has size %" PRIu32 " (%" PRIx32 ")\n", size, size);
+        uint32_t size = namelen + file->size + 12; // Size of the data plus something
+        uint32_t other_size = namelen + file->size + 6; // Also size of the data plus something
+        prime_vtl_pkt * pkt;
+
+        // Some text editors add the UTF-16LE BOM at the beginning of the file, but the SDKV0.30 firmware version chokes on it.
+        // Therefore, skip the BOM.
+        if (   (file->type == PRIME_TYPE_PRGM || file->type == PRIME_TYPE_NOTE)
+            && (file->data[0] == 0xFF && file->data[1] == 0xFE)
+           ) {
+            offset = 2;
+            size -= 2;
+            other_size -= 2;
+        }
+
+        pkt = prime_vtl_pkt_new(size + header_size); // Add size of the header.
         if (pkt != NULL) {
             uint8_t * ptr;
             uint16_t crc16;
-            uint32_t offset = 0;
-
-            // Some text editors add the UTF-16LE BOM at the beginning of the file, but the SDKV0.30 firmware version chokes on it.
-            // Therefore, skip the BOM.
-            if (   (file->type == PRIME_TYPE_PRGM || file->type == PRIME_TYPE_NOTE)
-                && (file->data[0] == 0xFF && file->data[1] == 0xFE)
-               ) {
-                offset = 2;
-                size -= 2;
-            }
 
             pkt->cmd = CMD_PRIME_RECV_FILE;
             ptr = pkt->data;
-            *ptr++ = CMD_PRIME_RECV_FILE;
+
+            // Command sequence. Connectivity kit increments this after each command, but the Prime seems to ignore it.
             *ptr++ = 0x01;
-            *ptr++ = (uint8_t)((size >> 24) & 0xFF);
-            *ptr++ = (uint8_t)((size >> 16) & 0xFF);
-            *ptr++ = (uint8_t)((size >>  8) & 0xFF);
-            *ptr++ = (uint8_t)((size      ) & 0xFF);
-            *ptr++ = file->type;
-            *ptr++ = namelen;
-            *ptr++ = 0x00; // CRC16, set it to 0 for now.
             *ptr++ = 0x00;
+            *ptr++ = 0x00;
+            *ptr++ = 0x00;  
+
+            *ptr++ = (uint8_t)((size      ) & 0xFF);
+            *ptr++ = (uint8_t)((size >>  8) & 0xFF);
+            *ptr++ = (uint8_t)((size >> 16) & 0xFF);
+            *ptr++ = (uint8_t)((size >> 24) & 0xFF);
+
+            *ptr++ = CMD_PRIME_RECV_FILE;
+            
+            // ?
+            *ptr++ = 0x03;
+            
+            // Why not use different endiannesses for sizes within the same package... It's more fun that way.
+            *ptr++ = (uint8_t)((other_size >> 24) & 0xFF);
+            *ptr++ = (uint8_t)((other_size >> 16) & 0xFF);
+            *ptr++ = (uint8_t)((other_size >>  8) & 0xFF);
+            *ptr++ = (uint8_t)((other_size      ) & 0xFF);
+            
+            *ptr++ = file->type;
+            
+            *ptr++ = namelen;
+
+            // CRC16, set it to 0 for now.
+            *ptr++ = 0x00;
+            *ptr++ = 0x00;
+
             memcpy(ptr, file->name, namelen);
             ptr += namelen;
+
             memcpy(ptr, file->data + offset, file->size - offset);
-            crc16 = crc16_block(pkt->data, size); // Yup, the last 6 bytes of the packet are excluded from the CRC.
-            pkt->data[8] = crc16 & 0xFF;
-            pkt->data[9] = (crc16 >> 8) & 0xFF;
-            res = write_vtl_pkt(handle, pkt);
+            ptr += file->size - offset;
+            
+            // Two extra nulls (for termination?
+            *ptr++ = 0x00;
+            *ptr++ = 0x00;
+
+            crc16 = crc16_block(pkt->data + header_size, size); // Excluding the header
+            pkt->data[16] = crc16 & 0xFF;
+            pkt->data[17] = (crc16 >> 8) & 0xFF;
+
+            res = write_vtl_pkt_new(handle, pkt);
 
             prime_vtl_pkt_del(pkt);
         }
@@ -417,10 +498,10 @@ HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry
 }
 
 HPEXPORT int HPCALL calc_prime_r_send_file(calc_handle * handle) {
-    int res;
+    int res = 0;
     if (handle != NULL) {
-        // There doesn't seem to be anything to do, beyond eliminating packets starting with 0xFF.
-        res = calc_prime_r_check_ready(handle, NULL, NULL);
+        // There doesn't seem to be anything to do.
+        //res = calc_prime_r_check_ready(handle, NULL, NULL);
     }
     else {
         res = ERR_INVALID_HANDLE;
