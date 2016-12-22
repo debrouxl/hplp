@@ -105,8 +105,6 @@ HPEXPORT int HPCALL prime_send_new_protocol_init(calc_handle * handle) {
         hpcalcs_info("%s: send init succeeded", __FUNCTION__);
     }
     
-    // Await response from Prime
-    
     return res;
 }
 
