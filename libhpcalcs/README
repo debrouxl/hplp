@@ -257,6 +257,11 @@ hpfiles INFO: Name:
   but I'm not really confident about it ;)
   Need to find a library for MSD. libusb does not recommend using it
   in MSD mode.
+* implement compressed file transfer. The HP connectivity kit switches
+  to a compressed transfer mode for files over a certain size when
+  connected to a Prime with recent firmware.
+* use the new Prime protocol throughout. Currently we use it only for
+  file transfers
 * certainly more... at least, if users and programmers think the software
   fits a purpose :-)
 

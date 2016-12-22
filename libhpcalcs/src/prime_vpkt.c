@@ -83,13 +83,38 @@ HPEXPORT void HPCALL prime_vtl_pkt_del(prime_vtl_pkt * pkt) {
     }
 }
 
+HPEXPORT int HPCALL prime_send_new_protocol_init(calc_handle * handle) {
+    int res;
+
+    // This is a special package that appears to switch the
+    // HP prime into some new protocol mode.
+    // It looks like a SEND_KEY, but the packet ID must be 0xFF I think.
+    prime_raw_hid_pkt raw;
+    memset((void *)&raw, 0, sizeof(raw));
+    raw.size = 8;
+    raw.data[1] = 0xFF;
+    raw.data[2] = 0xEC;
+    // Remaining bytes are 0
+    
+    res = prime_send(handle, &raw);
+    if (res) {
+        hpcalcs_info("%s: send init failed", __FUNCTION__);
+        return res;
+    }
+    else {
+        hpcalcs_info("%s: send init succeeded", __FUNCTION__);
+    }
+    
+    return res;
+}
+
 HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
     int res;
     if (handle != NULL && pkt != NULL) {
         prime_raw_hid_pkt raw;
         uint32_t i, q, r;
         uint32_t offset = 0;
-        uint8_t pkt_id = 0;
+        uint8_t pkt_id = handle->protocol_version > 0 ? 0x01 : 0x00;
 
         memset((void *)&raw, 0, sizeof(raw));
         q = (pkt->size) / (PRIME_RAW_HID_DATA_SIZE - 1);
@@ -115,8 +140,17 @@ HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
 
             // Increment packet ID, which seems to be necessary for computer -> calc packets
             pkt_id++;
-            if (pkt_id == 0xFF) {
-                pkt_id = 0; // Skip 0xFF, which is used for other purposes.
+            if (handle->protocol_version > 0) {
+                // Skip 0xFE to 0x01
+                if (pkt_id == 0xFE) {
+                    pkt_id = 0x02;
+                }
+            }
+            else {
+                // Skip 0xFF, which is used for other purposes.
+                if (pkt_id == 0xFF) {
+                    pkt_id = 0x00;
+                }
             }
         }
 
@@ -168,16 +202,24 @@ HPEXPORT int HPCALL prime_recv_data(calc_handle * handle, prime_vtl_pkt * pkt) {
             if (raw.size > 0) {
                 uint8_t * new_data;
 
+                uint8_t expected_seq = ((read_pkts_count + (read_pkts_count / 0xFF)) & 0xFF);
                 // Exclude those packets from reassembly (at least for screenshotting purposes, they seem to be spurious).
                 if (raw.data[0] == 0xFF) {
                     // TODO: investigate whether the second byte could indicate an error code ?
                     hpcalcs_error("%s: skipping packet starting with 0xFF", __FUNCTION__);
                     continue;
                 }
+                // Once we enable the new protocol, we get these periodically.
+                else if (handle->protocol_version > 0 && raw.data[0] == 0xFE) {
+                    // TODO: investigate whether the second byte could indicate an error code ?
+                    hpcalcs_error("%s: skipping packet starting with 0xFE", __FUNCTION__);
+                    continue;
+                }
                 // Sanity check. The first byte is the sequence number. After reaching 0xFE. it wraps back to 0 (skipping 0xFF).
-                else if (raw.data[0] != ((read_pkts_count + (read_pkts_count / 0xFF)) & 0xFF)) {
+                // TODO: This is probably going to be different if we're in the new_protocol mode.
+                else if (raw.data[0] != expected_seq) {
                     res = ERR_CALC_PACKET_FORMAT;
-                    hpcalcs_error("%s: packet out of sequence, got %d, expected %d", __FUNCTION__, (int)raw.data[0], read_pkts_count);
+                    hpcalcs_error("%s: packet out of sequence, got %d, expected %d", __FUNCTION__, (int)raw.data[0], (int)expected_seq);
                     break;
                 }
 

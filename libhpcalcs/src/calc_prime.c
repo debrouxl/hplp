@@ -99,7 +99,21 @@ static int calc_prime_recv_screen(calc_handle * handle, calc_screenshot_format f
 }
 
 static int calc_prime_send_file(calc_handle * handle, files_var_entry * file) {
-    int res;
+    int res, disable_res;
+
+    // send_file uses the new Prime protocol. Enable it:
+    res = calc_prime_s_enable_new_protocol(handle);
+    if (res == 0) {
+        res = calc_prime_r_enable_new_protocol(handle);
+        if (res != 0) {
+            hpcalcs_error("%s: r_enable_new_protocol failed", __FUNCTION__);
+            return res;
+        }
+    }
+    else {
+        hpcalcs_error("%s: s_enable_new_protocol failed", __FUNCTION__);
+        return res;
+    }
 
     res = calc_prime_s_send_file(handle, file);
     if (res == 0) {
@@ -111,6 +125,23 @@ static int calc_prime_send_file(calc_handle * handle, files_var_entry * file) {
     else {
         hpcalcs_error("%s: s_send_file failed", __FUNCTION__);
     }
+    
+    // Disable the new protocol
+    disable_res = calc_prime_s_disable_new_protocol(handle);
+    if (disable_res == 0) {
+        disable_res = calc_prime_r_disable_new_protocol(handle);
+        if (disable_res != 0) {
+            hpcalcs_error("%s: r_enable_new_protocol failed", __FUNCTION__);
+        }
+    }
+    else {
+        hpcalcs_error("%s: s_enable_new_protocol failed", __FUNCTION__);
+    }
+    // Return the disable result if we don't already have an error case.
+    if (!res) {
+        res = disable_res;
+    }
+    
     return res;
 }
 

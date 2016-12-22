@@ -118,6 +118,7 @@ struct _calc_handle {
     int attached; // Should be made explicitly atomic with GCC >= 4.7 or Clang, but int is atomic on most ISAs anyway.
     int open; // Should be made explicitly atomic with GCC >= 4.7 or Clang, but int is atomic on most ISAs anyway.
     int busy; // Should be made explicitly atomic with GCC >= 4.7 or Clang, but int is atomic on most ISAs anyway.
+    int protocol_version;
 };
 
 
@@ -379,6 +380,13 @@ HPEXPORT prime_vtl_pkt * HPCALL prime_vtl_pkt_new_with_data_ptr(uint32_t size, u
  * \param pkt the packet to be deleted.
  */
 HPEXPORT void HPCALL prime_vtl_pkt_del(prime_vtl_pkt * pkt);
+
+/**
+ * \brief Switches the Prime into a new protocol mode.
+ * \param handle the calculator handle.
+ * \return 0 upon success, nonzero otherwise.
+ */
+HPEXPORT int HPCALL prime_send_new_protocol_init(calc_handle * handle);
 
 /**
  * \brief Sends the given virtual packet to the Prime calculator using given calculator handle.

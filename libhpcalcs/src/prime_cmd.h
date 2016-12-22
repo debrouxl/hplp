@@ -48,6 +48,12 @@ HPEXPORT int HPCALL calc_prime_r_get_infos(calc_handle * handle, calc_infos * in
 HPEXPORT int HPCALL calc_prime_s_set_date_time(calc_handle * handle, time_t timestamp);
 HPEXPORT int HPCALL calc_prime_r_set_date_time(calc_handle * handle);
 
+HPEXPORT int HPCALL calc_prime_s_enable_new_protocol(calc_handle * handle);
+HPEXPORT int HPCALL calc_prime_r_enable_new_protocol(calc_handle * handle);
+
+HPEXPORT int HPCALL calc_prime_s_disable_new_protocol(calc_handle * handle);
+HPEXPORT int HPCALL calc_prime_r_disable_new_protocol(calc_handle * handle);
+
 HPEXPORT int HPCALL calc_prime_s_recv_screen(calc_handle * handle, calc_screenshot_format format);
 HPEXPORT int HPCALL calc_prime_r_recv_screen(calc_handle * handle, calc_screenshot_format format, uint8_t ** out_data, uint32_t * out_size);
 
