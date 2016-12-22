@@ -116,10 +116,6 @@ static int read_vtl_pkt(calc_handle * handle, uint8_t cmd, prime_vtl_pkt ** pkt,
     return res;
 }
 
-static int write_vtl_pkt_new(calc_handle * handle, prime_vtl_pkt * pkt) {
-    return prime_send_data_new(handle, pkt);
-}
-
 static int write_vtl_pkt(calc_handle * handle, prime_vtl_pkt * pkt) {
     return prime_send_data(handle, pkt);
 }
@@ -415,8 +411,8 @@ HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry
         uint32_t offset = 0;
         uint32_t header_size = 8;
         uint8_t namelen = (uint8_t)char16_strlen(file->name) * 2;
-        uint32_t size = namelen + file->size + 12; // Size of the data plus something
-        uint32_t other_size = namelen + file->size + 6; // Also size of the data plus something
+        uint32_t size = namelen + file->size + 10; // Size of the data plus something
+        uint32_t other_size = namelen + file->size + 4; // Also size of the data plus something
         prime_vtl_pkt * pkt;
 
         // Some text editors add the UTF-16LE BOM at the beginning of the file, but the SDKV0.30 firmware version chokes on it.
@@ -472,16 +468,12 @@ HPEXPORT int HPCALL calc_prime_s_send_file(calc_handle * handle, files_var_entry
 
             memcpy(ptr, file->data + offset, file->size - offset);
             ptr += file->size - offset;
-            
-            // Two extra nulls (for termination?
-            *ptr++ = 0x00;
-            *ptr++ = 0x00;
 
             crc16 = crc16_block(pkt->data + header_size, size); // Excluding the header
             pkt->data[16] = crc16 & 0xFF;
             pkt->data[17] = (crc16 >> 8) & 0xFF;
 
-            res = write_vtl_pkt_new(handle, pkt);
+            res = write_vtl_pkt(handle, pkt);
 
             prime_vtl_pkt_del(pkt);
         }

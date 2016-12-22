@@ -108,72 +108,13 @@ HPEXPORT int HPCALL prime_send_new_protocol_init(calc_handle * handle) {
     return res;
 }
 
-HPEXPORT int HPCALL prime_send_data_new(calc_handle * handle, prime_vtl_pkt * pkt) {
-    int res;
-    if (handle != NULL && pkt != NULL) {
-        prime_raw_hid_pkt raw;
-        uint32_t i, q, r;
-        uint32_t offset = 0;
-        uint8_t pkt_id = 0x01;
-
-        memset((void *)&raw, 0, sizeof(raw));
-        q = (pkt->size) / (PRIME_RAW_HID_DATA_SIZE - 1);
-        r = (pkt->size) % (PRIME_RAW_HID_DATA_SIZE - 1);
-
-        hpcalcs_info("%s: q:%" PRIu32 "\tr:%" PRIu32, __FUNCTION__, q, r);
-
-        for (i = 1; i <= q; i++) {
-            raw.size = PRIME_RAW_HID_DATA_SIZE + 1;
-            raw.data[1] = pkt_id;
-            memcpy(raw.data + 2, pkt->data + offset, PRIME_RAW_HID_DATA_SIZE - 1);
-            offset += PRIME_RAW_HID_DATA_SIZE - 1;
-
-            res = prime_send(handle, &raw);
-            if (res) {
-                hpcalcs_info("%s: send %" PRIu32 " failed", __FUNCTION__, i);
-                r = 0;
-                break;
-            }
-            else {
-                hpcalcs_info("%s: send %" PRIu32 " succeeded", __FUNCTION__, i);
-            }
-
-            // Increment packet ID, which seems to be necessary for computer -> calc packets
-            pkt_id++;
-            // Skip 0xFE to 0x01
-            if (pkt_id == 0xFE) {
-                pkt_id = 0x02;
-            }
-        }
-
-        if (r || !pkt->size) {
-            raw.size = r + 2;
-            raw.data[1] = pkt_id;
-            memcpy(raw.data + 2, pkt->data + offset, r);
-
-            res = prime_send(handle, &raw);
-            if (res) {
-                hpcalcs_info("%s: send remaining failed", __FUNCTION__);
-            }
-            else {
-                hpcalcs_info("%s: send remaining succeeded", __FUNCTION__);
-            }
-        }
-    }
-    else {
-        res = ERR_INVALID_PARAMETER;
-        hpcalcs_error("%s: an argument is NULL", __FUNCTION__);
-    }
-    return res;
-}
-
 HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
     int res;
     if (handle != NULL && pkt != NULL) {
         prime_raw_hid_pkt raw;
         uint32_t i, q, r;
         uint32_t offset = 0;
-        uint8_t pkt_id = 0;
+        uint8_t pkt_id = handle->protocol_version > 0 ? 0x01 : 0x00;
 
         memset((void *)&raw, 0, sizeof(raw));
         q = (pkt->size) / (PRIME_RAW_HID_DATA_SIZE - 1);
@@ -199,8 +140,17 @@ HPEXPORT int HPCALL prime_send_data(calc_handle * handle, prime_vtl_pkt * pkt) {
 
             // Increment packet ID, which seems to be necessary for computer -> calc packets
             pkt_id++;
-            if (pkt_id == 0xFF) {
-                pkt_id = 0; // Skip 0xFF, which is used for other purposes.
+            if (handle->protocol_version > 0) {
+                // Skip 0xFE to 0x01
+                if (pkt_id == 0xFE) {
+                    pkt_id = 0x02;
+                }
+            }
+            else {
+                // Skip 0xFF, which is used for other purposes.
+                if (pkt_id == 0xFF) {
+                    pkt_id = 0x00;
+                }
             }
         }
 

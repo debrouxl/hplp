@@ -389,14 +389,6 @@ HPEXPORT void HPCALL prime_vtl_pkt_del(prime_vtl_pkt * pkt);
 HPEXPORT int HPCALL prime_send_new_protocol_init(calc_handle * handle);
 
 /**
- * \brief Sends the given virtual packet to the Prime calculator using given calculator handle (new protocol).
- * \param handle the calculator handle.
- * \param pkt the virtual packet.
- * \return 0 upon success, nonzero otherwise.
- */
-HPEXPORT int HPCALL prime_send_data_new(calc_handle * handle, prime_vtl_pkt * pkt);
-
-/**
  * \brief Sends the given virtual packet to the Prime calculator using given calculator handle.
  * \param handle the calculator handle.
  * \param pkt the virtual packet.
